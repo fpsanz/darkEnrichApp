@@ -1,0 +1,31 @@
+.content-wrapper {
+    background: #33404f;
+}
+.skin-blue .left-side, .skin-blue .main-sidebar, .skin-blue .wrapper{
+    background: #33404f;
+}
+
+label {
+    color: whitesmoke;
+}
+
+.h1, .h2, .h3, .h4, .h5, .h6, h1, h2, h3, h4, h5, h6, b, strong {
+    color: whitesmoke;
+}
+
+.box-body, .box-header {
+    background: #636f7b ;
+}
+
+.irs-min, .irs-max {
+    color: whitesmoke;
+}
+
+.datatables {
+    background: whitesmoke;
+    padding: 10px;
+}
+
+hr {
+    border-top: #33404f;
+}
