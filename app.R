@@ -87,12 +87,13 @@ sidebar <- dashboardSidebar(useShinyalert(),
                             ))
 ### BODY ###############
 body <- dashboardBody(
-    tags$head(
-      tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")
-    ),
+     tags$head(
+       tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")
+     ),
     setShadow(class = "shiny-plot-output"),
     setShadow( class = "box"),
     setShadow( class = "svg-container"),
+    setShadow(class = "tab-content"),
     shiny::tagList(shiny::tags$head(
         shiny::tags$link(rel = "stylesheet", type = "text/css", href = "busystyle.css"),
         shiny::tags$script(type = "text/javascript", src = "busy.js")
@@ -128,89 +129,10 @@ body <- dashboardBody(
     ) )),
     # preview tab
     tabItem(tabName = "preview",
-            fluidRow(
-                infoBoxOutput("allbox"),
-                infoBoxOutput("upbox"),
-                infoBoxOutput("downbox"),
-            ), # fin fluidrow boxinfos
-            fluidRow( 
-              column(width = 2, uiOutput("sampleGroup")),
-              column(width = 2, uiOutput("samplesName")),
-              column(width = 3, uiOutput("logfc")),
-              column(width = 3, uiOutput("padj")),
-              column(width = 2, strong("Click to compute enrichment"), actionButton("runEnrich", "Apply values"))
-            ),
-            hr(),
-            fluidRow(column(width = 12,
-                            offset = 2,
-                            circleButton(inputId = "info1", icon = icon("info"),
-                                         size="xs", status = "primary"),
-                            bsTooltip("info1", "Enter free text explaining biological experiment",
-                                      trigger = "click", placement = "right"),
-                            textAreaInput("biologicalText",
-                                          label="Biological context",
-                                          resize = "both",
-                                          width = "900px",
-                                          height = "200px"))),
-            hr(),
-            h3("Samples info (colData)"),
-            fluidRow(
-              column(
-                width = 8,
-                offset = 2,
-                circleButton(inputId = "rolltable1", icon = icon("plus-circle"),
-                             size="xs", status = "default"),
-                DTOutput("samples"),
-              )
-            ),
-            hr(),
-            h3("DE results"),
-            fluidRow(
-              column(
-                width = 8,
-                offset = 2,
-                circleButton(inputId = "rolltable2", icon = icon("plus-circle"),
-                             size="xs", status = "default"),
-                DTOutput("preview")
-              )
-            ),
-            hr(),
-            h3("Expression Plots"),
-            fluidRow(column(
-              width = 6,
-              plotOutput("pca", height = "600px")),
-            column(
-              width = 6,
-              plotOutput("top6", height = "600px"))
-            ),
-            hr(),
-            fluidRow(column(width=4, offset = 6, 
-                            sliderInput("numheatmap", label ="Select number of genes",
-                                        min = 5, max=40, value=20, step=1))),
-            fluidRow(column(
-              width = 6,
-              plotOutput("cluster", height = "600px")),
-              column(
-                width = 6,
-              plotOutput("heat", height = "600px"))
-            ),
-            hr(),
-            fluidRow(column(
-              width = 6,
-              plotOutput("volcano", height = "600px")),
-              column(
-                width = 6,
-                plotOutput("MA", height = "600px"))
-            ),
-            fluidRow(
-                column(width = 12,
-                       offset = 2,
-                    textAreaInput("explainPreview",
-                              label="Preview background",
-                              resize = "both",
-                              width = "800px",
-                              height = "200px"))),
-    ),
+            source(file = "ui-preview-tab.R",
+            local=TRUE,
+            encoding = "UTF-8"
+            )$value),
     # kegg tab content
     tabItem(tabName = "kegg",
             tabsetPanel(
@@ -709,12 +631,6 @@ server <- function(input, output, session) {
                imageUrl = "dna-svg-small-13.gif", 
                imageWidth = 200, imageHeight = 100)})
 # toggle para show/hide tabla preview ##############
-    observeEvent(input$rolltable1, {
-        toggle(id = "samples")
-    })
-    observeEvent(input$rolltable2, {
-        toggle(id = "preview")
-    })
     
   data <- reactiveValues() # genes
   goDT <- reactiveValues() #pretabla GO
