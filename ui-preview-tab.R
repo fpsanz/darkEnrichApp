@@ -47,9 +47,9 @@ fluidPage(
                 textAreaInput(
                     "biologicalText",
                     label = NULL,
-                    resize = NULL,
-                    width = "710px",
-                    height = "258px"
+                    resize = NULL
+                    #width = "100%",
+                    #height = "258px"
                 )
             ),
             # tabpanel
@@ -58,9 +58,9 @@ fluidPage(
                 textAreaInput(
                     "explainPreview",
                     label = NULL,
-                    resize = NULL,
-                    width = "710px",
-                    height = "258px"
+                    resize = NULL
+                    #width = "100%",
+                    #height = "258px"
                 ) #texarea
             ) #tabpanel
         ) #tabbox
@@ -79,46 +79,63 @@ fluidPage(
                  )
              ) ), # fin column y tabbox
     
-             fluidRow(column(width = 3,
+             fluidRow(
+                 column(width = 3,
                 box(
                     title = "Conditions and Variables",
                     width = NULL,
                     uiOutput("sampleGroup"),
                     uiOutput("samplesName"))
              ),
-             column(width = 9,
+             column(width = 8,
                              tabBox( width = 12,
                                  tabPanel(
                                      title = "PCA plot",
-                                     plotOutput("pca")),
+                                     plotOutput("pca", width = "100%", height = "800px")),
                                  tabPanel(
                                      title = "Top genes",
-                                     plotOutput("top6")
+                                     plotOutput("top6", width = "100%", height = "800px")
                                      )
                                  )
                              )
                       ), 
-
-
-    column(
-        width = 4,
-        offset = 6,
-        sliderInput(
-            "numheatmap",
-            label = "Select number of genes",
-            min = 5,
-            max = 40,
-            value = 20,
-            step = 1
-        )
-    ),
-    column(width = 6,
-           plotOutput("cluster", height = "600px")),
-    column(width = 6,
-           plotOutput("heat", height = "600px")),
-    hr(),
-    column(width = 6,
-           plotOutput("volcano", height = "600px")),
-    column(width = 6,
-           plotOutput("MA", height = "600px"))
+  fluidRow(
+      column(
+     width = 8,
+     offset = 3,
+     tabBox(
+         width = 12,
+         title = "",
+         tabPanel(title = "Heatmap",
+                  tagList(fluidRow(
+                      column(
+                          width = 3,
+                          sliderInput(
+                              "numheatmap",
+                              label = "Select number of genes",
+                              min = 5,
+                              max = 40,
+                              value = 20,
+                              step = 1
+                          )
+                      ),
+                      column(width = 9,
+                             plotOutput("heat", height = "725px"))
+                  ))),
+         tabPanel(title = "Cluster",
+                  tagList(fluidRow(column(width = 9, offset = 3,
+                  plotOutput("cluster", height = "725px")
+                  )))
+                  ),
+         tabPanel(title = "Volcano plot",
+                  tagList(fluidRow(column(width = 9, offset = 3,
+                  plotOutput("volcano", height = "725px")
+                  )))
+                  ),
+         tabPanel(title = "MA plot",
+                  tagList(fluidRow(column(width = 9, offset = 3,
+                  plotOutput("MA", height = "725px")
+                  )))
+                  )
+ )))
 ) # fin page

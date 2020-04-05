@@ -21,6 +21,7 @@ library(shinydashboardPlus)
 library(pheatmap)
 library(shinyjs)
 library(shinythemes)
+library(dashboardthemes)
 source("utils.R")
 options(shiny.maxRequestSize = 3000*1024^2)
 
@@ -87,20 +88,24 @@ sidebar <- dashboardSidebar(useShinyalert(),
                             ))
 ### BODY ###############
 body <- dashboardBody(
+    # shinyDashboardThemes(
+    #   theme = "grey_dark"
+    # ),
      tags$head(
-       tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")
+       tags$link(rel = "stylesheet", type = "text/css", href = "customDark.css")
      ),
     setShadow(class = "shiny-plot-output"),
+    setShadow(class = "shiny-bound-output"),
     setShadow( class = "box"),
     setShadow( class = "svg-container"),
-    setShadow(class = "tab-content"),
+    #setShadow(class = "tab-content"),
     shiny::tagList(shiny::tags$head(
         shiny::tags$link(rel = "stylesheet", type = "text/css", href = "busystyle.css"),
         shiny::tags$script(type = "text/javascript", src = "busy.js")
     )),
     div(
         class = "busy",
-        h4("Loading data, please be patient..."),
+        #h4("Loading data, please be patient..."),
         img(src = "dna-svg-small-13.gif", style = "width: 150px"),
         style = "z-index: 99"
     ), 
