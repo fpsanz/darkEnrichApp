@@ -1654,46 +1654,46 @@ VST <- function (object, blind = TRUE, nsub = 1000, fitType = "parametric")
 
 # Heatmap #############
 
-heat <- function (vsd, n = 40, intgroup = "condition", sampleName = "condition", specie="Mm") 
-{
-  require("EnsDb.Mmusculus.v79")
-  require("org.Mm.eg.db")
-  require("EnsDb.Hsapiens.v86")
-  require("org.Hs.eg.db")
-  if(specie=="Mm"){
-    ensdb <- EnsDb.Mmusculus.v79
-    orgdb <- org.Mm.eg.db
-  }
-  else{
-    ensdb <- EnsDb.Hsapiens.v86
-    orgdb <- org.Hs.eg.db
-  }
-#vsd <- vst(data)
-topVarGenes <- head(order(rowVars(assay(vsd)), decreasing = TRUE), n)
-mat  <- assay(vsd)[ topVarGenes, ]
-mat  <- mat - rowMeans(mat)
-if (!all(intgroup %in% names(colData(vsd)))) {
-  stop("the argument 'intgroup' should specify columns of colData(dds)")
-}
-df <- as.data.frame(colData(vsd)[, intgroup, drop = FALSE])
-
-annot <- NULL
-annot$ENSEMBL <- rownames(mat)
-annot$SYMBOL <-  mapIds(ensdb, keys=rownames(mat), column="SYMBOL",keytype="GENEID")
-annot$SYMBOL1 <- mapIds(orgdb, keys = rownames(mat), column = 'SYMBOL', keytype = 'ENSEMBL', multiVals = 'first') 
-annot$description <- mapIds(orgdb, keys = rownames(mat), column = 'GENENAME', keytype = 'ENSEMBL', multiVals = 'first')
-annot <- as.data.frame(annot)
-consensus <- data.frame('Symbol'= ifelse(!is.na(annot$SYMBOL), as.vector(annot$SYMBOL),
-                                         ifelse(!is.na(annot$SYMBOL1),as.vector(annot$SYMBOL1),
-                                                as.vector(annot$ENSEMBL))), stringsAsFactors = F)
-
-pheatmap(mat, cluster_rows=TRUE, cluster_cols=TRUE,
-         show_colnames=TRUE, show_rownames = TRUE, annotation_col = df,
-         labels_col = as.character(vsd[[sampleName]]),
-         labels_row = as.character(consensus$Symbol),
-         main = "Heatmap top genes")
-}
-
+    heat <- function (vsd, n = 40, intgroup = "condition", sampleName = "condition", specie="Mm") 
+    {
+      require("EnsDb.Mmusculus.v79")
+      require("org.Mm.eg.db")
+      require("EnsDb.Hsapiens.v86")
+      require("org.Hs.eg.db")
+      if(specie=="Mm"){
+        ensdb <- EnsDb.Mmusculus.v79
+        orgdb <- org.Mm.eg.db
+      }
+      else{
+        ensdb <- EnsDb.Hsapiens.v86
+        orgdb <- org.Hs.eg.db
+      }
+    #vsd <- vst(data)
+    topVarGenes <- head(order(rowVars(assay(vsd)), decreasing = TRUE), n)
+    mat  <- assay(vsd)[ topVarGenes, ]
+    mat  <- mat - rowMeans(mat)
+    if (!all(intgroup %in% names(colData(vsd)))) {
+      stop("the argument 'intgroup' should specify columns of colData(dds)")
+    }
+    df <- as.data.frame(colData(vsd)[, intgroup, drop = FALSE])
+    
+    annot <- NULL
+    annot$ENSEMBL <- rownames(mat)
+    annot$SYMBOL <-  mapIds(ensdb, keys=rownames(mat), column="SYMBOL",keytype="GENEID")
+    annot$SYMBOL1 <- mapIds(orgdb, keys = rownames(mat), column = 'SYMBOL', keytype = 'ENSEMBL', multiVals = 'first') 
+    annot$description <- mapIds(orgdb, keys = rownames(mat), column = 'GENENAME', keytype = 'ENSEMBL', multiVals = 'first')
+    annot <- as.data.frame(annot)
+    consensus <- data.frame('Symbol'= ifelse(!is.na(annot$SYMBOL), as.vector(annot$SYMBOL),
+                                             ifelse(!is.na(annot$SYMBOL1),as.vector(annot$SYMBOL1),
+                                                    as.vector(annot$ENSEMBL))), stringsAsFactors = F)
+    
+    pheatmap(mat, cluster_rows=TRUE, cluster_cols=TRUE,
+             show_colnames=TRUE, show_rownames = TRUE, annotation_col = df,
+             labels_col = as.character(vsd[[sampleName]]),
+             labels_row = as.character(consensus$Symbol),
+             main = "Heatmap top genes")
+    }
+    
 
 # cluster #############
 
