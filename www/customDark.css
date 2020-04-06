@@ -177,7 +177,7 @@
           .nav-tabs-custom>.nav-tabs>li.active {
             border-radius: 5px;
             border-top-color: rgb(70,80,90);
-            # box-shadow: 0px 0px 0px ;
+            /* box-shadow: 0px 0px 0px ;*/
           }
 
           /* tabbox: font color */

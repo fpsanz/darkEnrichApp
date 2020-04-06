@@ -1,252 +1,406 @@
 fluidPage(
-             tabsetPanel(
-               tabPanel("All DE genes",
-                        h3("Biological proccess"),
-                        fluidRow(column(
-                          # table BP
-                          width = 8,
-                          offset = 2,
-                          dataTableOutput("tableBPall")
-                        )),
-                        hr(),
-                        fluidRow(column(
-                            width = 4,
-                            offset = 2,
-                            radioGroupButtons(
-                                inputId = "selectbpall",
-                                label = "Select bar plot type",
-                                choices = c("Dodge", "Stack", "Opposite"),
-                                selected = "Dodge",
-                                status = "primary",
-                                checkIcon = list(
-                                    yes = icon("ok",
-                                               lib = "glyphicon"),
-                                    no = icon("remove",
-                                              lib = "glyphicon")
-                                )
+      tabsetPanel(
+## All genes ##########################################
+## BP all #######################
+        tabPanel( "All DE genes",          # pestaña All
+            #tags$br(),
+            tabsetPanel(  # tabsetpanel all
+                tabPanel("Biological Proccess",
+                         fluidRow(# primera fila all
+                             column(
+                                 width = 3,
+                                 box(
+                                     title = "GO BP description",
+                                     solidHeader = FALSE,
+                                     status = "primary",
+                                     width = NULL,
+                                     textAreaInput("GObpText",
+                                                   label = "",
+                                                   resize = NULL)
+                                 ) # fin caja para el texto
+                             ),
+                             column(
+                                 width = 9,
+                                 box(
+                                     title = "Biological proccess terms",
+                                     solidHeader = FALSE,
+                                     status = "primary",
+                                     width = NULL,
+                                     DTOutput("tableBPall")
+                                 ) # caja para la tabla
+                             )), 
+            fluidRow( # 2 fila
+                column( width = 9, offset = 3,
+                    tabBox( width = 12, # caja con pestañas para los plots
+                            tabPanel(title = "Barplot",
+                                     fluidRow(column(
+                                         width = 3,
+                                         radioGroupButtons(
+                                             inputId = "selectbpall",
+                                             label = "Select bar plot type",
+                                             choices = c("Dodge", "Stack", "Opposite"),
+                                             selected = "Dodge",
+                                             size = "sm",
+                                             status = "primary",
+                                             checkIcon = list(
+                                                 yes = icon("ok",
+                                                            lib = "glyphicon"),
+                                                 no = icon("remove",
+                                                           lib = "glyphicon")
+                                             )
+                                         )
+                                     )), # fin fluidRow, column & radioGroupButtons
+                                     fluidRow(class = "text-center",
+                                              column(
+                                                  align = "center",
+                                                  plotlyOutput("plotBPall"),
+                                                  width = 9
+                                              ))),  #barplot
+                            tabPanel(title = "Dotplot",
+                                     plotOutput("BPDotall")
+                                     ) # dotplot
+                        )
+                    )
+            )),
+                ### MF all #############################
+            #tags$br(),
+            tabPanel("Molecular function",  # MF all
+             fluidRow(  # primera fila mf all 
+                column( width = 3,
+                    box(title = "GO description",
+                        solidHeader = FALSE,
+                        status = "primary",
+                        width = NULL, 
+                        textAreaInput(
+                            "GOmfText",
+                            label = "",
+                            resize = NULL
+                        )
+                    ) # fin caja para el texto
+                ),
+                column( width = 9,
+                    box(title = "Molecular function terms",
+                        solidHeader = FALSE,
+                        status = "primary",
+                        width = NULL,
+                        DTOutput("tableMFall")
+                    ) # caja para la tabla
+                    )
+                ),
+            fluidRow( # 2 fila
+                column( width = 9, offset = 3,
+                    tabBox( width = 12, # caja con pestañas para los plots
+                            tabPanel(title = "Barplot",
+                                     fluidRow(column(
+                                         width = 3,
+                                         radioGroupButtons(
+                                             inputId = "selectmfall",
+                                             label = "Select bar plot type",
+                                             choices = c("Dodge", "Stack", "Opposite"),
+                                             selected = "Dodge",
+                                             size = "sm",
+                                             status = "primary",
+                                             checkIcon = list(
+                                                 yes = icon("ok",
+                                                            lib = "glyphicon"),
+                                                 no = icon("remove",
+                                                           lib = "glyphicon")
+                                             )
+                                         )
+                                     )), # fin fluidRow, column & radioGroupButtons
+                                     fluidRow(class = "text-center",
+                                              column(
+                                                  align = "center",
+                                                  plotlyOutput("plotMFall"),
+                                                  width = 9
+                                              ))),  #barplot
+                            tabPanel(title = "Dotplot",
+                                     plotOutput("MFDotall")
+                                     ) # dotplot
+                        )
+                    )
+            )),
+                ### CC all #############################
+                tabPanel("Cellular component",   ##tab CC all
+                fluidRow(  # primera fila all CC
+                    column( width = 3,
+                        box(title = "GO description",
+                            solidHeader = FALSE,
+                            status = "primary",
+                            width = NULL, 
+                            textAreaInput(
+                                "GOccText",
+                                label = "",
+                                resize = NULL
                             )
-                        )), # fin fluidRow, column & radioGroupButtons
-                        fluidRow(
-                          #plot BP
-                          class = "text-center",
-                          column(
-                            align = "center",
-                            offset = 2,
-                            plotlyOutput("plotBPall"),
-                            width = 8)),
-                        hr(),
-                        fluidRow(
-                          class="text-center",
-                          column(
-                            align = "center",
-                            offset= 2,
-                            plotOutput("BPDotall"),
-                            width = 8)),
-                        h3("Molecular Functions"),
-                        fluidRow(column(
-                          # table MF
-                          width = 8,
-                          offset = 2,
-                          dataTableOutput("tableMFall")
-                        )),
-                        hr(),
-                        fluidRow(column(
-                            width = 4,
-                            offset = 2,
-                            radioGroupButtons(
-                                inputId = "selectmfall",
-                                label = "Select bar plot type",
-                                choices = c("Dodge", "Stack", "Opposite"),
-                                selected = "Dodge",
+                        ) # fin caja para el texto
+                    ),
+                column( width = 9,
+                    box(title = "Cellular component terms",
+                        solidHeader = FALSE,
+                        status = "primary",
+                        width = NULL,
+                        DTOutput("tableCCall")
+                    ) # caja para la tabla
+                    )
+                ),
+            fluidRow( # 2 fila
+                column( width = 9, offset = 3,
+                    tabBox( width = 12, # caja con pestañas para los plots
+                            tabPanel(title = "Barplot",
+                                     fluidRow(column(
+                                         width = 3,
+                                         radioGroupButtons(
+                                             inputId = "selectccall",
+                                             label = "Select bar plot type",
+                                             choices = c("Dodge", "Stack", "Opposite"),
+                                             selected = "Dodge",
+                                             size = "sm",
+                                             status = "primary",
+                                             checkIcon = list(
+                                                 yes = icon("ok",
+                                                            lib = "glyphicon"),
+                                                 no = icon("remove",
+                                                           lib = "glyphicon")
+                                             )
+                                         )
+                                     )), # fin fluidRow, column & radioGroupButtons
+                                     fluidRow(class = "text-center",
+                                              column(
+                                                  align = "center",
+                                                  plotlyOutput("plotCCall"),
+                                                  width = 9
+                                              ))),  #barplot
+                            tabPanel(title = "Dotplot",
+                                     plotOutput("CCDotall")
+                                     ) # dotplot
+                        )
+                    )
+            )))
+        ), #fin tab all genes
+###### Upregulated genes #####################################
+## BP up #############################
+        tabPanel( "Upregulated genes",          # pestaña upregulates
+            tabsetPanel(  # tabsetpanel up
+             tabPanel("Biological Proccess",
+            fluidRow(  # primera fila
+                column( width = 3,
+                    box(title = "GO BP description",
+                        solidHeader = FALSE,
+                        status = "primary",
+                        width = NULL, 
+                        textAreaInput(
+                            "GOBpUpText",
+                            label = "",
+                            resize = NULL
+                        )
+                    ) # fin caja para el texto
+                ),
+                column( width = 9,
+                    box(title = "Biological proccess terms",
+                        solidHeader = FALSE,
+                        status = "primary",
+                        width = NULL,
+                        DTOutput("tableBP")
+                    ) # caja para la tabla
+                    )
+                ),
+            fluidRow( # 2 fila
+                column( width = 9, offset = 3,
+                    tabBox( width = 12, # caja con pestañas para los plots
+                        tabPanel(title = "Barplot",
+                                  plotlyOutput("plotBP")
+                                              ),  #barplot
+                        tabPanel(title = "Dotplot",
+                                 plotOutput("BPDotUp")
+                                 ) # dotplot
+                        )
+                    )
+            )),
+## MF up #############################
+tabPanel("Molecular function",
+fluidRow(  # primera fila
+                column( width = 3,
+                    box(title = "GO MF description",
+                        solidHeader = FALSE,
+                        status = "primary",
+                        width = NULL, 
+                        textAreaInput(
+                            "GOMfUpText",
+                            label = "",
+                            resize = NULL
+                        )
+                    ) # fin caja para el texto
+                ),
+                column( width = 9,
+                    box(title = "Molecular function terms",
+                        solidHeader = FALSE,
+                        status = "primary",
+                        width = NULL,
+                        DTOutput("tableMF")
+                    ) # caja para la tabla
+                    )
+                ),
+            fluidRow( # 2 fila
+                column( width = 9, offset = 3,
+                    tabBox( width = 12, # caja con pestañas para los plots
+                        tabPanel(title = "Barplot",
+                                  plotlyOutput("plotMF")
+                                              ),  #barplot
+                        tabPanel(title = "Dotplot",
+                                 plotOutput("MFDotUp")
+                                 ) # dotplot
+                        )
+                    )
+            )),
+## CC up ###################################
+        tabPanel("Cellular component",
+            fluidRow(  # primera fila
+                        column( width = 3,
+                            box(title = "GO CC description",
+                                solidHeader = FALSE,
                                 status = "primary",
-                                checkIcon = list(
-                                    yes = icon("ok",
-                                               lib = "glyphicon"),
-                                    no = icon("remove",
-                                              lib = "glyphicon")
+                                width = NULL, 
+                                textAreaInput(
+                                    "GOCcUpText",
+                                    label = "",
+                                    resize = NULL
                                 )
-                            )
-                        )), # fin fluidRow, column & radioGroupButtons
-                        fluidRow(# plot MF
-                          class = "text-center",
-                          column( align = "center",offset = 2,
-                                  plotlyOutput("plotMFall"),width = 8)
+                            ) # fin caja para el texto
                         ),
-                        hr(),
-                        fluidRow(
-                          class="text-center",
-                          column(
-                            align = "center",
-                            offset= 2,
-                            plotOutput("MFDotall"),
-                            width = 8
-                          )
-                        ),
-                        h3("Cellular components"),
-                        fluidRow( # table CC
-                          column(width = 8,offset = 2,dataTableOutput("tableCCall"))
-                        ),
-                        hr(),
-                        fluidRow(column(
-                            width = 4,
-                            offset = 2,
-                            radioGroupButtons(
-                                inputId = "selectccall",
-                                label = "Select bar plot type",
-                                choices = c("Dodge", "Stack", "Opposite"),
-                                selected = "Dodge",
+                        column( width = 9,
+                            box(title = "Cellular component terms",
+                                solidHeader = FALSE,
                                 status = "primary",
-                                checkIcon = list(
-                                    yes = icon("ok",
-                                               lib = "glyphicon"),
-                                    no = icon("remove",
-                                              lib = "glyphicon")
-                                )
+                                width = NULL,
+                                DTOutput("tableCC")
+                            ) # caja para la tabla
                             )
-                        )), # fin fluidRow, column & radioGroupButtons
-                        fluidRow(# plot CC
-                          class = "text-center",
-                          column(align = "center",offset = 2,
-                                 plotlyOutput("plotCCall"),width = 8)
                         ),
-                        hr(),
-                        fluidRow(
-                          class="text-center",
-                          column(
-                            align = "center",
-                            offset= 2,
-                            plotOutput("CCDotall"),
-                            width = 8
-                          )
-                        ) #fin fluidrow
-               ),
-               tabPanel("Upregulated",
-                        h3("Biological proccess"),
-                        fluidRow(column(
-                          # table BP
-                          width = 8,
-                          offset = 2,
-                          dataTableOutput("tableBP")
-                        )),
-                        hr(),
-                        fluidRow(
-                          #plot BP
-                          class = "text-center",
-                          column(
-                            align = "center",
-                            offset = 2,
-                            plotlyOutput("plotBP"),
-                            width = 8)),
-                        hr(),
-                        fluidRow(
-                          class="text-center",
-                          column(
-                            align = "center",
-                            offset= 2,
-                            plotOutput("BPDotUp"),
-                            width = 8)),
-                        h3("Molecular Functions"),
-                        fluidRow(column(
-                          # table MF
-                          width = 8,
-                          offset = 2,
-                          dataTableOutput("tableMF")
-                        )),
-                        hr(),
-                        fluidRow(# plot MF
-                          class = "text-center",
-                          column( align = "center",offset = 2,plotlyOutput("plotMF"),width = 8)
-                        ),
-                        hr(),
-                        fluidRow(
-                          class="text-center",
-                          column(
-                            align = "center",
-                            offset= 2,
-                            plotOutput("MFDotUp"),
-                            width = 8
-                          )
-                        ),
-                        h3("Cellular components"),
-                        fluidRow( # table CC
-                          column(width = 8,offset = 2,dataTableOutput("tableCC"))
-                        ),
-                        hr(),
-                        fluidRow(# plot CC
-                          class = "text-center",
-                          column(align = "center",offset = 2,plotlyOutput("plotCC"),width = 8)
-                        ),
-                        hr(),
-                        fluidRow(
-                          class="text-center",
-                          column(
-                            align = "center",
-                            offset= 2,
-                            plotOutput("CCDotUp"),
-                            width = 8
-                          )
-                        ) #fin fluidrow
-               ),
-               tabPanel("Downregulated",
-                        h3("Biological proccess"),
-                        fluidRow(column(# table BP
-                          width = 8,
-                          offset = 2,
-                          dataTableOutput("tableBPdown")
-                        )),
-                        hr(),
-                        fluidRow(#plot BP
-                          class = "text-center",
-                          column(
-                            align = "center",
-                            offset = 2,
-                            plotlyOutput("plotBPdown"),
-                            width = 8
-                          )
-                        ),
-                        hr(),
-                        fluidRow(
-                          class="text-center",
-                          column(
-                            align = "center",
-                            offset= 2,
-                            plotOutput("BPDotDown"),
-                            width = 8)),
-                        h3("Molecular Functions"),
-                        fluidRow(column(# table MF
-                          width = 8,
-                          offset = 2,
-                          dataTableOutput("tableMFdown")
-                        )),
-                        hr(),
-                        fluidRow(# plot MF
-                          class = "text-center",
-                          column( align = "center",offset = 2,plotlyOutput("plotMFdown"),width = 8)
-                        ),
-                        hr(),
-                        fluidRow(
-                          class="text-center",
-                          column(
-                            align = "center",
-                            offset= 2,
-                            plotOutput("MFDotDown"),
-                            width = 8)),
-                        h3("Cellular components"),
-                        fluidRow( # table CC
-                          column(width = 8,offset = 2,dataTableOutput("tableCCdown"))
-                        ),
-                        hr(),
-                        fluidRow(# plot CC
-                          class = "text-center",
-                          column(align = "center",offset = 2,plotlyOutput("plotCCdown"),width = 8)
-                        ),
-                        hr(),
-                        fluidRow(
-                          class="text-center",
-                          column(
-                            align = "center",
-                            offset= 2,
-                            plotOutput("CCDotDown"),
-                            width = 8)) #fin fluidrow
-               )) # tab GO
+            fluidRow( # 2 fila
+                column( width = 9, offset = 3,
+                    tabBox( width = 12, # caja con pestañas para los plots
+                        tabPanel(title = "Barplot",
+                                  plotlyOutput("plotCC")
+                                              ),  #barplot
+                        tabPanel(title = "Dotplot",
+                                 plotOutput("CCDotUp")
+                                 ) # dotplot
+                            )
+                        )
+                    )
+        ))), #fin tab upregulated genes
+## Down regulated genes ############################################
+## BP down ##############################
+        tabPanel( "Downregulated genes",          # pestaña downregulates
+            tabsetPanel(
+                tabPanel( "Biological proccess",
+            fluidRow(  # primera fila
+                column( width = 3,
+                    box(title = "GO BP description",
+                        solidHeader = FALSE,
+                        status = "primary",
+                        width = NULL, 
+                        textAreaInput(
+                            "GOBpDownText",
+                            label = "",
+                            resize = NULL
+                        )
+                    ) # fin caja para el texto
+                ),
+                column( width = 9,
+                    box(title = "Biological proccess terms",
+                        solidHeader = FALSE,
+                        status = "primary",
+                        width = NULL,
+                        DTOutput("tableBPdown")
+                    ) # caja para la tabla
+                    )
+                ),
+            fluidRow( # 2 fila
+                column( width = 9, offset = 3,
+                    tabBox( width = 12, # caja con pestañas para los plots
+                        tabPanel(title = "Barplot",
+                                  plotlyOutput("plotBPdown")
+                                              ),  #barplot
+                        tabPanel(title = "Dotplot",
+                                 plotOutput("BPDotDown")
+                                 ) # dotplot
+                        )
+                    )
+            )),
+## MF down ###################################
+        tabPanel( "Molecular function",
+            fluidRow(  # primera fila
+                column( width = 3,
+                    box(title = "GO MF description",
+                        solidHeader = FALSE,
+                        status = "primary",
+                        width = NULL, 
+                        textAreaInput(
+                            "GOMfDownText",
+                            label = "",
+                            resize = NULL
+                        )
+                    ) # fin caja para el texto
+                ),
+                column( width = 9,
+                    box(title = "Molecular functions terms",
+                        solidHeader = FALSE,
+                        status = "primary",
+                        width = NULL,
+                        DTOutput("tableMFdown")
+                    ) # caja para la tabla
+                    )
+                ),
+            fluidRow( # 2 fila
+                column( width = 9, offset = 3,
+                    tabBox( width = 12, # caja con pestañas para los plots
+                        tabPanel(title = "Barplot",
+                                  plotlyOutput("plotMFdown")
+                                              ),  #barplot
+                        tabPanel(title = "Dotplot",
+                                 plotOutput("MFDotDown")
+                                 ) # dotplot
+                        )
+                    )
+            )),
+## CC down ###################################
+            fluidRow(  # primera fila
+                tabPanel("Cellular component",
+                column( width = 3,
+                    box(title = "GO CC description",
+                        solidHeader = FALSE,
+                        status = "primary",
+                        width = NULL, 
+                        textAreaInput(
+                            "GOCcDownText",
+                            label = "",
+                            resize = NULL
+                        )
+                    ) # fin caja para el texto
+                ),
+                column( width = 9,
+                    box(title = "Cellular component terms",
+                        solidHeader = FALSE,
+                        status = "primary",
+                        width = NULL,
+                        DTOutput("tableCCdown")
+                    ) # caja para la tabla
+                    )
+                ),
+            fluidRow( # 2 fila
+                column( width = 9, offset = 3,
+                    tabBox( width = 12, # caja con pestañas para los plots
+                        tabPanel(title = "Barplot",
+                                  plotlyOutput("plotCCdown")
+                                              ),  #barplot
+                        tabPanel(title = "Dotplot",
+                                 plotOutput("CCDotDown")
+                                 ) # dotplot
+                        )
+                    )
+            )))
+        ) #fin tab downrergulated genes
+    ) # fin tabsetpanel
 )#fin fluidpage

@@ -21,7 +21,6 @@ library(shinydashboardPlus)
 library(pheatmap)
 library(shinyjs)
 library(shinythemes)
-library(dashboardthemes)
 source("utils.R")
 options(shiny.maxRequestSize = 3000*1024^2)
 
