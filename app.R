@@ -21,6 +21,7 @@ library(shinydashboardPlus)
 library(pheatmap)
 library(shinyjs)
 library(shinythemes)
+library(rgl)
 source("utils.R")
 options(shiny.maxRequestSize = 3000*1024^2)
 
@@ -87,16 +88,12 @@ sidebar <- dashboardSidebar(useShinyalert(),
                             ))
 ### BODY ###############
 body <- dashboardBody(
-    # shinyDashboardThemes(
-    #   theme = "grey_dark"
-    # ),
      tags$head(
        tags$link(rel = "stylesheet", type = "text/css", href = "customDark.css")
      ),
     setShadow(class = "shiny-plot-output"),
     setShadow( class = "box"),
     setShadow( class = "svg-container"),
-    #setShadow(class = "tab-content"),
     shiny::tagList(shiny::tags$head(
         shiny::tags$link(rel = "stylesheet", type = "text/css", href = "busystyle.css"),
         shiny::tags$script(type = "text/javascript", src = "busy.js")
@@ -188,6 +185,7 @@ server <- function(input, output, session) {
   logfcRange <- reactiveValues() # min y max logfc
   res <- reactiveValues()
   vsd <- reactiveValues()
+  rlog <- reactiveValues()
   observeEvent(input$deseqFile, {
       datos$dds <- readRDS(input$deseqFile$datapath)
   })
@@ -218,6 +216,7 @@ server <- function(input, output, session) {
                        rownames(res$sh),"' target='_blank'>",rownames(res$sh),"</a>")
         res$sh <- cbind(`GeneName_Ensembl`= links, res$sh)
         vsd$data <- vst(datos$dds)
+        rlog$datos <- rlog(datos$dds)
         logfcRange$min <- min(res$sh$log2FoldChange)
         logfcRange$max <- max(res$sh$log2FoldChange)
         closeAlert(session, "fileAlert")
@@ -282,6 +281,7 @@ server <- function(input, output, session) {
   typeBarBpAll <- reactive({input$selectbpall})
   typeBarMfAll <- reactive({input$selectmfall})
   typeBarCcAll <- reactive({input$selectccall})
+  pca3d <- reactive({input$pca3d})
   # InputFile
   output$deseqFile <- renderUI({
       validate(need(specie(), ""))
@@ -398,15 +398,41 @@ server <- function(input, output, session) {
     )
   })
   # view pca plot data ###################
+  output$pca3 <- renderUI({
+      if (!isTRUE(pca3d())) {
+          plotOutput("pca", width = "100%", height = "800px")
+      } else{
+          rglwidgetOutput("pca3d", width = "500px", height = "500px")
+      }
+  })
+  
   output$pca <- renderPlot( {
-    validate(need(datos$dds, "Load file and condition to render PCA"))
-    validate(need(variables(),"Load condition to render PCA" ) )
+    validate(need( !isTRUE(pca3d()), "" ) )
+    validate(need(datos$dds, ""))
+    validate(need(variables(),"Select condition to render PCA" ) )
     validate(need(samplename(),"" ) )
-    plotPCA(rlog(datos$dds), intgroup = variables(), labels = samplename() )+
+    plotPCA(rlog$datos, intgroup = variables(), labels = samplename() )+
       theme(plot.margin=unit(c(0.5,0.5,0.5,0.5),"cm"))+
         scale_size_manual(values = 4) +
     theme(text = element_text(size=16))
   })
+  
+  output$pca3d <- renderRglwidget({
+    validate(need(datos$dds, ""))
+    validate(need(variables(),"Select condition to render PCA" ) )
+    validate(need(samplename(),"" ) )
+    try(rgl.close(), silent = TRUE)
+    #rgl.open(useNULL = rgl.useNULL()) 
+    x = d$PC1; y = d$PC2; z = d$PC3
+    plot3d(d[,1:3], size = 2, type = "s", col = as.integer(d$labels), box = FALSE,
+           axes = FALSE)
+    bg3d(sphere = FALSE, fogtype = "none", color = "slategray2" )
+    rgl.lines(c(min(x), max(x)), c(0, 0), c(0, 0), color = "black")
+    rgl.lines(c(0, 0), c(min(y),max(y)), c(0, 0), color = "red")
+    rgl.lines(c(0, 0), c(0, 0), c(min(z),max(z)), color = "green")
+    rglwidget()
+  })
+  
   # view Volcano plot data ###################
   output$volcano <- renderPlot( {
     validate(need(datos$dds, "Load file and condition to render Volcano"))

@@ -91,7 +91,17 @@ fluidPage(
                              tabBox( width = 12,
                                  tabPanel(
                                      title = "PCA plot",
-                                     plotOutput("pca", width = "100%", height = "800px")),
+                                     tagList(fluidRow(
+                                     column(width=3,
+                                        materialSwitch(inputId = "pca3d", label = "PCA 3D",
+                                                       status = "primary")
+                                            ),
+                                     column(width=9,
+                                        uiOutput("pca3")
+                                        #plotOutput("pca", width = "100%", height = "800px"),
+                                        #rglwidgetOutput("pca3d", width = "100%", height = "800px")
+                                     )
+                                     ))),
                                  tabPanel(
                                      title = "Top genes",
                                      plotOutput("top6", width = "100%", height = "800px")

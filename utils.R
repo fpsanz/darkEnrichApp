@@ -1005,7 +1005,6 @@ plotPCA = function(object, intgroup = "condition", ntop = 500,
     attr(d, "percentVar") <- percentVar[1:2]
     #return(d)
   }
-  
  if(length(intgroup)>1){
     p <- ggplot(data = d,
                 aes_string(x = "PC1", y = "PC2", color = "group", shape = "shape")) +
@@ -1036,11 +1035,55 @@ plotPCA = function(object, intgroup = "condition", ntop = 500,
       # scale_size_manual(labels = c("tam"), values = c(1)) +
       theme(text = element_text(size=20))
   }
-
-  return(p)
+    return(p)
 }
 
-
+pca3dplot <- function(object, intgroup = "condition", ntop = 500,
+                   returnData = TRUE, labels = NULL){
+    rv <- rowVars(assay(object))
+   select <- order(rv, decreasing = TRUE)[seq_len(min(ntop, length(rv)))]
+  pca <- prcomp(t(assay(object)[select, ]))
+  percentVar <- pca$sdev ^ 2 / sum(pca$sdev ^ 2)
+  if (!all(intgroup %in% names(colData(object)))) {
+    stop("the argument 'intgroup' should specify columns of colData(dds)")
+  }
+  intgroup.df <- as.data.frame(colData(object)[, intgroup, drop = FALSE])
+  
+  if(length(intgroup)>1){
+    colgroup <- factor(intgroup.df[ ,intgroup[1] ] )
+    shapegroup <- factor(intgroup.df[ ,intgroup[2] ] )
+    d <-
+      data.frame(
+        PC1 = pca$x[, 1],
+        PC2 = pca$x[, 2],
+        group = colgroup,
+        shape = shapegroup,
+        intgroup.df,
+        name = colnames(object),
+        labels = colData(object)[[labels]]
+      )
+  } else{
+    colgroup <- factor(intgroup.df[ ,intgroup[1] ] )
+    d <-data.frame(
+        PC1 = pca$x[, 1],
+        PC2 = pca$x[, 2],
+        PC3 = pca$x[, 3],
+        group = colgroup,
+        intgroup.df,
+        name = colnames(object),
+        labels = colData(object)[[labels]]
+      )
+  }
+  # assembly the data for the plot
+  
+  getPalette <- colorRampPalette(c("#f7837b","#1cc3c8"))
+  colours <- getPalette(length(levels(d$group)))
+  if (returnData) {
+    attr(d, "percentVar") <- percentVar[1:2]
+    #return(d)
+  }
+    return(d)
+  }
 
 
 # Función para recuperar los genes up de un objeto DEseq #############
