@@ -1009,7 +1009,7 @@ plotPCA = function(object, intgroup = "condition", ntop = 500,
     p <- ggplot(data = d,
                 aes_string(x = "PC1", y = "PC2", color = "group", shape = "shape")) +
       geom_point(size = 3) +
-      ggtitle("PCA for VST data transformation") +
+      ggtitle("PCA for transformed data") +
       xlab(paste0("PC1: ", round(percentVar[1] * 100), "% variance")) +
       ylab(paste0("PC2: ", round(percentVar[2] * 100), "% variance")) +
       scale_color_manual(values = colours, name = intgroup[1]) +
@@ -1024,7 +1024,7 @@ plotPCA = function(object, intgroup = "condition", ntop = 500,
     p <- ggplot(data = d,
                 aes_string(x = "PC1", y = "PC2", color = "group")) +
       geom_point(size = 3) +
-      ggtitle("PCA for VST data transformation") +
+      ggtitle("PCA for transformed data") +
       xlab(paste0("PC1: ", round(percentVar[1] * 100), "% variance")) +
       ylab(paste0("PC2: ", round(percentVar[2] * 100), "% variance")) +
       scale_color_manual(values = colours, name = intgroup[1]) +
@@ -1115,6 +1115,9 @@ geneIdConverter <- function(genes, specie="Mm"){ # genes = vector of ensembl gen
   require("org.Mm.eg.db")
   require("EnsDb.Hsapiens.v86")
   require("org.Hs.eg.db")
+  require("EnsDb.Rnorvegicus.v79")
+  require("org.Rn.eg.db") 
+  
   if(specie=="Mm"){
       ensdb <- EnsDb.Mmusculus.v79
       orgdb <- org.Mm.eg.db
@@ -1703,6 +1706,9 @@ VST <- function (object, blind = TRUE, nsub = 1000, fitType = "parametric")
       require("org.Mm.eg.db")
       require("EnsDb.Hsapiens.v86")
       require("org.Hs.eg.db")
+      require("EnsDb.Rnorvegicus.v79")
+      require("org.Rn.eg.db") 
+      
       if(specie=="Mm"){
         ensdb <- EnsDb.Mmusculus.v79
         orgdb <- org.Mm.eg.db
@@ -1718,7 +1724,13 @@ VST <- function (object, blind = TRUE, nsub = 1000, fitType = "parametric")
     if (!all(intgroup %in% names(colData(vsd)))) {
       stop("the argument 'intgroup' should specify columns of colData(dds)")
     }
-    df <- as.data.frame(colData(vsd)[, intgroup, drop = FALSE])
+    
+
+    if(length(intgroup)>1){
+      df <- as.data.frame(colData(vsd)[, intgroup[1:2], drop = FALSE])
+    } else{
+      df <- as.data.frame(colData(vsd)[, intgroup, drop = FALSE])
+    }
     
     annot <- NULL
     annot$ENSEMBL <- rownames(mat)
@@ -1734,6 +1746,7 @@ VST <- function (object, blind = TRUE, nsub = 1000, fitType = "parametric")
              show_colnames=TRUE, show_rownames = TRUE, annotation_col = df,
              labels_col = as.character(vsd[[sampleName]]),
              labels_row = as.character(consensus$Symbol),
+             cellwidth = 18, cellheight = 14,
              main = "Heatmap top genes")
     }
     

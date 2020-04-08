@@ -1,9 +1,14 @@
 library(shinydashboard)
 library(AnnotationDbi)
-    library(org.Mm.eg.db)
-    library(org.Hs.eg.db)
+    library(org.Mm.eg.db) #Mus musculus
+    library(org.Hs.eg.db) #Homo sapiens
+    #library(org.Dr.eg.db) #Danio rerio (zebra fish)
+    library(org.Rn.eg.db) #Ratus norvegicus
+    #library(org.Mmu.eg.db) #Macaca mulata
     library(EnsDb.Mmusculus.v79)
     library(EnsDb.Hsapiens.v86)
+    library(EnsDb.Rnorvegicus.v79)
+
 library(limma)
 library(tidyverse)
 library(DT)
@@ -41,7 +46,7 @@ sidebar <- dashboardSidebar(useShinyalert(),
                                     pickerInput(
                                         inputId = "specie",
                                         label = "Select specie",
-                                        choices = list( "Human" = "Hs", "Mouse" = "Mm"),
+                                        choices = list( "Human" = "Hs", "Mouse" = "Mm", "Ratus" = "Rn"),
                                         options = list(title = "specie"),
                                         selected = NULL
                                     ) 
@@ -110,7 +115,7 @@ body <- dashboardBody(
     # Initial INFO
     tabItem(tabName = "info",
             br(),
-            fluidRow(column(offset = 2,width = 10,
+            fluidRow(column(offset = 2,width = 9,
             box(width=10,
                 status = "info",
                 title = h1(strong("Welcome to Enrich app 2020!") ),
@@ -122,6 +127,19 @@ body <- dashboardBody(
               "library. It has to be compress as an RDS object and upload 
                 by clicking on the search engine button found in the upper left 
                 corner of the app. Choose your object and enjoy your enrichment analysis ;)"),
+            br(),
+            h3("Get the app ready to use!"),
+            p("First of all, select the specie of your experiment. 
+              Then the option to enter your RDS object containing your 
+              analysis will be unlocked. Upload it and wait for the loading 
+              to be completed. When the loading symbol stops moving, 
+              you can proceed to the next tab! "
+              ),
+            br(),
+            p("Take advantage of every symbol of info" , icon("info-circle"), "that you might find.
+              It can provide you with information that may be useful for 
+              the proper functioning of the app. "
+            ),
             br(),
             h3("How to download the app"),
             p("This app can be found on ",
@@ -276,6 +294,7 @@ server <- function(input, output, session) {
   biologicalText <- reactive({input$biologicalText})
   explainPreview <- reactive({input$explainPreview})
   keggAllText <- reactive({input$keggAllText})
+  GSEAText <- reactive({input$GSEAText})
   specie <- reactive({input$specie})
   numheatmap <- reactive({input$numheatmap})
   typeBarKeggAll <- reactive({input$selectkeggall})
@@ -299,7 +318,7 @@ server <- function(input, output, session) {
       as.data.frame() %>% 
       select(-c(sizeFactor,replaceable)) %>% 
       names()
-    selectInput("variables", label="Select condition[s] for PCA - Heatmap",
+    selectInput("variables", label="Select condition[s] to highlight in the PCA - Heatmap",
                 choices = nvars,
                 multiple = TRUE)
   })
@@ -311,7 +330,7 @@ server <- function(input, output, session) {
       as.data.frame() %>% 
       select(-c(sizeFactor,replaceable)) %>% 
       names()
-    selectInput("samplename", label="Select sample name",
+    selectInput("samplename", label="Select column for sample name",
                 choices = nvars,
                 multiple = FALSE)
   })
@@ -336,17 +355,17 @@ server <- function(input, output, session) {
       numall <- nrow( res$sh[ ((res$sh$log2FoldChange >= logfc()[2] |
                                     res$sh$log2FoldChange< logfc()[1]) &
                                    res$sh$padj <= padj() ),] ) 
-      infoBox("All DE genes", numall, icon = icon("arrows-alt-v"), color = "light-blue", fill = TRUE)
+      infoBox("All Differentially Expressed genes", numall, icon = icon("arrows-alt-v"), color = "light-blue", fill = TRUE)
   })
   output$upbox <- renderInfoBox({
       validate(need(res$sh, ""))
       numup <- nrow( res$sh[(res$sh$log2FoldChange >= logfc()[2]) & (res$sh$padj <= padj()), ]) 
-      infoBox("Up-regulated genes", numup, icon = icon("thumbs-up", lib = "glyphicon"), color = "light-blue", fill=TRUE)
+      infoBox("Upregulated genes", numup, icon = icon("thumbs-up", lib = "glyphicon"), color = "light-blue", fill=TRUE)
   })
   output$downbox <- renderInfoBox({
       validate(need(res$sh, ""))
       numdown <- nrow( res$sh[(res$sh$log2FoldChange <= logfc()[1]) & (res$sh$padj <= padj()), ]) 
-      infoBox("Down-regulated genes", numdown, icon = icon("thumbs-down", lib = "glyphicon"), color = "light-blue", fill=TRUE)
+      infoBox("Downregulated genes", numdown, icon = icon("thumbs-down", lib = "glyphicon"), color = "light-blue", fill=TRUE)
   })
   # preview samples ###################
   output$samples <- DT::renderDataTable(server = TRUE,{
@@ -430,11 +449,11 @@ server <- function(input, output, session) {
     #open3d()
     plot3d(x,y,x, size = 2, type="s", col = as.numeric(d$labels),
            box=FALSE, axes=FALSE, xlab = names(d)[1], ylab=names(d)[2], names(d)[3])
-    bg3d(sphere = FALSE, fogtype = "none", color = "#343e48" )
+    bg3d(sphere = FALSE, fogtype = "none", color = "#dadee3" )
     #rgl.bbox(xlen=0, ylen=0, zlen=0)
     rgl.lines(c(min(x), max(x)), c(0, 0), c(0, 0), color = "black")
-    rgl.lines(c(0, 0), c(min(y),max(y)), c(0, 0), color = "red")
-    rgl.lines(c(0, 0), c(0, 0), c(min(z),max(z)), color = "green")
+    rgl.lines(c(0, 0), c(min(y),max(y)), c(0, 0), color = "black")
+    rgl.lines(c(0, 0), c(0, 0), c(min(z),max(z)), color = "black")
     rglwidget()
   })
   
@@ -481,6 +500,7 @@ server <- function(input, output, session) {
   output$cluster <- renderPlot( {
     validate(need(datos$dds, ""))
     validate(need(vsd$data, "Load file to render plot"))
+    validate(need(variables(),"Load condition to render plot" ) )
     validate(need(samplename(),"Load condition to render plot" ) )
     cluster(vsd$data, intgroup = samplename())
   })
@@ -1027,7 +1047,7 @@ server <- function(input, output, session) {
                      gseanr=gseanr, author=author(), nrall = nrall,
                      bpnrall=bpnrall, mfnrall=mfnrall, ccnrall=ccnrall,
                      explainPreview=explainPreview(), biologicalText=biologicalText(),
-                     keggAllText = keggAllText(), deseq = datos$dds, 
+                     keggAllText = keggAllText(), GSEAText = GSEAText(), deseq = datos$dds, 
                      kggAll = kgg$all, kggUp = kgg$up, kggDown = kgg$down,
                      kggDTall = kggDT$all, kggDTup = kggDT$up, kggDTdown = kggDT$down,
                      goAll = go$all, goDTall = goDT$all, goUp=go$up, goDTup = goDT$up,

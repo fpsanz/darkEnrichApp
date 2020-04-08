@@ -5,6 +5,19 @@ fluidPage(
             fluidRow(  # primera fila
                 column( width = 3,
                     box(title = "Kegg description",
+                        circleButton(
+                            inputId = "information8",
+                            icon = icon("info"),
+                            size = "xs",
+                            status = "primary"
+                        ),
+                        bsTooltip(
+                            "information8",
+                            "Enter free text explaining the results obtained here
+                            or the data selected",
+                            trigger = "hover",
+                            placement = "right"
+                        ),
                         solidHeader = FALSE,
                         status = "primary",
                         width = NULL, 
@@ -25,10 +38,24 @@ fluidPage(
                     )
                 ),
             fluidRow( # 2 fila
-                column( width = 9, offset = 3,
+                column( 
+                    circleButton(
+                        inputId = "information5",
+                        icon = icon("info"),
+                        size = "xs",
+                        status = "primary"
+                    ),
+                    bsTooltip(
+                        "information5",
+                        "Please, select rows with the pathways of interest 
+                                         in the table to activate all the plots.",
+                        trigger = "hover",
+                        placement = "left"
+                    ),
+                    width = 9, offset = 3,
                     tabBox( width = 12, # caja con pestañas para los plots
                             tabPanel(title = "Barplot",
-                                     fluidRow(column(
+                                    fluidRow(column(
                                          width = 3,
                                          radioGroupButtons(
                                              inputId = "selectkeggall",
@@ -53,8 +80,8 @@ fluidPage(
                                               ))),  #barplot
                         tabPanel(title = "Chordplot",
                                  chorddiagOutput("keggChordAll",
-                                                 width = "500px", 
-                                                 height = "500px") ), #cordplot
+                                                 width = "600px", 
+                                                 height = "600px") ), #cordplot
                         tabPanel(title = "Dotplot",
                                  plotOutput("keggDotAll")
                                  ), # dotplot
@@ -73,6 +100,19 @@ fluidPage(
             fluidRow(  # primera fila
                 column( width = 3,
                     box(title = "Kegg description",
+                        circleButton(
+                            inputId = "information9",
+                            icon = icon("info"),
+                            size = "xs",
+                            status = "primary"
+                        ),
+                        bsTooltip(
+                            "information9",
+                            "Enter free text explaining the results obtained here
+                            or the data selected",
+                            trigger = "hover",
+                            placement = "right"
+                        ),
                         solidHeader = FALSE,
                         status = "primary",
                         width = NULL, 
@@ -93,15 +133,29 @@ fluidPage(
                     )
                 ),
             fluidRow( # 2 fila
-                column( width = 9, offset = 3,
+                column( 
+                    circleButton(
+                        inputId = "information6",
+                        icon = icon("info"),
+                        size = "xs",
+                        status = "primary"
+                    ),
+                    bsTooltip(
+                        "information6",
+                        "Please, select rows with the pathways of interest 
+                                         in the table to activate all the plots.",
+                        trigger = "hover",
+                        placement = "left"
+                    ),
+                    width = 9, offset = 3,
                     tabBox( width = 12, # caja con pestañas para los plots
                         tabPanel(title = "Barplot",
-                                  plotlyOutput("keggPlot")
+                                 plotlyOutput("keggPlot")
                                               ),  #barplot
                         tabPanel(title = "Chordplot",
                                  chorddiagOutput("keggChord",
-                                                 width = "500px", 
-                                                 height = "500px") ), #cordplot
+                                                 width = "600px", 
+                                                 height = "600px") ), #cordplot
                         tabPanel(title = "Dotplot",
                                  plotOutput("keggDotUp")
                                  ), # dotplot
@@ -120,6 +174,19 @@ fluidPage(
             fluidRow(  # primera fila
                 column( width = 3,
                     box(title = "Kegg description",
+                        circleButton(
+                            inputId = "information10",
+                            icon = icon("info"),
+                            size = "xs",
+                            status = "primary"
+                        ),
+                        bsTooltip(
+                            "information10",
+                            "Enter free text explaining the results obtained here
+                            or the data selected",
+                            trigger = "hover",
+                            placement = "right"
+                        ),
                         solidHeader = FALSE,
                         status = "primary",
                         width = NULL, 
@@ -140,15 +207,29 @@ fluidPage(
                     )
                 ),
             fluidRow( # 2 fila
-                column( width = 9, offset = 3,
+                column( 
+                    circleButton(
+                        inputId = "information7",
+                        icon = icon("info"),
+                        size = "xs",
+                        status = "primary"
+                    ),
+                    bsTooltip(
+                        "information7",
+                        "Please, select rows with the pathways of interest 
+                                         in the table to activate all the plots.",
+                        trigger = "hover",
+                        placement = "left"
+                    ),
+                    width = 9, offset = 3,
                     tabBox( width = 12, # caja con pestañas para los plots
                         tabPanel(title = "Barplot",
-                                  plotlyOutput("keggPlotDown")
+                                 plotlyOutput("keggPlotDown")
                                               ),  #barplot
                         tabPanel(title = "Chordplot",
                                  chorddiagOutput("keggChordDown",
-                                                 width = "500px", 
-                                                 height = "500px") ), #cordplot
+                                                 width = "600px", 
+                                                 height = "600px") ), #cordplot
                         tabPanel(title = "Dotplot",
                                  plotOutput("keggDotDown")
                                  ), # dotplot
