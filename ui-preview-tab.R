@@ -226,7 +226,7 @@ fluidPage(
                                                        status = "primary"),
                                             ),
                                      column(width=9,
-                                        plotlyOutput("boxviolin")
+                                        plotlyOutput("boxviolin", width="100%", height = "500px")
                                      )
                                      )))
                                  )

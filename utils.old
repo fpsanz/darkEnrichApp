@@ -1009,7 +1009,7 @@ plotPCA = function(object, intgroup = "condition", ntop = 500,
     p <- ggplot(data = d,
                 aes_string(x = "PC1", y = "PC2", color = "group", shape = "shape")) +
       geom_point(size = 3) +
-      ggtitle("PCA for VST data transformation") +
+      ggtitle("PCA for transformed data") +
       xlab(paste0("PC1: ", round(percentVar[1] * 100), "% variance")) +
       ylab(paste0("PC2: ", round(percentVar[2] * 100), "% variance")) +
       scale_color_manual(values = colours, name = intgroup[1]) +
@@ -1024,7 +1024,7 @@ plotPCA = function(object, intgroup = "condition", ntop = 500,
     p <- ggplot(data = d,
                 aes_string(x = "PC1", y = "PC2", color = "group")) +
       geom_point(size = 3) +
-      ggtitle("PCA for VST data transformation") +
+      ggtitle("PCA for transformed data") +
       xlab(paste0("PC1: ", round(percentVar[1] * 100), "% variance")) +
       ylab(paste0("PC2: ", round(percentVar[2] * 100), "% variance")) +
       scale_color_manual(values = colours, name = intgroup[1]) +
@@ -1039,7 +1039,7 @@ plotPCA = function(object, intgroup = "condition", ntop = 500,
 }
 
 pca3dplot <- function(object, intgroup = "condition", ntop = 500,
-                   returnData = TRUE, labels = NULL){
+                   returnData = TRUE){
     rv <- rowVars(assay(object))
    select <- order(rv, decreasing = TRUE)[seq_len(min(ntop, length(rv)))]
   pca <- prcomp(t(assay(object)[select, ]))
@@ -1049,20 +1049,6 @@ pca3dplot <- function(object, intgroup = "condition", ntop = 500,
   }
   intgroup.df <- as.data.frame(colData(object)[, intgroup, drop = FALSE])
   
-  if(length(intgroup)>1){
-    colgroup <- factor(intgroup.df[ ,intgroup[1] ] )
-    shapegroup <- factor(intgroup.df[ ,intgroup[2] ] )
-    d <-
-      data.frame(
-        PC1 = pca$x[, 1],
-        PC2 = pca$x[, 2],
-        group = colgroup,
-        shape = shapegroup,
-        intgroup.df,
-        name = colnames(object),
-        labels = colData(object)[[labels]]
-      )
-  } else{
     colgroup <- factor(intgroup.df[ ,intgroup[1] ] )
     d <-data.frame(
         PC1 = pca$x[, 1],
@@ -1071,9 +1057,9 @@ pca3dplot <- function(object, intgroup = "condition", ntop = 500,
         group = colgroup,
         intgroup.df,
         name = colnames(object),
-        labels = colData(object)[[labels]]
+        labels = colData(object)[[intgroup[1]]]
       )
-  }
+
   # assembly the data for the plot
   
   getPalette <- colorRampPalette(c("#f7837b","#1cc3c8"))
@@ -1115,6 +1101,9 @@ geneIdConverter <- function(genes, specie="Mm"){ # genes = vector of ensembl gen
   require("org.Mm.eg.db")
   require("EnsDb.Hsapiens.v86")
   require("org.Hs.eg.db")
+  require("EnsDb.Rnorvegicus.v79")
+  require("org.Rn.eg.db") 
+  
   if(specie=="Mm"){
       ensdb <- EnsDb.Mmusculus.v79
       orgdb <- org.Mm.eg.db
@@ -1703,6 +1692,9 @@ VST <- function (object, blind = TRUE, nsub = 1000, fitType = "parametric")
       require("org.Mm.eg.db")
       require("EnsDb.Hsapiens.v86")
       require("org.Hs.eg.db")
+      require("EnsDb.Rnorvegicus.v79")
+      require("org.Rn.eg.db") 
+      
       if(specie=="Mm"){
         ensdb <- EnsDb.Mmusculus.v79
         orgdb <- org.Mm.eg.db
@@ -1718,7 +1710,13 @@ VST <- function (object, blind = TRUE, nsub = 1000, fitType = "parametric")
     if (!all(intgroup %in% names(colData(vsd)))) {
       stop("the argument 'intgroup' should specify columns of colData(dds)")
     }
-    df <- as.data.frame(colData(vsd)[, intgroup, drop = FALSE])
+    
+
+    if(length(intgroup)>1){
+      df <- as.data.frame(colData(vsd)[, intgroup[1:2], drop = FALSE])
+    } else{
+      df <- as.data.frame(colData(vsd)[, intgroup, drop = FALSE])
+    }
     
     annot <- NULL
     annot$ENSEMBL <- rownames(mat)
@@ -1734,6 +1732,7 @@ VST <- function (object, blind = TRUE, nsub = 1000, fitType = "parametric")
              show_colnames=TRUE, show_rownames = TRUE, annotation_col = df,
              labels_col = as.character(vsd[[sampleName]]),
              labels_row = as.character(consensus$Symbol),
+             cellwidth = 18, cellheight = 14,
              main = "Heatmap top genes")
     }
     
@@ -1815,7 +1814,33 @@ plotCountsSymbol <- function (dds, gene, res, intgroup = "condition", normalized
   #text(data$group + runif(ncol(dds), -0.05, 0.05), data$count, labels=colnames(dds))
 }
 
-
+# Boxplot Violin plot ###########################
+boxViolin <- function(datos=NULL, vsd=NULL, boxplotswitch=NULL, dataswitch=NULL, intgroup=NULL){
+    if(isTRUE(dataswitch)){
+        data <- datos
+    } else{
+        data <- vsd
+    }
+    df <- assay(data)
+    condition <- colData(data)[[intgroup[1]]] # variables()
+    df <- as.data.frame(t(df))
+    df$condition <- as.character(condition)
+    df$samples <- rownames(df)
+    dflong <-
+        df %>% pivot_longer(c(-condition,-samples),
+                            names_to = "genes",
+                            values_to = "count")
+    p <- dflong %>% ggplot(aes(x = samples, y = count, fill = condition))
+    if(!isTRUE(boxplotswitch)){
+        p <- p + geom_boxplot() +
+            theme(axis.text.x = element_text(angle = 90))
+        return(p)
+    } else {
+        p <- p + geom_violin() +
+            theme(axis.text.x = element_text(angle = 90))
+        return(p)
+        }
+          }
 
 
 
