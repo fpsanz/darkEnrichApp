@@ -11,8 +11,8 @@ fluidPage(
                  ),
                  bsTooltip(
                    "information20",
-                   "Enter free text explaining the results obtained here
-                            or the data selected",
+                   paste0("Enter free text explaining the results ",
+                   "obtained here or the data selected"),
                    trigger = "hover",
                    placement = "right"
                  ),

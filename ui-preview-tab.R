@@ -4,26 +4,27 @@ fluidPage(
              infoBoxOutput("downbox")
              ),
     # fin fluidrow boxinfos
-    fluidRow(column(
-      circleButton(
-        inputId = "information1",
-        icon = icon("info"),
-        size = "xs",
-        status = "primary"
-      ),
-      bsTooltip(
-        "information1",
-        "Customize here the statistical values that you 
-        intend to apply to your experiment as a cutoff
-        to consider a gene differentially expressed. The
-        numbers per category can be check above. 
-        Click on 'Apply values' once you have finished
-        exploring this tab and before moving to the next one.",
-        trigger = "hover",
-        placement = "right"
-      ),
-        width = 4,
-        offset = 1,
+    fluidRow(
+        column(
+            width = 4,
+            offset = 1, 
+            circleButton(
+                inputId = "information1",
+                icon = icon("info"),
+                size = "xs",
+                status = "primary"
+            ),
+            bsTooltip(
+                    "information1",
+                    paste0("Customize here the statistical values that you intend",
+                           " to apply to your experiment as a cutoff to consider a",
+                           " gene differentially expressed. The numbers per",
+                           "category can be check above. Click on Apply values",
+                           " once you have finished exploring this tab and",
+                           " before moving to the next one."),
+                    trigger = "hover",
+                    placement = "right"
+                ),
         box(
             align = 'center',
             title = "Cutoff values",
@@ -81,8 +82,8 @@ fluidPage(
                 ),
                 bsTooltip(
                   "info2",
-                  "Enter free text explaining the results obtained here
-                  or the statistical value selected.",
+                  paste0("Enter free text explaining the results obtained here",
+                  " or the statistical value selected."),
                   trigger = "hover",
                   placement = "right"
                 ),
@@ -119,9 +120,9 @@ fluidPage(
              ),
              bsTooltip(
                "information2",
-               "Choose here the variables from your 'Coldata' that will 
-               help to represent the data graphically 
-               and explore all the conditions properly.",
+               paste0("Choose here the variables from your Coldata that will ", 
+               "help to represent the data graphically ", 
+               "and explore all the conditions properly."),
                trigger = "hover",
                placement = "left"
              ),
@@ -144,11 +145,11 @@ fluidPage(
                                      ),
                                      bsTooltip(
                                        "information3",
-                                       "Up to two conditions may be accepted for PCA 2D. 
-                                       The first variable
-                                       will be represented with different colours 
-                                       and the second will correspond to the dot shape.
-                                       For PCA 3D only the first one is taken.",
+                                       paste0("Up to two conditions may be accepted for PCA 2D. ", 
+                                       "The first variable ",
+                                       "will be represented with different colours ",
+                                       "and the second will correspond to the dot shape. ",
+                                       "For PCA 3D only the first one is taken."),
                                        trigger = "hover",
                                        placement = "right"
                                      ),
@@ -172,10 +173,10 @@ fluidPage(
                                           ),
                                           bsTooltip(
                                             "information4",
-                                            "Up to two conditions may be accepted for the heatmap. 
-                                            Every variable will be represented as a line on top 
-                                            of the plot with different colors showing the
-                                            distincts condition per sample.",
+                                            paste0("Up to two conditions may be accepted for the heatmap. ",
+                                            "Every variable will be represented as a line on top ",
+                                            "of the plot with different colors showing the ",
+                                            "distincts condition per sample."),
                                             trigger = "hover",
                                             placement = "right"
                                           ),
@@ -201,7 +202,33 @@ fluidPage(
                                  tabPanel(
                                      title = "Top genes",
                                      plotOutput("top6", width = "100%", height = "800px")
+                                     ),
+                                 tabPanel(
+                                     title = "Box/violin plot",
+                                     circleButton(
+                                            inputId = "infobox",
+                                            icon = icon("info"),
+                                            size = "xs",
+                                            status = "primary"
+                                          ),
+                                          bsTooltip(
+                                            "infobox",
+                                            paste0("Pon aquí ",
+                                            "lo que te salga de la piiiiiiiiii"),
+                                            trigger = "hover",
+                                            placement = "right"
+                                          ),
+                                     tagList(fluidRow(
+                                     column(width=3,
+                                        materialSwitch(inputId = "boxplotswitch", label = "Violin plot",
+                                                       status = "primary"),
+                                        materialSwitch(inputId = "dataswitch", label = "Raw data",
+                                                       status = "primary"),
+                                            ),
+                                     column(width=9,
+                                        plotlyOutput("boxviolin")
                                      )
+                                     )))
                                  )
                              )
                       ), 

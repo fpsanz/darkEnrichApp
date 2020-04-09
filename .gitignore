@@ -2,5 +2,5 @@
 .Rhistory
 .RData
 .Ruserdata
-app.Old
+*.old
 barplotTest.R

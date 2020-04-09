@@ -13,8 +13,8 @@ fluidPage(
                         ),
                         bsTooltip(
                             "information8",
-                            "Enter free text explaining the results obtained here
-                            or the data selected",
+                            paste0("Enter free text explaining the results",
+                            " obtained here or the data selected"),
                             trigger = "hover",
                             placement = "right"
                         ),
@@ -47,8 +47,8 @@ fluidPage(
                     ),
                     bsTooltip(
                         "information5",
-                        "Please, select rows with the pathways of interest 
-                                         in the table to activate all the plots.",
+                        paste0("Please, select rows with the pathways",
+                        " of interest in the table to activate all the plots."),
                         trigger = "hover",
                         placement = "left"
                     ),
@@ -108,8 +108,8 @@ fluidPage(
                         ),
                         bsTooltip(
                             "information9",
-                            "Enter free text explaining the results obtained here
-                            or the data selected",
+                            paste0("Enter free text explaining the results obtained ",
+                            " here or the data selected"),
                             trigger = "hover",
                             placement = "right"
                         ),
@@ -142,8 +142,8 @@ fluidPage(
                     ),
                     bsTooltip(
                         "information6",
-                        "Please, select rows with the pathways of interest 
-                                         in the table to activate all the plots.",
+                        paste0("Please, select rows with the pathways of interest ", 
+                                "in the table to activate all the plots."),
                         trigger = "hover",
                         placement = "left"
                     ),
@@ -182,8 +182,8 @@ fluidPage(
                         ),
                         bsTooltip(
                             "information10",
-                            "Enter free text explaining the results obtained here
-                            or the data selected",
+                            paste0("Enter free text explaining the results ",
+                            "obtained here or the data selected"),
                             trigger = "hover",
                             placement = "right"
                         ),
@@ -216,8 +216,8 @@ fluidPage(
                     ),
                     bsTooltip(
                         "information7",
-                        "Please, select rows with the pathways of interest 
-                                         in the table to activate all the plots.",
+                        paste0("Please, select rows with the pathways of interest ",
+                                "in the table to activate all the plots."),
                         trigger = "hover",
                         placement = "left"
                     ),

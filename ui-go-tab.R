@@ -174,9 +174,11 @@ fluidPage(
                             tabPanel(title = "Dotplot",
                                      plotOutput("CCDotall")
                                      ) # dotplot
-                        )
-                    )
-            )))
+                        ) #tabbox
+                    ) #column 
+            ) #fluidrow
+            ) # tabpanel CC 
+            ) # tabsetpanel all
         ), #fin tab all genes
 ###### Upregulated genes #####################################
 ## BP up #############################
@@ -366,8 +368,8 @@ fluidRow(  # primera fila
                     )
             )),
 ## CC down ###################################
-            fluidRow(  # primera fila
                 tabPanel("Cellular component",
+                fluidRow(  # primera fila
                 column( width = 3,
                     box(title = "GO CC description",
                         solidHeader = FALSE,
@@ -400,7 +402,8 @@ fluidRow(  # primera fila
                                  ) # dotplot
                         )
                     )
-            )))
+            ))
+) # fin tabsetpanel downregulated
         ) #fin tab downrergulated genes
     ) # fin tabsetpanel
 )#fin fluidpage

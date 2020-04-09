@@ -1039,7 +1039,7 @@ plotPCA = function(object, intgroup = "condition", ntop = 500,
 }
 
 pca3dplot <- function(object, intgroup = "condition", ntop = 500,
-                   returnData = TRUE, labels = NULL){
+                   returnData = TRUE){
     rv <- rowVars(assay(object))
    select <- order(rv, decreasing = TRUE)[seq_len(min(ntop, length(rv)))]
   pca <- prcomp(t(assay(object)[select, ]))
@@ -1049,20 +1049,6 @@ pca3dplot <- function(object, intgroup = "condition", ntop = 500,
   }
   intgroup.df <- as.data.frame(colData(object)[, intgroup, drop = FALSE])
   
-  if(length(intgroup)>1){
-    colgroup <- factor(intgroup.df[ ,intgroup[1] ] )
-    shapegroup <- factor(intgroup.df[ ,intgroup[2] ] )
-    d <-
-      data.frame(
-        PC1 = pca$x[, 1],
-        PC2 = pca$x[, 2],
-        group = colgroup,
-        shape = shapegroup,
-        intgroup.df,
-        name = colnames(object),
-        labels = colData(object)[[labels]]
-      )
-  } else{
     colgroup <- factor(intgroup.df[ ,intgroup[1] ] )
     d <-data.frame(
         PC1 = pca$x[, 1],
@@ -1071,9 +1057,9 @@ pca3dplot <- function(object, intgroup = "condition", ntop = 500,
         group = colgroup,
         intgroup.df,
         name = colnames(object),
-        labels = colData(object)[[labels]]
+        labels = colData(object)[[intgroup[1]]]
       )
-  }
+
   # assembly the data for the plot
   
   getPalette <- colorRampPalette(c("#f7837b","#1cc3c8"))
@@ -1828,7 +1814,33 @@ plotCountsSymbol <- function (dds, gene, res, intgroup = "condition", normalized
   #text(data$group + runif(ncol(dds), -0.05, 0.05), data$count, labels=colnames(dds))
 }
 
-
+# Boxplot Violin plot ###########################
+boxViolin <- function(datos=NULL, vsd=NULL, boxplotswitch=NULL, dataswitch=NULL, intgroup=NULL){
+    if(isTRUE(dataswitch)){
+        data <- datos
+    } else{
+        data <- vsd
+    }
+    df <- assay(data)
+    condition <- colData(data)[[intgroup[1]]] # variables()
+    df <- as.data.frame(t(df))
+    df$condition <- as.character(condition)
+    df$samples <- rownames(df)
+    dflong <-
+        df %>% pivot_longer(c(-condition,-samples),
+                            names_to = "genes",
+                            values_to = "count")
+    p <- dflong %>% ggplot(aes(x = samples, y = count, fill = condition))
+    if(!isTRUE(boxplotswitch)){
+        p <- p + geom_boxplot() +
+            theme(axis.text.x = element_text(angle = 90))
+        return(p)
+    } else {
+        p <- p + geom_violin() +
+            theme(axis.text.x = element_text(angle = 90))
+        return(p)
+        }
+          }
 
 
 

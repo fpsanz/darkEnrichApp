@@ -1,14 +1,13 @@
 library(shinydashboard)
 library(AnnotationDbi)
-    library(org.Mm.eg.db) #Mus musculus
-    library(org.Hs.eg.db) #Homo sapiens
-    #library(org.Dr.eg.db) #Danio rerio (zebra fish)
-    library(org.Rn.eg.db) #Ratus norvegicus
-    #library(org.Mmu.eg.db) #Macaca mulata
-    library(EnsDb.Mmusculus.v79)
-    library(EnsDb.Hsapiens.v86)
-    library(EnsDb.Rnorvegicus.v79)
-
+library(org.Mm.eg.db) #Mus musculus
+library(org.Hs.eg.db) #Homo sapiens
+#library(org.Dr.eg.db) #Danio rerio (zebra fish)
+library(org.Rn.eg.db) #Ratus norvegicus
+#library(org.Mmu.eg.db) #Macaca mulata
+library(EnsDb.Mmusculus.v79)
+library(EnsDb.Hsapiens.v86)
+library(EnsDb.Rnorvegicus.v79)
 library(limma)
 library(tidyverse)
 library(DT)
@@ -65,23 +64,10 @@ sidebar <- dashboardSidebar(useShinyalert(),
                                        icon = icon("info")),
                               menuItem("Preview dataset",
                                        tabName = "preview",
-                                       icon = icon("eye")),
-                              menuItem(
-                                "Kegg Enrichment",
-                                tabName = "kegg",
-                                icon = icon("chart-bar")
+                                       icon = icon("eye"))
                               ),
-                              menuItem(
-                                "GO Enrichment",
-                                tabName = "go",
-                                icon = icon("chart-bar")
-                              ),
-                              menuItem(
-                                "GSEA",
-                                tabName = "gsea",
-                                icon = icon("chart-line")
-                              ),
-                              sidebarMenu(
+                            sidebarMenu("", sidebarMenuOutput("menu")),
+                             sidebarMenu(
                                 menuItem(
                                   textInput("author", value="your name...", label = h4("Author report name")
                                   ))),
@@ -91,7 +77,7 @@ sidebar <- dashboardSidebar(useShinyalert(),
                               sidebarMenu(
                                 menuItem(
                                   fluidRow(column(12, align = "center", offset=0, uiOutput("pdf")))))
-                            ))
+                            )
 ### BODY ###############
 body <- dashboardBody(
      tags$head(
@@ -231,7 +217,7 @@ server <- function(input, output, session) {
         res$sh <-  res$sh %>% select(-c(pvalue))
         if(specie() == "Mm" ){spc = "Mus_musculus"}
         else {spc = "Homo_sapiens"}
-        links = paste0("<a href='http://www.ensembl.org/",spc,",/Gene/Summary?db=core;g=",
+        links = paste0("<a href='http://www.ensembl.org/",spc,"/Gene/Summary?db=core;g=",
                        rownames(res$sh),"' target='_blank'>",rownames(res$sh),"</a>")
         res$sh <- cbind(`GeneName_Ensembl`= links, res$sh)
         vsd$data <- vst(datos$dds)
@@ -302,6 +288,8 @@ server <- function(input, output, session) {
   typeBarMfAll <- reactive({input$selectmfall})
   typeBarCcAll <- reactive({input$selectccall})
   pca3d <- reactive({input$pca3d})
+  boxplotswitch <- reactive({input$boxplotswitch})
+  dataswitch <- reactive({input$dataswitch})
   # InputFile
   output$deseqFile <- renderUI({
       validate(need(specie(), ""))
@@ -310,7 +298,25 @@ server <- function(input, output, session) {
           placeholder = "RDS DESeq",
           accept = ".Rds")
   })
-  
+  # side bar menu
+  output$menu <- renderMenu({
+      validate(need(kgg$all, ""))
+      sidebarMenu(
+          menuItem(
+              "Kegg Enrichment",
+              tabName = "kegg",
+              icon = icon("chart-bar")
+          ),
+          menuItem(
+              "GO Enrichment",
+              tabName = "go",
+              icon = icon("chart-bar")
+          ),
+          menuItem("GSEA",
+                   tabName = "gsea",
+                   icon = icon("chart-line"))
+      )
+      })
   # ui selector sample groups ###################
   output$sampleGroup <- renderUI({
     validate(need(datos$dds, ""))
@@ -440,13 +446,11 @@ server <- function(input, output, session) {
   output$pca3d <- renderRglwidget({
     validate(need(datos$dds, ""))
     validate(need(variables(),"Select condition to render PCA" ) )
-    validate(need(samplename(),"" ) )
     d <- pca3dplot(rlog$datos, intgroup = variables(), ntop = 500,
-                   returnData = TRUE, labels = samplename() )
+                   returnData = TRUE )
     try(rgl.close(), silent = TRUE)
     rgl.open(useNULL = TRUE) 
     x = d$PC1; y = d$PC2; z = d$PC3
-    #open3d()
     plot3d(x,y,x, size = 2, type="s", col = as.numeric(d$labels),
            box=FALSE, axes=FALSE, xlab = names(d)[1], ylab=names(d)[2], names(d)[3])
     bg3d(sphere = FALSE, fogtype = "none", color = "#dadee3" )
@@ -525,6 +529,14 @@ server <- function(input, output, session) {
       facet_wrap(~symbol) +
       ggtitle("Top 6 most significant gene")
     })
+ # boxviolin plot #################################
+  output$boxviolin <- renderPlotly({
+          validate(need(datos$dds, "Load file and condition to render Volcano"))
+          validate(need(vsd$data, ""))
+          validate(need(variables(), ""))
+          boxViolin(datos=datos$dds, vsd=vsd$data, boxplotswitch=boxplotswitch(),
+                    dataswitch=dataswitch(), intgroup=variables() )
+  })
 # KEGG table All #####################################
   output$tableAll <- DT::renderDT(server=TRUE,{
     validate(need(kgg$all, "Load file to render table"))
