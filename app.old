@@ -27,6 +27,7 @@ library(shinyjs)
 library(shinythemes)
 library(rgl)
 library(rglwidget)
+library(scales)
 source("utils.R")
 options(shiny.maxRequestSize = 3000*1024^2)
 
@@ -191,10 +192,19 @@ server <- function(input, output, session) {
   res <- reactiveValues()
   vsd <- reactiveValues()
   rlog <- reactiveValues()
+  coloresPCA <- reactiveValues(niveles=NULL, numNiveles=NULL)
   observeEvent(input$deseqFile, {
       datos$dds <- readRDS(input$deseqFile$datapath)
   })
-    
+  
+  coloresPCA$colores <- reactive({
+        tmp = NULL
+      for(i in seq_len(coloresPCA$numNiveles)){
+          tmp <- c(tmp, input[[ coloresPCA$niveles[i] ]] )
+      }
+      return(tmp)
+  })
+
   observeEvent(datos$dds, {
     validate(need(datos$dds, ""))
     # if(!is(datos$dds, "DESeqDataSet") | !("results" %in% mcols(mcols(datos$dds))$type) ){
@@ -253,6 +263,16 @@ server <- function(input, output, session) {
     goDT$down <- go2DT(enrichdf = go$down, data = data$genesDown )
     
   })
+  
+  observeEvent(input$variables, {
+        if(!is.factor(colData(datos$dds)[[ variables()[1] ]] ) ){
+          coloresPCA$niveles <- as.character(unique( colData(datos$dds)[[ variables()[1] ]] ))
+      } else {
+          coloresPCA$niveles <- as.character(levels(colData(datos$dds)[[ variables()[1] ]]))
+      }
+      coloresPCA$numNiveles <- length(coloresPCA$niveles)
+  })
+  
   # generate reactive variable ###################
   rowsAll <- reactive({input$tableAll_rows_selected})
   rowsUp <- reactive({input$table_rows_selected})
@@ -290,6 +310,7 @@ server <- function(input, output, session) {
   pca3d <- reactive({input$pca3d})
   boxplotswitch <- reactive({input$boxplotswitch})
   dataswitch <- reactive({input$dataswitch})
+
   # InputFile
   output$deseqFile <- renderUI({
       validate(need(specie(), ""))
@@ -350,12 +371,31 @@ server <- function(input, output, session) {
                 value = c(-0.5,0.5), step = 0.1 )
   })
   
-  # ui selector padj #############################
+  # ui selector padj #################################
   output$padj <- renderUI({
     validate(need(datos$dds,""))
     sliderInput("padj", label = "Select p-adjusted threshold (corrected p-value)", min = 0, max=0.2, value=0.05, step = 0.005 )
   })
-  # infoboxes
+  # ui selector Colores para PCA y demás #######################
+  output$colorPalettes <- renderUI({
+      validate(need(datos$dds, ""))
+      validate(need(variables(), ""))
+      validate(need(coloresPCA$numNiveles, ""))
+      l1 <- rep(1:6, times = coloresPCA$numNiveles / 6 , length.out = coloresPCA$numNiveles)
+      l2 <- rep(1:9, each = 6, length.out = coloresPCA$numNiveles)
+      selectores <- lapply(seq_len(coloresPCA$numNiveles), function(x){
+          spectrumInput(
+            inputId = paste0(coloresPCA$niveles[x]),
+            label = paste0("Select ",coloresPCA$niveles[x]," color"),
+            selected = choices_brewer2[[l1[x]]][l2[x]],
+            choices = choices_brewer2,
+            width = "50%",
+            options = list(`toggle-palette-more-text` = "Show more")
+            )
+      })
+  })
+ 
+  # infoboxes ###############################
   output$allbox <- renderInfoBox({
       validate(need(res$sh, ""))
       numall <- nrow( res$sh[ ((res$sh$log2FoldChange >= logfc()[2] |
@@ -437,7 +477,9 @@ server <- function(input, output, session) {
     validate(need(datos$dds, ""))
     validate(need(variables(),"Select condition to render PCA" ) )
     validate(need(samplename(),"" ) )
-    plotPCA(rlog$datos, intgroup = variables(), labels = samplename() )+
+    #validate(need(coloresPCA$colores, ""))
+    plotPCA(rlog$datos, intgroup = variables(),
+            labels = samplename(), customColor = coloresPCA$colores() )+
       theme(plot.margin=unit(c(0.5,0.5,0.5,0.5),"cm"))+
         scale_size_manual(values = 4) +
     theme(text = element_text(size=16))
@@ -472,7 +514,8 @@ server <- function(input, output, session) {
                   pCutoff = padj(),
                   FCcutoffUP = logfc()[2],
                   FCcutoffDOWN = logfc()[1],
-                  xlim = c(-8, 8)
+                  xlim = c(-8, 8),
+                  col = c(input$nsColor, input$logfcColor, input$padjColor, input$bothColor)
                   )
   })
   # view MA plot data ###################
@@ -481,8 +524,8 @@ server <- function(input, output, session) {
     validate(need(res$sh, "Load file to render plot"))
     validate(need(logfc(), ""))
     MA(res$sh, main = 'MA plot',
-       fdr = padj(), fcDOWN = logfc()[1], fcUP = logfc()[2] , size = 0.5,
-       palette = c("#B31B21", "#1465AC", "darkgray"),
+       fdr = padj(), fcDOWN = logfc()[1], fcUP = logfc()[2] , size = 1.5,
+       palette = c(input$upColor, input$downColor, input$nsColor),
        genenames = res$sh$GeneName_Symbol,
        legend = "top", top = 15, select.top.method = c('padj','fc'),
        font.label = c("plain", 12),
@@ -498,7 +541,8 @@ server <- function(input, output, session) {
     validate(need(vsd$data, "Load file to render plot"))
     validate(need(variables(),"Load condition to render plot" ) )
     validate(need(samplename(),"Load condition to render plot" ) )
-    heat(vsd$data, n=numheatmap(), intgroup = variables(), sampleName = samplename(), specie=specie())
+    heat(vsd$data, n=numheatmap(), intgroup = variables(), sampleName = samplename(),
+         specie=specie(), customColor = coloresPCA$colores() )
   })
   # view cluster data ###################
   output$cluster <- renderPlot( {
@@ -513,7 +557,7 @@ server <- function(input, output, session) {
     validate(need(datos$dds, ""))
     validate(need(res$sh, "Load file to render plot"))
     validate(need(variables(),"Load condition to render plot" ) )
-    
+    validate(need(coloresPCA$colores(), ""))
     topGenes <- rownames(res$sh)[order(res$sh$padj)][1:6]
     topSymbol <- as.character(res$sh$GeneName_Symbol)[order(res$sh$padj)][1:6]
     z <- lapply(topGenes, function(x) plotCounts(dds=datos$dds, gene=x,
@@ -522,11 +566,11 @@ server <- function(input, output, session) {
     for(i in 1:6) z[[i]]$gene <- rep(topGenes[i], nrow(colData(datos$dds)))
     z <- do.call(rbind, z)
     z$symbol <- rep(topSymbol, each =(nrow(z)/6) ) 
-    
-    ggplot(z, aes_(as.name(variables()), ~count, colour = as.name(variables()))) + 
+    z[[variables()[1]]] <- as.factor(z[[variables()[1]]])
+    ggplot(z, aes_(as.name(variables()), ~count, colour = as.name(variables() ) ) ) + 
       scale_y_log10() +
       geom_point(position = position_jitter(width = 0.1, height = 0), size = 2) +
-      facet_wrap(~symbol) +
+      facet_wrap(~symbol) + scale_color_manual( values = coloresPCA$colores() ) +
       ggtitle("Top 6 most significant gene")
     })
  # boxviolin plot #################################
@@ -534,8 +578,10 @@ server <- function(input, output, session) {
           validate(need(datos$dds, "Load file and condition to render Volcano"))
           validate(need(vsd$data, ""))
           validate(need(variables(), ""))
+          validate(need(coloresPCA$colores(), ""))
           boxViolin(datos=datos$dds, vsd=vsd$data, boxplotswitch=boxplotswitch(),
-                    dataswitch=dataswitch(), intgroup=variables() )
+                    dataswitch=dataswitch(), intgroup=variables(),
+                    customColor = coloresPCA$colores()) 
   })
 # KEGG table All #####################################
   output$tableAll <- DT::renderDT(server=TRUE,{
@@ -553,7 +599,8 @@ server <- function(input, output, session) {
     rowsAll <- rowsAll()
     if(is.null( rowsAll )){ rowsAll <- c(1:10) }
     p <- plotKeggAll(enrichdf = kgg$all[rowsAll,], nrows = length(rowsAll),
-                genesUp = data$genesUp, genesDown = data$genesDown)
+                genesUp = data$genesUp, genesDown = data$genesDown,
+                colors = c(input$upColor, input$downColor))
     if(typeBarKeggAll() == "Dodge"){
         print(p[[1]])   } else if(typeBarKeggAll()=="Stack"){
             print(p[[2]])} else {print(p[[3]])}
@@ -602,7 +649,7 @@ server <- function(input, output, session) {
     validate(need(kgg$up, "Load file to render BarPlot"))
     rowsUp <- rowsUp()
     if(is.null(rowsUp)){rowsUp <- c(1:10)}
-    plotKegg(enrichdf = kgg$up[rowsUp,], nrows = length(rowsUp))
+    plotKegg(enrichdf = kgg$up[rowsUp,], nrows = length(rowsUp), colors = c(input$upColor))
   })
   # KEGG chordiag plot up ###############
   output$keggChord <- renderChorddiag({
@@ -648,7 +695,8 @@ server <- function(input, output, session) {
     validate(need(kgg$down, "Load file to render BarPlot"))
     rowsdown <- rowsdown()
     if(is.null(rowsdown)){rowsdown <- c(1:10)}
-    plotKegg(enrichdf = kgg$down[rowsdown,], nrows = length(rowsdown))
+    plotKegg(enrichdf = kgg$down[rowsdown,], nrows = length(rowsdown), 
+             colors = c(input$downColor))
   })
   # KEGG chordiag plot down ###############
   output$keggChordDown <- renderChorddiag({
@@ -697,7 +745,8 @@ server <- function(input, output, session) {
     if(is.null(bprowsall)){bprowsall <- c(1:10)}
     gosBP <- go$all[go$all$Ont=="BP",]
     p <- plotGOAll(enrichdf = gosBP[bprowsall, ], nrows = length(bprowsall), ont="BP", 
-              genesUp = data$genesUp, genesDown = data$genesDown)
+              genesUp = data$genesUp, genesDown = data$genesDown,
+              colors = c(input$upColor, input$downColor) )
     if( typeBarBpAll() == "Dodge") { print(p[[1]]) }
     else if ( typeBarBpAll() == "Stack") { print(p[[2]]) }
     else { print(p[[3]]) }
@@ -731,7 +780,8 @@ server <- function(input, output, session) {
     if(is.null(mfrowsall)){mfrowsall <- c(1:10)}
     gosMF <- go$all[go$all$Ont=="MF",]
     p <- plotGOAll(enrichdf = gosMF[mfrowsall, ], nrows = length(mfrowsall), ont="MF", 
-                   genesUp = data$genesUp, genesDown = data$genesDown)
+                   genesUp = data$genesUp, genesDown = data$genesDown,
+                   colors = c(input$upColor, input$downColor) )
     if( typeBarMfAll() == "Dodge") { print(p[[1]]) }
     else if ( typeBarMfAll() == "Stack") { print(p[[2]]) }
     else { print(p[[3]]) }
@@ -765,7 +815,8 @@ server <- function(input, output, session) {
     if(is.null(ccrowsall)){ccrowsall <- c(1:10)}
     gosCC <- go$all[go$all$Ont=="CC",]
     p <- plotGOAll(enrichdf = gosCC[ccrowsall, ], nrows = length(ccrowsall), ont="CC", 
-                   genesUp = data$genesUp, genesDown = data$genesDown)
+                   genesUp = data$genesUp, genesDown = data$genesDown,
+                   colors = c(input$upColor, input$downColor) )
     if( typeBarCcAll() == "Dodge") { print(p[[1]]) }
     else if ( typeBarCcAll() == "Stack") { print(p[[2]]) }
     else { print(p[[3]]) }
@@ -798,7 +849,8 @@ server <- function(input, output, session) {
     bprowsup <- bprowsup()
     if(is.null(bprowsup)){bprowsup <- c(1:10)}
     gosBP <- go$up[go$up$Ont=="BP",]
-    plotGO(enrichdf = gosBP[bprowsup, ], nrows = length(bprowsup), ont="BP")
+    plotGO(enrichdf = gosBP[bprowsup, ], nrows = length(bprowsup), ont="BP",
+           colors = c(input$upColor) )
   })
   # GO BP dotplot up ################### 
   output$BPDotUp <- renderPlot({
@@ -828,7 +880,8 @@ server <- function(input, output, session) {
     mfrowsup <- mfrowsup()
     if(is.null(mfrowsup)){mfrowsup <- c(1:10)}
     gosMF <- go$up[go$up$Ont=="MF",]
-    plotGO(enrichdf = gosMF[mfrowsup, ], nrows = length(mfrowsup), ont = "MF")
+    plotGO(enrichdf = gosMF[mfrowsup, ], nrows = length(mfrowsup), ont = "MF",
+           colors = c(input$upColor) )
   })
   # GO MF dotplot up ################### 
   output$MFDotUp <- renderPlot({
@@ -858,7 +911,8 @@ server <- function(input, output, session) {
     ccrowsup <- ccrowsup()
     if(is.null(ccrowsup)){ccrowsup <- c(1:10)}
     gosCC <- go$up[go$up$Ont=="CC",]
-    plotGO(enrichdf = gosCC[ccrowsup,], nrows = length(ccrowsup), ont="CC")
+    plotGO(enrichdf = gosCC[ccrowsup,], nrows = length(ccrowsup), ont="CC",
+           colors = c(input$upColor))
   })
   # GO CC dotplot up ################### 
   output$CCDotUp <- renderPlot({
@@ -887,7 +941,8 @@ server <- function(input, output, session) {
     bprowsdown <- bprowsdown()
     if(is.null(bprowsdown)){bprowsdown <- c(1:10)}
     gosBP <- go$down[go$down$Ont=="BP",]
-    plotGO(enrichdf = gosBP[bprowsdown, ], nrows = length(bprowsdown), ont="BP")
+    plotGO(enrichdf = gosBP[bprowsdown, ], nrows = length(bprowsdown), ont="BP",
+           colors = c(input$downColor))
   })
   # GO BP dotplot down ################### 
   output$BPDotDown <- renderPlot({
@@ -917,7 +972,8 @@ server <- function(input, output, session) {
     mfrowsdown <- mfrowsdown()
     if(is.null(mfrowsdown)){mfrowsdown <- c(1:10)}
     gosMF <- go$down[go$down$Ont=="MF",]
-    plotGO(enrichdf = gosMF[mfrowsdown, ], nrows = length(mfrowsdown), ont = "MF")
+    plotGO(enrichdf = gosMF[mfrowsdown, ], nrows = length(mfrowsdown), ont = "MF",
+           colors = c(input$downColor) )
   })
   # GO MF dotplot down ################### 
   output$MFDotDown <- renderPlot({
@@ -947,7 +1003,8 @@ server <- function(input, output, session) {
     ccrowsdown <- ccrowsdown()
     if(is.null(ccrowsdown)){ccrowsdown <- c(1:10)}
     gosCC <- go$down[go$down$Ont=="CC",]
-    plotGO(enrichdf = gosCC[ccrowsdown,], nrows = length(ccrowsdown), ont="CC")
+    plotGO(enrichdf = gosCC[ccrowsdown,], nrows = length(ccrowsdown), ont="CC",
+           colors = c(input$downColor) )
   })
   # GO CC dotplot down ################### 
   output$CCDotDown <- renderPlot({

@@ -783,7 +783,7 @@ kegg2DT <- function(enrichdf, data, orderby = NULL, nrows = NULL) {
 }
 
 # Plot barras de GO ####################
-plotGO <- function(enrichdf, nrows = 30, orderby=NULL, ont){
+plotGO <- function(enrichdf, nrows = 30, orderby=NULL, ont, colors=NULL){
     require(plotly)
     if(!is.data.frame(enrichdf)){
         stop("enrichdf should be data.frame")
@@ -791,9 +791,9 @@ plotGO <- function(enrichdf, nrows = 30, orderby=NULL, ont){
     if(!exists("ont") | !(ont %in% c("BP","MF","CC")) ){
         stop("A valid value should be provided for 'ont'")
     }
-    dataTitle <- list(BP=c("Biological Process", 'rgb(227,74,51)'),
-                      MF=c("Molecular Function",'rgb(31,119,180)'),
-                      CC=c("Cellular Component", 'rgb(49,163,84)'))
+    dataTitle <- list(BP=c("Biological Process", colors),
+                      MF=c("Molecular Function", colors),
+                      CC=c("Cellular Component", colors))
     enrichdf <- enrichdf[enrichdf$Ont == ont, ]
     if(!is.null(orderby)){
         orderby = match.arg(orderby, c("DE", "P.DE", "N", "Term"))
@@ -811,7 +811,7 @@ plotGO <- function(enrichdf, nrows = 30, orderby=NULL, ont){
 }
 # Plot barras de GOAll ####################
 plotGOAll <- function(enrichdf, nrows = 30, orderby=NULL,
-                      ont, genesUp = NULL, genesDown = NULL){
+                      ont, genesUp = NULL, genesDown = NULL, colors = NULL){
     require(plotly)
     require(ggplot2)
     if(!is.data.frame(enrichdf)){
@@ -820,9 +820,9 @@ plotGOAll <- function(enrichdf, nrows = 30, orderby=NULL,
     if(!exists("ont") | !(ont %in% c("BP","MF","CC")) ){
         stop("A valid value should be provided for 'ont'")
     }
-    dataTitle <- list(BP=c("Biological Process", '#3e90bd', "#eb3f3f"),
-                      MF=c("Molecular Function",'#3e90bd',"#eb3f3f"),
-                      CC=c("Cellular Component",'#3e90bd',"#eb3f3f" ))
+    dataTitle <- list(BP=c("Biological Process", colors ),
+                      MF=c("Molecular Function",colors ),
+                      CC=c("Cellular Component",colors  ))
     enrichdf <- enrichdf[enrichdf$Ont == ont, ]
     if(!is.null(orderby)){
         orderby = match.arg(orderby, c("DE", "P.DE", "N", "Term"))
@@ -869,7 +869,7 @@ plotGOAll <- function(enrichdf, nrows = 30, orderby=NULL,
 }
 
 # Plot barras de Kegg ###########################
-plotKegg <- function(enrichdf, nrows = 30, orderby=NULL){
+plotKegg <- function(enrichdf, nrows = 30, orderby=NULL, colors = NULL){
     require(plotly)
     if(!is.data.frame(enrichdf)){
         stop("enrichdf should be data.frame")
@@ -882,7 +882,7 @@ plotKegg <- function(enrichdf, nrows = 30, orderby=NULL){
     }
     p <- enrichdf[1:nrows,] %>%
         plot_ly(x=~DE, y=~pathID, text=~Pathway, type = "bar",
-                marker = list(color='rgb(117,107,177)'),
+                marker = list(color=colors),
                 orientation = "v") %>%
         layout(margin = list(l=100), yaxis = list(title=""),
                title="Kegg pathways")
@@ -891,7 +891,7 @@ plotKegg <- function(enrichdf, nrows = 30, orderby=NULL){
 
 # Plot barras de KeggALL ###################
 plotKeggAll <- function(enrichdf, nrows = 10, orderby = NULL, 
-                        genesUp = NULL, genesDown = NULL){
+                        genesUp = NULL, genesDown = NULL, colors = NULL){
     require(plotly)
     require(ggplot2)
         if(!is.data.frame(enrichdf)){
@@ -917,7 +917,7 @@ plotKeggAll <- function(enrichdf, nrows = 10, orderby = NULL,
         DE = c(enrichAll$numUp, enrichAll$numDown),
         DENeg = c(enrichAll$numUp, enrichAll$numDownNeg)
     )
-    colorfill <- c("#3e90bd","#eb3f3f")
+    colorfill <- colors #c("#3e90bd","#eb3f3f")
     r <- ggplot(df, aes(x = pathId, y = DENeg, fill = Regulation)) +
         geom_bar(stat = "identity", position = "identity") + coord_flip() +
         theme(axis.text.y = element_text(angle = 0, hjust = 1)) + theme_bw() +
@@ -952,7 +952,7 @@ loadGenes <- function(filegenes){
 # PCA de un objeto DESeq #####################
 
 plotPCA = function(object, intgroup = "condition", ntop = 500,
-                   returnData = TRUE, labels = NULL){
+                   returnData = TRUE, labels = NULL, customColor = NULL){
   # calculate the variance for each gene
   rv <- rowVars(assay(object))
   # select the ntop genes by variance
@@ -997,10 +997,14 @@ plotPCA = function(object, intgroup = "condition", ntop = 500,
         labels = colData(object)[[labels]]
       )
   }
+  d$group <- as.factor(d$group)
   # assembly the data for the plot
-  
-  getPalette <- colorRampPalette(c("#f7837b","#1cc3c8"))
-  colours <- getPalette(length(levels(d$group)))
+  if(is.null(customColor)){
+    getPalette <- colorRampPalette(c("#f7837b","#1cc3c8"))
+    colours <- getPalette(length(levels(d$group)))
+  }else{
+        colours <- customColor
+    }
   if (returnData) {
     attr(d, "percentVar") <- percentVar[1:2]
     #return(d)
@@ -1686,7 +1690,8 @@ VST <- function (object, blind = TRUE, nsub = 1000, fitType = "parametric")
 
 # Heatmap #############
 
-    heat <- function (vsd, n = 40, intgroup = "condition", sampleName = "condition", specie="Mm") 
+    heat <- function (vsd, n = 40, intgroup = "condition", sampleName = "condition",
+                      specie="Mm", customColor = NULL) 
     {
       require("EnsDb.Mmusculus.v79")
       require("org.Mm.eg.db")
@@ -1710,7 +1715,6 @@ VST <- function (object, blind = TRUE, nsub = 1000, fitType = "parametric")
     if (!all(intgroup %in% names(colData(vsd)))) {
       stop("the argument 'intgroup' should specify columns of colData(dds)")
     }
-    
 
     if(length(intgroup)>1){
       df <- as.data.frame(colData(vsd)[, intgroup[1:2], drop = FALSE])
@@ -1727,12 +1731,14 @@ VST <- function (object, blind = TRUE, nsub = 1000, fitType = "parametric")
     consensus <- data.frame('Symbol'= ifelse(!is.na(annot$SYMBOL), as.vector(annot$SYMBOL),
                                              ifelse(!is.na(annot$SYMBOL1),as.vector(annot$SYMBOL1),
                                                     as.vector(annot$ENSEMBL))), stringsAsFactors = F)
-    
+    ann_colors<-list()
+    ann_colors[[intgroup[1]]] <- customColor
+    names(ann_colors[[intgroup[1]]]) <- c(levels(df[[intgroup[1]]]))
     pheatmap(mat, cluster_rows=TRUE, cluster_cols=TRUE,
              show_colnames=TRUE, show_rownames = TRUE, annotation_col = df,
              labels_col = as.character(vsd[[sampleName]]),
              labels_row = as.character(consensus$Symbol),
-             cellwidth = 18, cellheight = 14,
+             cellwidth = 18, cellheight = 14, annotation_colors = ann_colors,
              main = "Heatmap top genes")
     }
     
@@ -1815,7 +1821,8 @@ plotCountsSymbol <- function (dds, gene, res, intgroup = "condition", normalized
 }
 
 # Boxplot Violin plot ###########################
-boxViolin <- function(datos=NULL, vsd=NULL, boxplotswitch=NULL, dataswitch=NULL, intgroup=NULL){
+boxViolin <- function(datos=NULL, vsd=NULL, boxplotswitch=NULL, dataswitch=NULL,
+                      intgroup=NULL, customColor = NULL){
     if(isTRUE(dataswitch)){
         data <- datos
     } else{
@@ -1826,14 +1833,14 @@ boxViolin <- function(datos=NULL, vsd=NULL, boxplotswitch=NULL, dataswitch=NULL,
     df <- as.data.frame(t(df))
     df$condition <- as.character(condition)
     df$samples <- rownames(df)
-    dflong <-
-        df %>% pivot_longer(c(-condition,-samples),
+    dflong <- df %>% pivot_longer(c(-condition,-samples),
                             names_to = "genes",
                             values_to = "count")
     p <- dflong %>% ggplot(aes(x = samples, y = count, fill = condition))
     if(!isTRUE(boxplotswitch)){
         p <- p + geom_boxplot() +
-            theme(axis.text.x = element_text(angle = 90))
+            theme(axis.text.x = element_text(angle = 90)) +
+            scale_fill_manual( values = customColor )
         return(p)
     } else {
         p <- p + geom_violin() +
@@ -1843,4 +1850,21 @@ boxViolin <- function(datos=NULL, vsd=NULL, boxplotswitch=NULL, dataswitch=NULL,
           }
 
 
+choices_brewer <- list(
+  "Blues" = brewer_pal(palette = "Blues")(9),
+  "Greens" = brewer_pal(palette = "Greens")(9),
+  "Reds" = brewer_pal(palette = "Reds")(9),
+  "Oranges" = brewer_pal(palette = "Oranges")(9),
+  "Purples" = brewer_pal(palette = "Purples")(9),
+  "Greys" = brewer_pal(palette = "Greys")(9)
+)
+
+choices_brewer2 <- list(
+  as.list(rev(brewer_pal(palette = "Blues")(9))),
+  as.list(rev(brewer_pal(palette = "Greens")(9))),
+  as.list(rev(brewer_pal(palette = "Reds")(9))),
+  as.list(rev(brewer_pal(palette = "Oranges")(9))),
+  as.list(rev(brewer_pal(palette = "Purples")(9))),
+  as.list(rev(brewer_pal(palette = "Greys")(9)))
+)
 
