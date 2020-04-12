@@ -195,7 +195,7 @@ server <- function(input, output, session) {
   coloresPCA <- reactiveValues(niveles=NULL, numNiveles=NULL)
   observeEvent(input$deseqFile, {
       datos$dds <- readRDS(input$deseqFile$datapath)
-      colData(datos$dds)@listData <- colData(dds)@listData %>%
+      colData(datos$dds)@listData <- colData(datos$dds)@listData %>%
           as.data.frame() %>% mutate_at(vars(-sizeFactor, -replaceable), as.character ) %>%
           mutate_at(vars(-sizeFactor, -replaceable), as.factor  ) %>% as.list()
   })
