@@ -951,7 +951,7 @@ loadGenes <- function(filegenes){
 
 # PCA de un objeto DESeq #####################
 
-plotPCA = function(object, intgroup = "condition", ntop = 500,
+    plotPCA = function(object, intgroup = "condition", ntop = 500,
                    returnData = TRUE, labels = NULL, customColor = NULL){
   # calculate the variance for each gene
   rv <- rowVars(assay(object))

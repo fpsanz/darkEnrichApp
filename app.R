@@ -179,8 +179,8 @@ server <- function(input, output, session) {
             miriam.riquelmep@gmail.com",
                imageUrl = "dna-svg-small-13.gif", 
                imageWidth = 200, imageHeight = 100)})
+
 # toggle para show/hide tabla preview ##############
-    
   data <- reactiveValues() # genes
   goDT <- reactiveValues() #pretabla GO
   kgg <- reactiveValues() # enrich kegg
@@ -195,6 +195,9 @@ server <- function(input, output, session) {
   coloresPCA <- reactiveValues(niveles=NULL, numNiveles=NULL)
   observeEvent(input$deseqFile, {
       datos$dds <- readRDS(input$deseqFile$datapath)
+      colData(datos$dds)@listData <- colData(dds)@listData %>%
+          as.data.frame() %>% mutate_at(vars(-sizeFactor, -replaceable), as.character ) %>%
+          mutate_at(vars(-sizeFactor, -replaceable), as.factor  ) %>% as.list()
   })
   
   coloresPCA$colores <- reactive({
@@ -477,7 +480,7 @@ server <- function(input, output, session) {
     validate(need(datos$dds, ""))
     validate(need(variables(),"Select condition to render PCA" ) )
     validate(need(samplename(),"" ) )
-    #validate(need(coloresPCA$colores, ""))
+    validate(need(coloresPCA$colores(), "" ))
     plotPCA(rlog$datos, intgroup = variables(),
             labels = samplename(), customColor = coloresPCA$colores() )+
       theme(plot.margin=unit(c(0.5,0.5,0.5,0.5),"cm"))+
@@ -488,25 +491,28 @@ server <- function(input, output, session) {
   output$pca3d <- renderRglwidget({
     validate(need(datos$dds, ""))
     validate(need(variables(),"Select condition to render PCA" ) )
+    validate(need(coloresPCA$colores(), "" ))
     d <- pca3dplot(rlog$datos, intgroup = variables(), ntop = 500,
                    returnData = TRUE )
+    levels(d$labels) <- coloresPCA$colores()
     try(rgl.close(), silent = TRUE)
     rgl.open(useNULL = TRUE) 
     x = d$PC1; y = d$PC2; z = d$PC3
-    plot3d(x,y,x, size = 2, type="s", col = as.numeric(d$labels),
-           box=FALSE, axes=FALSE, xlab = names(d)[1], ylab=names(d)[2], names(d)[3])
-    bg3d(sphere = FALSE, fogtype = "none", color = "#dadee3" )
+    plot3d(x,y,x, size = 2, type="s", col = (d$labels),
+           box=FALSE, axes=FALSE, xlab = names(d)[1],
+           ylab=names(d)[2], names(d)[3])
+    bg3d(sphere = FALSE, fogtype = "none", color = "#46505a")#"#dadee3" )
     #rgl.bbox(xlen=0, ylen=0, zlen=0)
-    rgl.lines(c(min(x), max(x)), c(0, 0), c(0, 0), color = "black")
-    rgl.lines(c(0, 0), c(min(y),max(y)), c(0, 0), color = "black")
-    rgl.lines(c(0, 0), c(0, 0), c(min(z),max(z)), color = "black")
+    rgl.lines(c(min(x), max(x)), c(0, 0), c(0, 0), color = "white")
+    rgl.lines(c(0, 0), c(min(y),max(y)), c(0, 0), color = "white")
+    rgl.lines(c(0, 0), c(0, 0), c(min(z),max(z)), color = "white")
     rglwidget()
   })
   
   # view Volcano plot data ###################
   output$volcano <- renderPlot( {
-    validate(need(datos$dds, "Load file and condition to render Volcano"))
-    validate(need(res$sh, "Load file to render table"))
+    #validate(need(datos$dds, "Load file and condition to render Volcano"))
+    validate(need(res$sh, "Load file to render plot"))
     res$sh$GeneName_Symbol <- as.character(res$sh$GeneName_Symbol)
     CustomVolcano(res$sh, lab = res$sh$GeneName_Symbol, 
                   x = 'log2FoldChange',
@@ -520,7 +526,7 @@ server <- function(input, output, session) {
   })
   # view MA plot data ###################
   output$MA <- renderPlot( {
-    validate(need(datos$dds, ""))
+    #validate(need(datos$dds, ""))
     validate(need(res$sh, "Load file to render plot"))
     validate(need(logfc(), ""))
     MA(res$sh, main = 'MA plot',
