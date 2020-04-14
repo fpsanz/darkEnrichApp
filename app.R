@@ -306,6 +306,7 @@ server <- function(input, output, session) {
   GSEAText <- reactive({input$GSEAText})
   specie <- reactive({input$specie})
   numheatmap <- reactive({input$numheatmap})
+  gene <- reactive({input$gene})
   typeBarKeggAll <- reactive({input$selectkeggall})
   typeBarBpAll <- reactive({input$selectbpall})
   typeBarMfAll <- reactive({input$selectmfall})
@@ -348,7 +349,7 @@ server <- function(input, output, session) {
       as.data.frame() %>% 
       select(-c(sizeFactor,replaceable)) %>% 
       names()
-    selectInput("variables", label="Select condition[s] to highlight in the PCA - Heatmap",
+    selectInput("variables", label="Select condition[s] of interest to highlight",
                 choices = nvars,
                 multiple = TRUE)
   })
@@ -360,7 +361,7 @@ server <- function(input, output, session) {
       as.data.frame() %>% 
       select(-c(sizeFactor,replaceable)) %>% 
       names()
-    selectInput("samplename", label="Select column for sample name",
+    selectInput("samplename", label="Select column to use for sample name",
                 choices = nvars,
                 multiple = FALSE)
   })
@@ -368,7 +369,7 @@ server <- function(input, output, session) {
   # ui selector logfc #######################
   output$logfc <- renderUI({
     validate(need(datos$dds, ""))
-    sliderInput("logfc", label = "Select logFC range to remove (keep tails)",
+    sliderInput("logfc", label = "Select logFC range to remove (keeps the tails)",
                 min=round(logfcRange$min,3), max=round(logfcRange$max, 3),
                 #value = c(round(logfcRange$min,3)+1,round(logfcRange$max,3)-1 ), step = 0.1 )
                 value = c(-0.5,0.5), step = 0.1 )
@@ -404,7 +405,7 @@ server <- function(input, output, session) {
       numall <- nrow( res$sh[ ((res$sh$log2FoldChange >= logfc()[2] |
                                     res$sh$log2FoldChange< logfc()[1]) &
                                    res$sh$padj <= padj() ),] ) 
-      infoBox("All Differentially Expressed genes", numall, icon = icon("arrows-alt-v"), color = "light-blue", fill = TRUE)
+      infoBox("All DE genes", numall, icon = icon("arrows-alt-v"), color = "light-blue", fill = TRUE)
   })
   output$upbox <- renderInfoBox({
       validate(need(res$sh, ""))
@@ -415,6 +416,11 @@ server <- function(input, output, session) {
       validate(need(res$sh, ""))
       numdown <- nrow( res$sh[(res$sh$log2FoldChange <= logfc()[1]) & (res$sh$padj <= padj()), ]) 
       infoBox("Downregulated genes", numdown, icon = icon("thumbs-down", lib = "glyphicon"), color = "light-blue", fill=TRUE)
+  })
+  output$params <- renderInfoBox({
+    validate(need(res$sh, ""))
+    infoBox("Statistics applied", paste0("P-adjusted: ", padj(), ", Foldchange up: ", logfc()[2], ", Foldchange down: ", logfc()[1]),
+            icon = icon("glyphicon glyphicon-stats", lib = "glyphicon"), color = "light-blue", fill=TRUE)
   })
   # preview samples ###################
   output$samples <- DT::renderDataTable(server = TRUE,{
@@ -446,8 +452,8 @@ server <- function(input, output, session) {
     datatable( res.sh, extensions = "Buttons", escape = FALSE,
                rownames = FALSE,
                filter = list(position="top", clear=FALSE),
-               options = list(
-                 columnDefs = list(list(orderable = FALSE,
+               options = list(order = list(list(6, 'asc')),
+                 columnDefs = list(list(orderable = TRUE,
                                         className = "details-control",
                                         targets = 1),
                                    list(className = "dt-right", targets = 1:(ncol(res.sh)-1))
@@ -529,7 +535,7 @@ server <- function(input, output, session) {
     #validate(need(datos$dds, ""))
     validate(need(res$sh, "Load file to render plot"))
     validate(need(logfc(), ""))
-    MA(res$sh, main = 'MA plot',
+    MA(res$sh, main = 'MA plot applying the DESeq2 Shrinkage normalization for Foldchange',
        fdr = padj(), fcDOWN = logfc()[1], fcUP = logfc()[2] , size = 1.5,
        palette = c(input$upColor, input$downColor, input$nsColor),
        genenames = res$sh$GeneName_Symbol,
@@ -577,27 +583,40 @@ server <- function(input, output, session) {
       scale_y_log10() +
       geom_point(position = position_jitter(width = 0.1, height = 0), size = 2) +
       facet_wrap(~symbol) + scale_color_manual( values = coloresPCA$colores() ) +
-      ggtitle("Top 6 most significant gene")
+      ggtitle("Expression of top 6 most significant genes")
     })
+# view top1 data ###################  
+  output$top1 <- renderPlot( {
+    validate(need(datos$dds, ""))
+    validate(need(res$sh, "Load file to render plot"))
+    validate(need(variables(),"Load condition to render plot" ) )
+    validate(need(coloresPCA$colores(), ""))
+    validate(need(gene(), "Enter a gene of interest in Ensembl"))
+    plotCountsSymbol(dds=datos$dds, gene=gene(), intgroup = variables()) 
+  })
  # boxviolin plot #################################
   output$boxviolin <- renderPlotly({
           validate(need(datos$dds, "Load file and condition to render Volcano"))
           validate(need(vsd$data, ""))
           validate(need(variables(), ""))
+          validate(need(samplename(),"" ) )
           validate(need(coloresPCA$colores(), ""))
-          boxViolin(datos=datos$dds, vsd=vsd$data, boxplotswitch=boxplotswitch(),
+          boxViolin(datos=datos$dds, names = samplename() , vsd=vsd$data, boxplotswitch=boxplotswitch(),
                     dataswitch=dataswitch(), intgroup=variables(),
                     customColor = coloresPCA$colores()) 
   })
 # KEGG table All #####################################
   output$tableAll <- DT::renderDT(server=TRUE,{
     validate(need(kgg$all, "Load file to render table"))
+    names(kggDT$all)[names(kggDT$all) == "DE"] <- "DEG"
+    names(kggDT$all)[names(kggDT$all) == "P.DE"] <- "p-value"
     datatable2(
       kggDT$all, 
       vars = c("genes"),
       filter = list(position="top", clear=FALSE),
       escape = FALSE,
-      opts = list(pageLength = 10, white_space = "normal"))
+      opts = list(order = list(list(5, 'asc')),
+        pageLength = 10, white_space = "normal"))
   }) 
 # KEGG barplot All ################
   output$keggPlotAll <- renderPlotly ({
@@ -606,7 +625,7 @@ server <- function(input, output, session) {
     if(is.null( rowsAll )){ rowsAll <- c(1:10) }
     p <- plotKeggAll(enrichdf = kgg$all[rowsAll,], nrows = length(rowsAll),
                 genesUp = data$genesUp, genesDown = data$genesDown,
-                colors = c(input$upColor, input$downColor))
+                colors = c(input$downColor, input$upColor))
     if(typeBarKeggAll() == "Dodge"){
         print(p[[1]])   } else if(typeBarKeggAll()=="Stack"){
             print(p[[2]])} else {print(p[[3]])}
@@ -643,12 +662,15 @@ server <- function(input, output, session) {
   # KEGG table up#####################################
   output$table <- DT::renderDT(server=TRUE,{
     validate(need(kgg$up, "Load file to render table"))
+    names(kggDT$up)[names(kggDT$up) == "DE"] <- "DEG"
+    names(kggDT$up)[names(kggDT$up) == "P.DE"] <- "p-value"
     datatable2(
       kggDT$up,
       vars = c("genes"),
       filter = list(position="top", clear=FALSE),
       escape = FALSE,
-      opts = list(pageLength = 10, white_space = "normal"))
+      opts = list(order = list(list(5, 'asc')),
+        pageLength = 10, white_space = "normal"))
   }) 
   # KEGG barplot up################
   output$keggPlot <- renderPlotly ({
@@ -689,12 +711,15 @@ server <- function(input, output, session) {
   # KEGG table down #####################################
   output$tableDown <- DT::renderDT(server=TRUE,{
     validate(need(kgg$down, "Load file to render table"))
+    names(kggDT$down)[names(kggDT$down) == "DE"] <- "DEG"
+    names(kggDT$down)[names(kggDT$down) == "P.DE"] <- "p-value"
     datatable2(
       kggDT$down,
       vars = c("genes"),
       filter = list(position="top", clear=FALSE),
       escape = FALSE,
-      opts = list(pageLength = 10, white_space = "normal"))
+      opts = list(order = list(list(5, 'asc')),
+        pageLength = 10, white_space = "normal"))
   }) 
   # KEGG barplot down ################
   output$keggPlotDown <- renderPlotly ({
@@ -736,12 +761,15 @@ server <- function(input, output, session) {
   output$tableBPall <- DT::renderDataTable(server=TRUE,{
     validate(need(goDT$all, "Load file to render table"))
     goDT <- goDT$all 
+    names(goDT)[names(goDT) == "DE"] <- "DEG"
+    names(goDT)[names(goDT) == "P.DE"] <- "p-value"
     names(goDT)[names(goDT) == "level"] <- "Ont.level"
     goDT$Ont.level = as.integer(goDT$Ont.level) 
     datatable2(goDT[goDT$Ont=="BP",], vars = c("genes"),
                filter = list(position="top", clear=FALSE),
                escape = FALSE,
-               opts = list(pageLength = 10, white_space = "normal")
+               opts = list(order = list(list(6, 'asc')),
+                 pageLength = 10, white_space = "normal")
     )
   })
   # GO plots BP all #####################
@@ -752,7 +780,7 @@ server <- function(input, output, session) {
     gosBP <- go$all[go$all$Ont=="BP",]
     p <- plotGOAll(enrichdf = gosBP[bprowsall, ], nrows = length(bprowsall), ont="BP", 
               genesUp = data$genesUp, genesDown = data$genesDown,
-              colors = c(input$upColor, input$downColor) )
+              colors = c(input$downColor, input$upColor))
     if( typeBarBpAll() == "Dodge") { print(p[[1]]) }
     else if ( typeBarBpAll() == "Stack") { print(p[[2]]) }
     else { print(p[[3]]) }
@@ -770,12 +798,15 @@ server <- function(input, output, session) {
   output$tableMFall <- DT::renderDataTable({
     validate(need(goDT$all, "Load file to render table"))
     goDT <- goDT$all
+    names(goDT)[names(goDT) == "DE"] <- "DEG"
+    names(goDT)[names(goDT) == "P.DE"] <- "p-value"
     names(goDT)[names(goDT) == "level"] <- "Ont.level"
     goDT$Ont.level = as.integer(goDT$Ont.level) 
     datatable2(goDT[goDT$Ont=="MF",], vars = c("genes"),
                filter = list(position="top", clear=FALSE),
                escape = FALSE,
-               opts = list(pageLength = 10, white_space = "normal",
+               opts = list(order = list(list(6, 'asc')),
+                           pageLength = 10, white_space = "normal",
                            ajax = list(serverSide = TRUE, processing = TRUE))
     )
   })
@@ -787,7 +818,7 @@ server <- function(input, output, session) {
     gosMF <- go$all[go$all$Ont=="MF",]
     p <- plotGOAll(enrichdf = gosMF[mfrowsall, ], nrows = length(mfrowsall), ont="MF", 
                    genesUp = data$genesUp, genesDown = data$genesDown,
-                   colors = c(input$upColor, input$downColor) )
+                   colors = c(input$downColor, input$upColor))
     if( typeBarMfAll() == "Dodge") { print(p[[1]]) }
     else if ( typeBarMfAll() == "Stack") { print(p[[2]]) }
     else { print(p[[3]]) }
@@ -805,12 +836,15 @@ server <- function(input, output, session) {
   output$tableCCall <- DT::renderDataTable(server=TRUE,{
     validate(need(goDT$all, "Load file to render table"))
     goDT <- goDT$all
+    names(goDT)[names(goDT) == "DE"] <- "DEG"
+    names(goDT)[names(goDT) == "P.DE"] <- "p-value"
     names(goDT)[names(goDT) == "level"] <- "Ont.level"
     goDT$Ont.level = as.integer(goDT$Ont.level) 
     datatable2(goDT[goDT$Ont=="CC",], vars = c("genes"),
                filter = list(position="top", clear=FALSE),
                escape = FALSE,
-               opts = list(pageLength = 10, white_space = "normal",
+               opts = list(order = list(list(6, 'asc')),
+                           pageLength = 10, white_space = "normal",
                            ajax = list(serverSide = TRUE, processing = TRUE))
     )
   })
@@ -822,7 +856,7 @@ server <- function(input, output, session) {
     gosCC <- go$all[go$all$Ont=="CC",]
     p <- plotGOAll(enrichdf = gosCC[ccrowsall, ], nrows = length(ccrowsall), ont="CC", 
                    genesUp = data$genesUp, genesDown = data$genesDown,
-                   colors = c(input$upColor, input$downColor) )
+                   colors = c(input$downColor, input$upColor))
     if( typeBarCcAll() == "Dodge") { print(p[[1]]) }
     else if ( typeBarCcAll() == "Stack") { print(p[[2]]) }
     else { print(p[[3]]) }
@@ -841,12 +875,15 @@ server <- function(input, output, session) {
   output$tableBP <- DT::renderDataTable(server=TRUE,{
     validate(need(goDT$up, "Load file to render table"))
     goDT <- goDT$up
+    names(goDT)[names(goDT) == "DE"] <- "DEG"
+    names(goDT)[names(goDT) == "P.DE"] <- "p-value"
     names(goDT)[names(goDT) == "level"] <- "Ont.level"
     goDT$Ont.level = as.integer(goDT$Ont.level) 
     datatable2(goDT[goDT$Ont=="BP",], vars = c("genes"),
                filter = list(position="top", clear=FALSE),
                escape = FALSE,
-               opts = list(pageLength = 10, white_space = "normal")
+               opts = list(order = list(list(6, 'asc')),
+                           pageLength = 10, white_space = "normal")
     )
   })
   # GO plots BP UP #####################
@@ -871,12 +908,15 @@ server <- function(input, output, session) {
   output$tableMF <- DT::renderDataTable({
     validate(need(goDT$up, "Load file to render table"))
     goDT <- goDT$up
+    names(goDT)[names(goDT) == "DE"] <- "DEG"
+    names(goDT)[names(goDT) == "P.DE"] <- "p-value"
     names(goDT)[names(goDT) == "level"] <- "Ont.level"
     goDT$Ont.level = as.integer(goDT$Ont.level) 
     datatable2(goDT[goDT$Ont=="MF",], vars = c("genes"),
                filter = list(position="top", clear=FALSE),
                escape = FALSE,
-               opts = list(pageLength = 10, white_space = "normal",
+               opts = list(order = list(list(6, 'asc')),
+                           pageLength = 10, white_space = "normal",
                            ajax = list(serverSide = TRUE, processing = TRUE))
     )
   })
@@ -902,12 +942,15 @@ server <- function(input, output, session) {
   output$tableCC <- DT::renderDataTable(server=TRUE,{
     validate(need(goDT$up, "Load file to render table"))
     goDT <- goDT$up
+    names(goDT)[names(goDT) == "DE"] <- "DEG"
+    names(goDT)[names(goDT) == "P.DE"] <- "p-value"
     names(goDT)[names(goDT) == "level"] <- "Ont.level"
     goDT$Ont.level = as.integer(goDT$Ont.level) 
     datatable2(goDT[goDT$Ont=="CC",], vars = c("genes"),
                filter = list(position="top", clear=FALSE),
                escape = FALSE,
-               opts = list(pageLength = 10, white_space = "normal",
+               opts = list(order = list(list(6, 'asc')),
+                           pageLength = 10, white_space = "normal",
                            ajax = list(serverSide = TRUE, processing = TRUE))
     )
   })
@@ -933,12 +976,15 @@ server <- function(input, output, session) {
   output$tableBPdown <- DT::renderDataTable(server=TRUE,{
     validate(need(goDT$down, "Load file to render table"))
     goDT <- goDT$down
+    names(goDT)[names(goDT) == "DE"] <- "DEG"
+    names(goDT)[names(goDT) == "P.DE"] <- "p-value"
     names(goDT)[names(goDT) == "level"] <- "Ont.level"
     goDT$Ont.level = as.integer(goDT$Ont.level) 
     datatable2(goDT[goDT$Ont=="BP",], vars = c("genes"),
                filter = list(position="top", clear=FALSE),
                escape = FALSE,
-               opts = list(pageLength = 10, white_space = "normal")
+               opts = list(order = list(list(6, 'asc')),
+                           pageLength = 10, white_space = "normal")
     )
   })
   # GO plots BP DOWN #####################
@@ -963,12 +1009,15 @@ server <- function(input, output, session) {
   output$tableMFdown <- DT::renderDataTable({
     validate(need(goDT$down, "Load file to render table"))
     goDT <- goDT$down
+    names(goDT)[names(goDT) == "DE"] <- "DEG"
+    names(goDT)[names(goDT) == "P.DE"] <- "p-value"
     names(goDT)[names(goDT) == "level"] <- "Ont.level"
     goDT$Ont.level = as.integer(goDT$Ont.level) 
     datatable2(goDT[goDT$Ont=="MF",], vars = c("genes"),
                filter = list(position="top", clear=FALSE),
                escape = FALSE,
-               opts = list(pageLength = 10, white_space = "normal",
+               opts = list(order = list(list(6, 'asc')),
+                           pageLength = 10, white_space = "normal",
                            ajax = list(serverSide = TRUE, processing = TRUE))
     )
   })
@@ -994,12 +1043,15 @@ server <- function(input, output, session) {
   output$tableCCdown <- DT::renderDataTable(server=TRUE,{
     validate(need(goDT$down, "Load file to render table"))
     goDT <- goDT$down
+    names(goDT)[names(goDT) == "DE"] <- "DEG"
+    names(goDT)[names(goDT) == "P.DE"] <- "p-value"
     names(goDT)[names(goDT) == "level"] <- "Ont.level"
     goDT$Ont.level = as.integer(goDT$Ont.level) 
     datatable2(goDT[goDT$Ont=="CC",], vars = c("genes"),
                filter = list(position="top", clear=FALSE),
                escape = FALSE,
-               opts = list(pageLength = 10, white_space = "normal",
+               opts = list(order = list(list(6, 'asc')),
+                           pageLength = 10, white_space = "normal",
                            ajax = list(serverSide = TRUE, processing = TRUE))
     )
   })
@@ -1032,7 +1084,7 @@ server <- function(input, output, session) {
     DT::datatable( table,
                    rownames=FALSE,
                    filter = list(position="top", clear=FALSE),
-                   options = list(
+                   options = list(order = list(list(4, 'asc')),
                      columnDefs = list(list(orderable = FALSE,
                                             className = "details-control",
                                             targets = 1)
@@ -1119,7 +1171,7 @@ server <- function(input, output, session) {
       params <- list(nrup=nrup, nrdown=nrdown, bpnrup=bpnrup, bpnrdown=bpnrdown,
                      mfnrup=mfnrup, mfnrdown=mfnrdown, ccnrup=ccnrup, ccnrdown=ccnrdown,
                      variablepca=variablepca, samplecluster=samplecluster, tempdir =tempdir(),
-                     gseanr=gseanr, author=author(), nrall = nrall,
+                     gseanr=gseanr, author=author(), gene = gene(), numheatmap=numheatmap(), nrall = nrall,
                      bpnrall=bpnrall, mfnrall=mfnrall, ccnrall=ccnrall,
                      explainPreview=explainPreview(), biologicalText=biologicalText(),
                      keggAllText = keggAllText(), GSEAText = GSEAText(), deseq = datos$dds, 

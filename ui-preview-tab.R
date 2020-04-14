@@ -1,7 +1,8 @@
 fluidPage(
-    fluidRow(infoBoxOutput("allbox"),
-             infoBoxOutput("upbox"),
-             infoBoxOutput("downbox")
+    fluidRow(infoBoxOutput("allbox", width = 3),
+             infoBoxOutput("upbox", width = 3),
+             infoBoxOutput("downbox", width = 3),
+             infoBoxOutput("params", width = 3)
              ),
     # fin fluidrow boxinfos
     fluidRow(
@@ -19,7 +20,7 @@ fluidPage(
                     paste0("Customize here the statistical values that you intend",
                            " to apply to your experiment as a cutoff to consider a",
                            " gene differentially expressed. The numbers per",
-                           "category can be check above. Click on Apply values",
+                           " category can be checked above. Click on Apply values",
                            " once you have finished exploring this tab and",
                            " before moving to the next one."),
                     trigger = "hover",
@@ -120,11 +121,11 @@ fluidPage(
              ),
              bsTooltip(
                "information2",
-               paste0("Choose here the variables from your Coldata that will ", 
+               paste0("Choose here the conditions from your Coldata that will ", 
                "help to represent the data graphically ", 
-               "and explore all the conditions properly."),
+               "and explore all the variables properly."),
                trigger = "hover",
-               placement = "left"
+               placement = "right"
              ),
                 box(
                     title = "Conditions and Variables",
@@ -146,7 +147,7 @@ fluidPage(
                                      bsTooltip(
                                        "information3",
                                        paste0("Up to two conditions may be accepted for PCA 2D. ", 
-                                       "The first variable ",
+                                       "The first one of them ",
                                        "will be represented with different colours ",
                                        "and the second will correspond to the dot shape. ",
                                        "For PCA 3D only the first one is taken."),
@@ -174,9 +175,9 @@ fluidPage(
                                           bsTooltip(
                                             "information4",
                                             paste0("Up to two conditions may be accepted for the heatmap. ",
-                                            "Every variable will be represented as a line on top ",
+                                            "Every condition will be represented on top ",
                                             "of the plot with different colors showing the ",
-                                            "distincts condition per sample."),
+                                            "distincts group per sample."),
                                             trigger = "hover",
                                             placement = "right"
                                           ),
@@ -199,10 +200,44 @@ fluidPage(
                                       title = "Cluster",
                                       plotOutput("cluster", width = "100%", height = "800px")
                                  ),
-                                 tabPanel(
-                                     title = "Top genes",
-                                     plotOutput("top6", width = "100%", height = "800px")
-                                     ),
+                                 tabPanel(title = "Top 6 genes",
+                                          circleButton(
+                                            inputId = "information200",
+                                            icon = icon("info"),
+                                            size = "xs",
+                                            status = "primary"
+                                          ),
+                                          bsTooltip(
+                                            "information200",
+                                            paste0("Only the first condition selected will be ",
+                                                   "taken into account to group the samples."),
+                                            trigger = "hover",
+                                            placement = "right"
+                                          ),
+                                          plotOutput("top6", width="100%", height = "800px")),
+                                 tabPanel(title = "Top unique gene",
+                                          circleButton(
+                                            inputId = "information100",
+                                            icon = icon("info"),
+                                            size = "xs",
+                                            status = "primary"
+                                          ),
+                                          bsTooltip(
+                                            "information100",
+                                            paste0("Select the individual gene in which you are interested ",
+                                                   "in exploring the expression. Only the first condition selected will be ",
+                                                   "taken into account to group the samples."),
+                                            trigger = "hover",
+                                            placement = "right"
+                                          ),
+                                          tagList(fluidRow(
+                                            column(
+                                              width = 3,
+                                              textInput("gene", value="", label = "Select the gene of interest")
+                                            ),
+                                            column(width = 9,
+                                                   plotOutput("top1", height = "800px"))
+                                          ))),
                                  tabPanel(
                                      title = "Box/violin plot",
                                      circleButton(
@@ -213,8 +248,10 @@ fluidPage(
                                           ),
                                           bsTooltip(
                                             "infobox",
-                                            paste0("Pon aquí ",
-                                            "lo que te salga de la piiiiiiiiii"),
+                                            paste0("Change here the way you want to represent ",
+                                            "the profile of the counts per gene for the normalized samples. ",
+                                            "Only the first condition selected will be taken into ",
+                                            "account to group the samples."),
                                             trigger = "hover",
                                             placement = "right"
                                           ),

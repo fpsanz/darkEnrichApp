@@ -97,7 +97,7 @@ customCnet2Cytoscape <- function(kgg, category=NULL, nPath=NULL, byDE=FALSE){
     n <- dim(tmp)[1]
     V(g)$size[1:n] <- size
     V(g)$pval <- NA
-    V(g)$pval[1:n] <- kgg$P.DE[1:n]
+    V(g)$pval[1:n] <- kgg$p-value[1:n]
     edge_layer <- geom_edge_link(alpha=.8, colour='darkgrey')
     fc <- V(g)$pval
     V(g)$color <- fc
@@ -654,7 +654,7 @@ go2DT <- function(enrichdf, data, orderby = NULL, nrows = NULL) {
         } else{ enrichdf <- enrichdf %>% arrange(desc(get(orderby)))}
     }
     enrichdf2 <- enrichdf %>%
-        mutate(url = paste0("<a href='http://amigo.geneontology.org/amigo/search/bioentity?q=",
+        mutate(url = paste0("<a href='https://www.ebi.ac.uk/QuickGO/term/",
                             go_id,"' target='_blank'>",go_id,"</a>"))
     CAup <- enrichdf2[, c(1, 2, 3, 4, 5, 7, 8, 9)]
     CAup$genes <- gsub(",", ", ", CAup$genes)
@@ -672,7 +672,7 @@ go2DT <- function(enrichdf, data, orderby = NULL, nrows = NULL) {
     if(!is.null(nrows) & is.numeric(nrows)){
         CAup <- CAup[1:nrows, ]
     }
-    #CAup <- CAup %>% mutate(P.DE = format(P.DE, scientific = T, digits = 4))
+    #CAup <- CAup %>% mutate(p-value = format(p-value, scientific = T, digits = 4))
     return(CAup)
 }
 
@@ -778,7 +778,7 @@ kegg2DT <- function(enrichdf, data, orderby = NULL, nrows = NULL) {
     if(!is.null(nrows) & is.numeric(nrows)){
         CAup <- CAup[1:nrows, ]
     }
-    #CAup <- CAup %>% mutate(P.DE = format(P.DE, scientific = T, digits = 4))
+    #CAup <- CAup %>% mutate(p-value = format(p-value, scientific = T, digits = 4))
     return(CAup)
 }
 
@@ -917,7 +917,7 @@ plotKeggAll <- function(enrichdf, nrows = 10, orderby = NULL,
         DE = c(enrichAll$numUp, enrichAll$numDown),
         DENeg = c(enrichAll$numUp, enrichAll$numDownNeg)
     )
-    colorfill <- colors #c("#3e90bd","#eb3f3f")
+    colorfill <- colors #c("#eb3f3f","#3e90bd")
     r <- ggplot(df, aes(x = pathId, y = DENeg, fill = Regulation)) +
         geom_bar(stat = "identity", position = "identity") + coord_flip() +
         theme(axis.text.y = element_text(angle = 0, hjust = 1)) + theme_bw() +
@@ -1013,7 +1013,7 @@ loadGenes <- function(filegenes){
     p <- ggplot(data = d,
                 aes_string(x = "PC1", y = "PC2", color = "group", shape = "shape")) +
       geom_point(size = 3) +
-      ggtitle("PCA for transformed data") +
+      ggtitle("PCA for top 500 genes on normalized data") +
       xlab(paste0("PC1: ", round(percentVar[1] * 100), "% variance")) +
       ylab(paste0("PC2: ", round(percentVar[2] * 100), "% variance")) +
       scale_color_manual(values = colours, name = intgroup[1]) +
@@ -1028,7 +1028,7 @@ loadGenes <- function(filegenes){
     p <- ggplot(data = d,
                 aes_string(x = "PC1", y = "PC2", color = "group")) +
       geom_point(size = 3) +
-      ggtitle("PCA for transformed data") +
+      ggtitle("PCA for top 500 genes on normalized data") +
       xlab(paste0("PC1: ", round(percentVar[1] * 100), "% variance")) +
       ylab(paste0("PC2: ", round(percentVar[2] * 100), "% variance")) +
       scale_color_manual(values = colours, name = intgroup[1]) +
@@ -1145,7 +1145,7 @@ dotPlotkegg <- function(data, n = 20){
   p <- ggplot(data, aes(y=Pathway, x=ratio, color=P.DE))+
     geom_point(aes(size=DE), stat="identity")+
     theme_bw()+
-    labs(x = "ratio (DE/N)") +
+    labs(x = "ratio (DEG/N)") +
     scale_color_continuous(low = "red", high = "blue", 
                            guide = guide_colorbar(reverse = TRUE))+
     theme(text = element_text(size=20))
@@ -1161,7 +1161,7 @@ dotPlotGO <- function(data, n = 20){
   p <- ggplot(data, aes(y=Term, x=ratio, color=P.DE))+
     geom_point(aes(size=DE), stat="identity")+
     theme_bw()+
-    labs(x = "ratio (DE/N)") +
+    labs(x = "ratio (DEG/N)") +
     scale_color_continuous(low = "red", high = "blue", 
                            guide = guide_colorbar(reverse = TRUE))+
     theme(text = element_text(size=20))
@@ -1171,16 +1171,16 @@ dotPlotGO <- function(data, n = 20){
 # Heatmap de objeto enrich kegg ##########################
 heatmapKegg <- function(kdt, nr){
   kdt <- kdt[nr, ]
-  colourCount <- length(unique(kdt$DE)) # number of levels
+  colourCount <- length(unique(kdt$DEG)) # number of levels
   getPalette <- colorRampPalette(RColorBrewer::brewer.pal(9, "YlOrRd"))
-  kdt %>% dplyr::select(Pathway, genes,DE) %>% 
+  kdt %>% dplyr::select(Pathway, genes, DEG) %>% 
     separate_rows(genes) %>%
     mutate(Pathway = fct_inorder(Pathway)) %>% 
     mutate(Pathway = fct_rev(Pathway)) %>% 
     mutate(genes = fct_infreq(genes)) %>% 
-    mutate(DE = factor(DE)) %>% 
+    mutate(DEG = factor(DEG)) %>% 
     ggplot(aes_(~genes, ~Pathway)) + 
-    geom_tile(aes_(fill = ~DE), color = 'black', size =0.2) +
+    geom_tile(aes_(fill = ~DEG), color = 'black', size =0.2) +
     xlab(NULL) + ylab(NULL) +
     theme_minimal() +
     theme(panel.grid.major = element_line(colour = "gray88", size = 0.8),
@@ -1192,7 +1192,7 @@ heatmapKegg <- function(kdt, nr){
   
 }
 
-# Función para crear dataset para hacer GESA pathway ##################
+# Función para crear dataset para hacer GSEA pathway ##################
 buildKeggDataset <- function(specie="mmu"){
   GeneID.PathID <- getGeneKEGGLinks(specie, convert = FALSE)
   PathName <- getKEGGPathwayNames(specie,remove.qualifier = TRUE)
@@ -1260,7 +1260,7 @@ CustomVolcano <- function (toptable, lab, x, y, selectLab = NULL, xlim = c(min(t
                            na.rm = TRUE), max(toptable[[x]], na.rm = TRUE)), 
                            ylim = c(0, max(-log10(toptable[[y]]), na.rm = TRUE) + 5), xlab = bquote(~Log[2] ~ "fold change"), 
                            ylab = bquote(~-Log[10] ~ italic(P)), axisLabSize = 18, 
-                           title = "Volcano plot", subtitle = "", caption = paste0("Total = ", 
+                           title = "Volcano plot highlighting the different groups of signification", subtitle = "", caption = paste0("Total = ", 
                            nrow(toptable), " variables"), titleLabSize = 18, subtitleLabSize = 14, 
                            captionLabSize = 14, pCutoff = 1e-05, pLabellingCutoff = pCutoff, 
                            FCcutoffDOWN = -1, FCcutoffUP = 1 , cutoffLineType = "longdash", cutoffLineCol = "black", 
@@ -1272,7 +1272,7 @@ CustomVolcano <- function (toptable, lab, x, y, selectLab = NULL, xlim = c(min(t
                            shape = 19, shapeCustom = NULL, col = c("grey30", "forestgreen", 
                            "royalblue", "red2"), colCustom = NULL, colAlpha = 1/2, 
                            legend = c("NS", "Log2 FC", "P", "P & Log2 FC"), legendLabels = c("NS", 
-                           expression(Log[2]~FC), "p-adjusted", expression(p-adjusted ~ and ~ log[2]~FC)), 
+                           expression(Only ~ log[2]~FC), "Only p-adjusted", expression(p-adjusted ~ and ~ log[2]~FC)), 
                            legendPosition = "top", legendLabSize = 14, 
                            legendIconSize = 4, legendVisible = TRUE, shade = NULL, 
                            shadeLabel = NULL, shadeAlpha = 1/2, shadeFill = "grey", 
@@ -1739,7 +1739,7 @@ VST <- function (object, blind = TRUE, nsub = 1000, fitType = "parametric")
              labels_col = as.character(vsd[[sampleName]]),
              labels_row = as.character(consensus$Symbol),
              cellwidth = 18, cellheight = 14, annotation_colors = ann_colors,
-             main = "Heatmap top genes")
+             main = "Heatmap top variant genes on normalized data")
     }
     
 
@@ -1756,7 +1756,7 @@ cluster <- function(vsd, intgroup = "condition")
   pheatmap(sampleDistMatrix_vsd,
            clustering_distance_rows = sampleDists_vsd,
            clustering_distance_cols = sampleDists_vsd,
-           col = colors, main = 'Heatmap clustering')
+           col = colors, main = 'Heatmap clustering of samples on normalized data')
 }
 
 
@@ -1767,7 +1767,7 @@ cluster <- function(vsd, intgroup = "condition")
 #############  TOP6 genes #########################
 
 
-plotCountsSymbol <- function (dds, gene, res, intgroup = "condition", normalized = TRUE,
+plotCountsSymbol <- function (dds, gene, intgroup = "condition", normalized = TRUE,
                               transform = TRUE, main, xlab = "group", returnData = FALSE,
                               replaced = FALSE, pc, ...){
   stopifnot(length(gene) == 1 & (is.character(gene) | (is.numeric(gene) &
@@ -1813,15 +1813,16 @@ plotCountsSymbol <- function (dds, gene, res, intgroup = "condition", normalized
   #colors = c("#008000","#800080")
   if (returnData)
     return(data.frame(count = data$count, colData(dds)[intgroup]))
+  gene <- 
   plot(data$group + runif(ncol(dds), -0.05, 0.05), data$count, #col=colors[(dds)[intergroup]],
        xlim = c(0.5, max(data$group) + 0.5), log = logxy, xaxt = "n",
-       xlab = xlab, ylab = ylab, main = "Top 6 significant gene", ...)
+       xlab = xlab, ylab = ylab, main = paste0("Expression of ", gene), ...)
   axis(1, at = seq_along(levels(group)), levels(group))
   #text(data$group + runif(ncol(dds), -0.05, 0.05), data$count, labels=colnames(dds))
 }
 
 # Boxplot Violin plot ###########################
-boxViolin <- function(datos=NULL, vsd=NULL, boxplotswitch=NULL, dataswitch=NULL,
+boxViolin <- function(datos=NULL, vsd=NULL, names=NULL, boxplotswitch=NULL, dataswitch=NULL,
                       intgroup=NULL, customColor = NULL){
     if(isTRUE(dataswitch)){
         data <- datos
@@ -1830,21 +1831,25 @@ boxViolin <- function(datos=NULL, vsd=NULL, boxplotswitch=NULL, dataswitch=NULL,
     }
     df <- assay(data)
     condition <- colData(data)[[intgroup[1]]] # variables()
+    samples <- colData(data)[[names[1]]]
     df <- as.data.frame(t(df))
     df$condition <- as.character(condition)
-    df$samples <- rownames(df)
+    df$samples <- as.character(samples)
     dflong <- df %>% pivot_longer(c(-condition,-samples),
                             names_to = "genes",
                             values_to = "count")
     p <- dflong %>% ggplot(aes(x = samples, y = count, fill = condition))
     if(!isTRUE(boxplotswitch)){
-        p <- p + geom_boxplot() +
+        p <- p + geom_boxplot() + 
+            ggtitle('Box plot for the normalized counts per gene and sample') +
             theme(axis.text.x = element_text(angle = 90)) +
             scale_fill_manual( values = customColor )
         return(p)
     } else {
-        p <- p + geom_violin() +
-            theme(axis.text.x = element_text(angle = 90))
+        p <- p + geom_violin() + 
+            ggtitle('Violin plot for the normalized counts per gene and sample') +
+            theme(axis.text.x = element_text(angle = 90))+
+          scale_fill_manual( values = customColor )
         return(p)
         }
           }

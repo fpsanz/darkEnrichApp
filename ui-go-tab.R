@@ -67,7 +67,7 @@ fluidPage(
             tabPanel("Molecular function",  # MF all
              fluidRow(  # primera fila mf all 
                 column( width = 3,
-                    box(title = "GO description",
+                    box(title = "GO MF description",
                         solidHeader = FALSE,
                         status = "primary",
                         width = NULL, 
@@ -124,7 +124,7 @@ fluidPage(
                 tabPanel("Cellular component",   ##tab CC all
                 fluidRow(  # primera fila all CC
                     column( width = 3,
-                        box(title = "GO description",
+                        box(title = "GO CC description",
                             solidHeader = FALSE,
                             status = "primary",
                             width = NULL, 
