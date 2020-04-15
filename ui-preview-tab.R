@@ -1,8 +1,19 @@
 fluidPage(
-    fluidRow(infoBoxOutput("allbox", width = 3),
-             infoBoxOutput("upbox", width = 3),
-             infoBoxOutput("downbox", width = 3),
-             infoBoxOutput("params", width = 3)
+    fluidRow(infoBoxOutput("allbox", width = 4),
+             infoBoxOutput("upbox", width = 4),
+             infoBoxOutput("downbox", width = 4)),
+    fluidRow(column(width = 12,
+             boxPlus(solidHeader = FALSE, width = 12, height = "100px",
+                     collapsible = TRUE, closable = FALSE,
+                 title = "Statistics applied",
+                 column(width = 4,
+                 uiOutput("fcup")),
+                 column(width=4,
+                 uiOutput("fcdown")),
+                 column(width = 4,
+                 uiOutput("pval"))
+                    #infoBoxOutput("params", width = 3)
+             ))
              ),
     # fin fluidrow boxinfos
     fluidRow(
@@ -233,7 +244,7 @@ fluidPage(
                                           tagList(fluidRow(
                                             column(
                                               width = 3,
-                                              textInput("gene", value="", label = "Select the gene of interest")
+                                              textInput("gene", value="", label = "Select the ensembl gene of interest")
                                             ),
                                             column(width = 9,
                                                    plotOutput("top1", height = "800px"))
@@ -258,9 +269,7 @@ fluidPage(
                                      tagList(fluidRow(
                                      column(width=3,
                                         materialSwitch(inputId = "boxplotswitch", label = "Violin plot",
-                                                       status = "primary"),
-                                        materialSwitch(inputId = "dataswitch", label = "Raw data",
-                                                       status = "primary"),
+                                                       status = "primary")
                                             ),
                                      column(width=9,
                                         plotlyOutput("boxviolin", width="100%", height = "800px")

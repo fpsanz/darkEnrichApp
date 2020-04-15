@@ -1,4 +1,14 @@
 # Chorplot ##########################################
+legendChorplot <- function(enrichdf){
+    labels <- enrichdf$Pathway
+    colours = colorRampPalette(RColorBrewer::brewer.pal(11, "Spectral"))(length(labels))
+    par(bg="#37414b", mar=c(0.5,0.5,0.5,0.5))
+    plot(NULL, xaxt='n',yaxt='n',bty='n',ylab='',xlab='', xlim=0:1, ylim=0:1)
+    legend("topleft", legend = labels, pch=16, pt.cex = 1.8,
+           cex = 1, bty="n", col = colours, bg="#37414b",
+           text.col="white", border = "#37414b")
+}
+
 chordPlot <- function(enrichdf, nRows = 10, ont=NULL,  orderby=NULL) {
   if(! "dplyr" %in% .packages()) require("dplyr")
   if(! "tidyr" %in% .packages()) require("tidyr")
@@ -29,24 +39,32 @@ chordPlot <- function(enrichdf, nRows = 10, ont=NULL,  orderby=NULL) {
   kk <- tidyr::pivot_wider(tmp2, names_from = name, values_from = genes)
 
   ns <- NULL
-  nd <- NULL
+  lenVect <- NULL
+  comunTotal <- NULL
   for (i in seq(1, dim(kk)[2])) {
     pt <- unlist(kk[1, i][[1]])
+    nd <- NULL
+    lenVect <- append(lenVect, length(pt))
     for (j in seq(1, dim(kk)[2])) {
       ns <-
         append(ns, length(intersect(unlist(kk[1, i][[1]]), unlist(kk[1, j][[1]]))))
-      if (i != j) {
-        pt <- pt[!(pt %in% unlist(kk[1, j][[1]]))]
-      }
+      nd <- append(ns, intersect(unlist(kk[1, i][[1]]), unlist(kk[1, j][[1]])))
+      # if (i != j) {
+      #   pt <- pt[!(pt %in% unlist(kk[1, j][[1]]))]
+      # }
     }
-    nd <- append(nd, length(pt))
+    comunTotal <- append(comunTotal, length(pt[!pt %in% nd]))
+    #nd <- append(nd, length(pt))
   }
   m <- matrix(ns, nrow = dim(kk)[2])
-  diag(m) <- nd
+  
   dimnames(m) <- list(have = names(kk), prefer = names(kk))
 
+  diag(m) <- (as.vector(lenVect) - comunTotal )
+  
   p <- chorddiag(
     m,
+    type = "directional",
     groupnamePadding = 20,
     margin = 100,
     groupColors = colorRampPalette(RColorBrewer::brewer.pal(11, "Spectral"))(n),
@@ -357,6 +375,7 @@ customGO <- function(data, universe = NULL, species = "Hs", prior.prob = NULL,
     GOlevel <- readRDS(golevelFile)
     GOlevel$id <- as.character(GOlevel$id)
     resultado <- left_join(resultado, GOlevel, by = c("go_id"="id"))
+    resultado <- resultado %>% arrange(P.DE)
     return(resultado)
 }
 
@@ -564,6 +583,7 @@ customKegg <- function(data, universe = NULL, restrict.universe = FALSE,
     Results$pathID <- rownames(Results)
     resultado <- left_join(Results, kkk, by = c(pathID = "PathwayID"))
     resultado <- resultado[which(resultado$P.DE < 0.05), ]
+    resultado <- resultado %>% arrange(P.DE)
     return(resultado)
 }
 
@@ -601,6 +621,7 @@ datatable2 <- function(x, vars = NULL, opts = NULL, ...) {
                                 list(className = "dt-right",targets = 3:ncol(x) 
                                      )
                                 ),
+              lengthMenu = list(c(10,25,50,100,-1), c(10,25,50,100,"All")),
               rowCallback = JS(js),
               dom = "Bfrtipl",
               buttons = c("copy", "csv", "excel", "pdf", "print") ) )
@@ -783,7 +804,7 @@ kegg2DT <- function(enrichdf, data, orderby = NULL, nrows = NULL) {
 }
 
 # Plot barras de GO ####################
-plotGO <- function(enrichdf, nrows = 30, orderby=NULL, ont, colors=NULL){
+plotGO <- function(enrichdf, nrows = 30, orderby="p-val", ont, colors=NULL){
     require(plotly)
     if(!is.data.frame(enrichdf)){
         stop("enrichdf should be data.frame")
@@ -791,26 +812,29 @@ plotGO <- function(enrichdf, nrows = 30, orderby=NULL, ont, colors=NULL){
     if(!exists("ont") | !(ont %in% c("BP","MF","CC")) ){
         stop("A valid value should be provided for 'ont'")
     }
+    names(enrichdf) <- gsub("P.DE", "p-val", names(enrichdf) )
+    names(enrichdf) <- gsub("DE", "DEG", names(enrichdf) )
     dataTitle <- list(BP=c("Biological Process", colors),
                       MF=c("Molecular Function", colors),
                       CC=c("Cellular Component", colors))
     enrichdf <- enrichdf[enrichdf$Ont == ont, ]
     if(!is.null(orderby)){
-        orderby = match.arg(orderby, c("DE", "P.DE", "N", "Term"))
-        if(orderby=="P.DE" | orderby =="Term"){
+        orderby = match.arg(orderby, c("DEG", "p-val", "N", "Term"))
+        if(orderby=="DEG" | orderby =="Term"){
             enrichdf <- enrichdf %>% arrange(get(orderby))
         } else{ enrichdf <- enrichdf %>% arrange(desc(get(orderby)))}
     }
     p <- enrichdf[1:nrows,] %>%
-        plot_ly(x=~DE, y=~go_id, text=~Term, type = "bar",
+        plot_ly(x=~DEG, y=~go_id, text=~Term, type = "bar",
                 marker = list(color=dataTitle[[ont]][2]),
-                orientation = "v") %>%
+                orientation = "v",
+                hovertext = paste0(enrichdf$Pathway,"\np-val: ",format(enrichdf$`p-val`, scientific = T, digits = 4))) %>%
         layout(margin = list(l=100), yaxis = list(title=""),
-               title=dataTitle[[ont]][1])
+               title=dataTitle[[ont]][1], xaxis = list(tickvals = c(1:max(enrichdf$DEG) ) ))
     return(p)
 }
 # Plot barras de GOAll ####################
-plotGOAll <- function(enrichdf, nrows = 30, orderby=NULL,
+plotGOAll <- function(enrichdf, nrows = 30, orderby="p-val",
                       ont, genesUp = NULL, genesDown = NULL, colors = NULL){
     require(plotly)
     require(ggplot2)
@@ -820,13 +844,15 @@ plotGOAll <- function(enrichdf, nrows = 30, orderby=NULL,
     if(!exists("ont") | !(ont %in% c("BP","MF","CC")) ){
         stop("A valid value should be provided for 'ont'")
     }
+    names(enrichdf) <- gsub("P.DE", "p-val", names(enrichdf) )
+    names(enrichdf) <- gsub("DE", "DEG", names(enrichdf) )
     dataTitle <- list(BP=c("Biological Process", colors ),
                       MF=c("Molecular Function",colors ),
                       CC=c("Cellular Component",colors  ))
     enrichdf <- enrichdf[enrichdf$Ont == ont, ]
     if(!is.null(orderby)){
-        orderby = match.arg(orderby, c("DE", "P.DE", "N", "Term"))
-        if(orderby=="P.DE" | orderby =="Term"){
+        orderby = match.arg(orderby, c("DEG", "p-val", "N", "Term"))
+        if(orderby=="p-val" | orderby =="Term"){
             enrichdf <- enrichdf %>% arrange(get(orderby))
         } else{ enrichdf <- enrichdf %>% arrange(desc(get(orderby)))}
     }
@@ -835,110 +861,125 @@ plotGOAll <- function(enrichdf, nrows = 30, orderby=NULL,
         mutate(numUp = length(which(strsplit(genes,", ")[[1]] %in% genesUp$ENTREZID ))) %>% 
         mutate(numDown = length(which(strsplit(genes,", ")[[1]] %in% genesDown$ENTREZID ))) %>% 
         mutate(numDownNeg = -length(which(strsplit(genes,", ")[[1]] %in% genesDown$ENTREZID )))
-    enrichAll <- enrichAll %>% dplyr::select(go_id, numUp, numDown, numDownNeg)
+    enrichAll <- enrichAll %>% dplyr::select(go_id, numUp, numDown, numDownNeg, `p-val`)
     df <- data.frame(
         Regulation = rep(c("Up", "Down"), each = nrows),
         goId = enrichAll$go_id,
         x = rep(1:nrows, 2),
-        DE = c(enrichAll$numUp, enrichAll$numDown),
-        DENeg = c(enrichAll$numUp, enrichAll$numDownNeg)
+        DEG = c(enrichAll$numUp, enrichAll$numDown),
+        DENeg = c(enrichAll$numUp, enrichAll$numDownNeg),
+        `p_val` = rep(enrichAll$`p-val`, 2)
     )
     colorfill <- c(dataTitle[[ont]][2:3])
-    r <- ggplot(df, aes(x = goId, y = DENeg, fill = Regulation)) +
+    r <- ggplot(df, aes(x = goId, y = DENeg, fill = Regulation,
+                        text =paste0("p-val: ",format(p_val, scientific = T, digits = 4)) )) +
         geom_bar(stat = "identity", position = "identity") + coord_flip() +
         theme(axis.text.y = element_text(angle = 0, hjust = 1)) + theme_bw() +
         scale_fill_manual(values = colorfill) +
         theme(panel.grid.major.y  = element_blank(),
               axis.title.y = element_blank())
-    r <- r %>% plotly::ggplotly()
-    p <- ggplot(df, aes(fill = Regulation, y = DE, x = goId)) +
+    r <- r %>% plotly::ggplotly(tooltip = "all")
+    p <- ggplot(df, aes(fill = Regulation, y = DEG, x = goId,
+                        text =paste0("p-val: ",format(p_val, scientific = T, digits = 4)) )) +
         geom_bar(position = "dodge", stat = "identity") + coord_flip() +
         theme(axis.text.y = element_text(angle = 0, hjust = 1)) + theme_bw() +
         scale_fill_manual(values = colorfill) +
         theme(panel.grid.major.y  = element_blank(),
               axis.title.y = element_blank())
-    p <- p %>% ggplotly()
-    q <- ggplot(df, aes(fill = Regulation, y = DE, x = goId)) +
+    p <- p %>% ggplotly(tooltip = "all")
+    q <- ggplot(df, aes(fill = Regulation, y = DEG, x = goId,
+                        text =paste0("p-val: ",format(p_val, scientific = T, digits = 4)) )) +
         geom_bar(position = "stack", stat = "identity") + coord_flip() +
         theme(axis.text.y = element_text(angle = 0, hjust = 1)) + theme_bw() +
         scale_fill_manual(values = colorfill) +
         theme(panel.grid.major.y  = element_blank(),
               axis.title.y = element_blank())
-    q <- q %>% ggplotly()
+    q <- q %>% ggplotly(tooltip = "all")
     return(list(p,q,r) ) 
 }
 
 # Plot barras de Kegg ###########################
-plotKegg <- function(enrichdf, nrows = 30, orderby=NULL, colors = NULL){
+plotKegg <- function(enrichdf, nrows = 30, orderby="p-val", colors = NULL){
     require(plotly)
     if(!is.data.frame(enrichdf)){
         stop("enrichdf should be data.frame")
     }
+    names(enrichdf) <- gsub("P.DE", "p-val", names(enrichdf) )
+    names(enrichdf) <- gsub("DE", "DEG", names(enrichdf) )
     if(!is.null(orderby)){
-        orderby = match.arg(orderby, c("DE", "P.DE", "N", "Pathway"))
-        if(orderby=="P.DE" | orderby =="Pathway"){
+        orderby = match.arg(orderby, c("DEG", "p-val", "N", "Pathway"))
+        if(orderby=="p-val" | orderby =="Pathway"){
             enrichdf <- enrichdf %>% arrange(get(orderby))
         } else{ enrichdf <- enrichdf %>% arrange(desc(get(orderby)))}
     }
-    p <- enrichdf[1:nrows,] %>%
-        plot_ly(x=~DE, y=~pathID, text=~Pathway, type = "bar",
+    enrichdf <- enrichdf[1:nrows,]
+    p <- enrichdf %>%
+        plot_ly(x=~DEG, y=~pathID, text=~Pathway, type = "bar",
                 marker = list(color=colors),
-                orientation = "v") %>%
+                orientation = "v",
+                hovertext = paste0(enrichdf$Pathway,"\np-val: ",format(enrichdf$`p-val`, scientific = T, digits = 4))) %>%
         layout(margin = list(l=100), yaxis = list(title=""),
-               title="Kegg pathways")
+               title="Kegg pathways", xaxis = list(tickvals = c(1:max(enrichdf$DEG) ) ) )
+        
     return(p)
 }
 
 # Plot barras de KeggALL ###################
-plotKeggAll <- function(enrichdf, nrows = 10, orderby = NULL, 
+plotKeggAll <- function(enrichdf, nrows = 10, orderby = "p-val", 
                         genesUp = NULL, genesDown = NULL, colors = NULL){
     require(plotly)
     require(ggplot2)
         if(!is.data.frame(enrichdf)){
         stop("enrichdf should be data.frame")
-    }
+        }
+    names(enrichdf) <- gsub("P.DE", "p-val", names(enrichdf) )
+    names(enrichdf) <- gsub("DE", "DEG", names(enrichdf) )
     if(!is.null(orderby)){
-        orderby = match.arg(orderby, c("DE", "P.DE", "N", "Pathway"))
-        if(orderby=="P.DE" | orderby =="Pathway"){
+        orderby = match.arg(orderby, c("DEG", "p-val", "N", "Pathway"))
+        if(orderby=="p-val" | orderby =="Pathway"){
             enrichdf <- enrichdf %>% arrange(get(orderby))
         } else{ enrichdf <- enrichdf %>% arrange(desc(get(orderby)))}
     }
-    enrichAll <- enrichdf
+    enrichAll <- enrichdf[1:nrows, ]
     enrichAll <- enrichAll %>% rowwise() %>%
         mutate(numUp = length(which(strsplit(genes,",")[[1]] %in% genesUp$ENTREZID ))) %>% 
         mutate(numDown = length(which(strsplit(genes,",")[[1]] %in% genesDown$ENTREZID ))) %>% 
         mutate(numDownNeg = -length(which(strsplit(genes,",")[[1]] %in% genesDown$ENTREZID )))
-    enrichAll <- enrichAll %>% dplyr::select(pathID, numUp, numDown, numDownNeg)
+    enrichAll <- enrichAll %>% dplyr::select(pathID, numUp, numDown, numDownNeg, `p-val`)
     enrichAll$pathID <- sub(  "path:", "", enrichAll$pathID )
     df <- data.frame(
         Regulation = rep(c("Up", "Down"), each = nrows),
         pathId = enrichAll$pathID,
         x = rep(1:nrows, 2),
-        DE = c(enrichAll$numUp, enrichAll$numDown),
-        DENeg = c(enrichAll$numUp, enrichAll$numDownNeg)
+        DEG = c(enrichAll$numUp, enrichAll$numDown),
+        DENeg = c(enrichAll$numUp, enrichAll$numDownNeg),
+        `p_val` = rep(enrichAll$`p-val`, 2)
     )
     colorfill <- colors #c("#eb3f3f","#3e90bd")
-    r <- ggplot(df, aes(x = pathId, y = DENeg, fill = Regulation)) +
+    r <- ggplot(df, aes(x = pathId, y = DENeg, fill = Regulation,
+                        text =paste0("p-val: ",format(p_val, scientific = T, digits = 4)) )) +
         geom_bar(stat = "identity", position = "identity") + coord_flip() +
         theme(axis.text.y = element_text(angle = 0, hjust = 1)) + theme_bw() +
         scale_fill_manual(values = colorfill) +
         theme(panel.grid.major.y  = element_blank(),
               axis.title.y = element_blank())
-    r <- r %>% plotly::ggplotly()
-    p <- ggplot(df, aes(fill = Regulation, y = DE, x = pathId)) +
+    r <- r %>% plotly::ggplotly(tooltip = "all" )
+    p <- ggplot(df, aes(fill = Regulation, y = DEG, x = pathId,
+                        text =paste0("p-val: ",format(p_val, scientific = T, digits = 4)) )) +
         geom_bar(position = "dodge", stat = "identity") + coord_flip() +
         theme(axis.text.y = element_text(angle = 0, hjust = 1)) + theme_bw() +
         scale_fill_manual(values = colorfill) +
         theme(panel.grid.major.y  = element_blank(),
               axis.title.y = element_blank())
-    p <- p %>% ggplotly()
-    q <- ggplot(df, aes(fill = Regulation, y = DE, x = pathId)) +
+    p <- p %>% ggplotly(tooltip = "all")
+    q <- ggplot(df, aes(fill = Regulation, y = DEG, x = pathId, 
+                        text =paste0("p-val: ",format(p_val, scientific = T, digits = 4)) )) +
         geom_bar(position = "stack", stat = "identity") + coord_flip() +
         theme(axis.text.y = element_text(angle = 0, hjust = 1)) + theme_bw() +
         scale_fill_manual(values = colorfill) +
         theme(panel.grid.major.y  = element_blank(),
               axis.title.y = element_blank())
-    q <- q %>% ggplotly()
+    q <- q %>% ggplotly(tooltip = "all")
 
     return(list(p, q, r))
 }
@@ -1138,12 +1179,14 @@ geneIdConverter <- function(genes, specie="Mm"){ # genes = vector of ensembl gen
 
 # Dotplot de objeto enrich kegg ##########################
 dotPlotkegg <- function(data, n = 20){
-  data$ratio <- data$DE/data$N
+  names(data) <- gsub("P.DE", "p-val", names(data) )
+  names(data) <- gsub("DE", "DEG", names(data) )
+  data$ratio <- data$DEG/data$N
   data <- data[order(data$ratio, decreasing = F), ]
   data <- data[seq_len(n),]
   data$Pathway <- factor(data$Pathway, levels = data$Pathway)
-  p <- ggplot(data, aes(y=Pathway, x=ratio, color=P.DE))+
-    geom_point(aes(size=DE), stat="identity")+
+  p <- ggplot(data, aes(y=Pathway, x=ratio, color=`p-val`))+
+    geom_point(aes(size=DEG)  )+
     theme_bw()+
     labs(x = "ratio (DEG/N)") +
     scale_color_continuous(low = "red", high = "blue", 
@@ -1154,12 +1197,14 @@ dotPlotkegg <- function(data, n = 20){
 
 # Dotplot de objeto enrich GO ##########################
 dotPlotGO <- function(data, n = 20){
-  data$ratio <- data$DE/data$N
+    names(data) <- gsub("P.DE", "p-val", names(data) )
+  names(data) <- gsub("DE", "DEG", names(data) )
+  data$ratio <- data$DEG/data$N
   data <- data[order(data$ratio, decreasing = F), ]
   data <- data[seq_len(n),]
   data$Term <- factor(data$Term, levels = data$Term)
-  p <- ggplot(data, aes(y=Term, x=ratio, color=P.DE))+
-    geom_point(aes(size=DE), stat="identity")+
+  p <- ggplot(data, aes(y=Term, x=ratio, color=`p-val`))+
+    geom_point(aes(size=DEG), stat="identity")+
     theme_bw()+
     labs(x = "ratio (DEG/N)") +
     scale_color_continuous(low = "red", high = "blue", 
@@ -1789,6 +1834,7 @@ plotCountsSymbol <- function (dds, gene, intgroup = "condition", normalized = TR
     dds <- estimateSizeFactors(dds)
   }
   cnts <- counts(dds, normalized = normalized, replaced = replaced)[gene,]
+  intgroup <- intgroup[1]
   group <- if (length(intgroup) == 1) {
     colData(dds)[[intgroup]]
   }
@@ -1822,13 +1868,9 @@ plotCountsSymbol <- function (dds, gene, intgroup = "condition", normalized = TR
 }
 
 # Boxplot Violin plot ###########################
-boxViolin <- function(datos=NULL, vsd=NULL, names=NULL, boxplotswitch=NULL, dataswitch=NULL,
+boxViolin <- function(datos=NULL, vsd=NULL, names=NULL, boxplotswitch=NULL,
                       intgroup=NULL, customColor = NULL){
-    if(isTRUE(dataswitch)){
-        data <- datos
-    } else{
-        data <- vsd
-    }
+    data <- vsd
     df <- assay(data)
     condition <- colData(data)[[intgroup[1]]] # variables()
     samples <- colData(data)[[names[1]]]

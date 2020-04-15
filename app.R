@@ -313,7 +313,6 @@ server <- function(input, output, session) {
   typeBarCcAll <- reactive({input$selectccall})
   pca3d <- reactive({input$pca3d})
   boxplotswitch <- reactive({input$boxplotswitch})
-  dataswitch <- reactive({input$dataswitch})
 
   # InputFile
   output$deseqFile <- renderUI({
@@ -417,11 +416,23 @@ server <- function(input, output, session) {
       numdown <- nrow( res$sh[(res$sh$log2FoldChange <= logfc()[1]) & (res$sh$padj <= padj()), ]) 
       infoBox("Downregulated genes", numdown, icon = icon("thumbs-down", lib = "glyphicon"), color = "light-blue", fill=TRUE)
   })
-  output$params <- renderInfoBox({
-    validate(need(res$sh, ""))
-    infoBox("Statistics applied", paste0("P-adjusted: ", padj(), ", Foldchange up: ", logfc()[2], ", Foldchange down: ", logfc()[1]),
-            icon = icon("glyphicon glyphicon-stats", lib = "glyphicon"), color = "light-blue", fill=TRUE)
+  output$fcup <- renderUI({
+      descriptionBlock(number = NULL, number_color = "#3c8dbc",
+                       header = logfc()[1],text = "Lower log_FC", right_border = TRUE, margin_bottom = FALSE)
   })
+  output$fcdown <- renderUI({
+      descriptionBlock(number = NULL, number_color = "red",
+                       header = logfc()[2],text = "Upper log_FC", right_border = TRUE, margin_bottom = FALSE)
+  })
+  output$pval <- renderUI({
+      descriptionBlock(number = NULL, number_color = "green",
+                       header = padj(),text = "p-value", right_border = FALSE, margin_bottom = FALSE)
+  })
+  # output$params <- renderInfoBox({
+  #   validate(need(res$sh, ""))
+  #   infoBox("Statistics applied", paste0("P-adjusted: ", padj(), ", Foldchange up: ", logfc()[2], ", Foldchange down: ", logfc()[1]),
+  #           icon = icon("glyphicon glyphicon-stats", lib = "glyphicon"), color = "light-blue", fill=TRUE)
+  # })
   # preview samples ###################
   output$samples <- DT::renderDataTable(server = TRUE,{
     validate(need(datos$dds, "Load file to render table"))
@@ -453,6 +464,7 @@ server <- function(input, output, session) {
                rownames = FALSE,
                filter = list(position="top", clear=FALSE),
                options = list(order = list(list(6, 'asc')),
+                 lengthMenu = list(c(10,25,50,100,-1), c(10,25,50,100,"All")),
                  columnDefs = list(list(orderable = TRUE,
                                         className = "details-control",
                                         targets = 1),
@@ -592,7 +604,12 @@ server <- function(input, output, session) {
     validate(need(variables(),"Load condition to render plot" ) )
     validate(need(coloresPCA$colores(), ""))
     validate(need(gene(), "Enter a gene of interest in Ensembl"))
-    plotCountsSymbol(dds=datos$dds, gene=gene(), intgroup = variables()) 
+    z <- plotCounts(dds = datos$dds, gene = gene(), returnData = TRUE, intgroup = variables()[1] )
+    z %>% ggplot(aes_(as.name(variables()[1]), ~count, colour = as.name(variables()[1] ) ) ) + 
+      scale_y_log10() +
+      geom_point(position = position_jitter(width = 0.1, height = 0), size = 2)+
+        scale_color_manual( values = coloresPCA$colores() )+
+        ggtitle(paste0("Expression of ", gene() ) )
   })
  # boxviolin plot #################################
   output$boxviolin <- renderPlotly({
@@ -601,9 +618,8 @@ server <- function(input, output, session) {
           validate(need(variables(), ""))
           validate(need(samplename(),"" ) )
           validate(need(coloresPCA$colores(), ""))
-          boxViolin(datos=datos$dds, names = samplename() , vsd=vsd$data, boxplotswitch=boxplotswitch(),
-                    dataswitch=dataswitch(), intgroup=variables(),
-                    customColor = coloresPCA$colores()) 
+          boxViolin( names = samplename() , vsd=vsd$data, boxplotswitch=boxplotswitch(),
+                    intgroup=variables(), customColor = coloresPCA$colores()) 
   })
 # KEGG table All #####################################
   output$tableAll <- DT::renderDT(server=TRUE,{
@@ -622,7 +638,10 @@ server <- function(input, output, session) {
   output$keggPlotAll <- renderPlotly ({
     validate(need(kgg$all, "Load file to render BarPlot"))
     rowsAll <- rowsAll()
-    if(is.null( rowsAll )){ rowsAll <- c(1:10) }
+    if(is.null(rowsAll)){
+        if( dim(kgg$all)[1]<10 ){rowsAll <-  seq_len(nrow(kgg$all)) }
+        else{ rowsAll <-  seq_len(10)  }
+        }
     p <- plotKeggAll(enrichdf = kgg$all[rowsAll,], nrows = length(rowsAll),
                 genesUp = data$genesUp, genesDown = data$genesDown,
                 colors = c(input$downColor, input$upColor))
@@ -635,8 +654,20 @@ server <- function(input, output, session) {
   output$keggChordAll <- renderChorddiag({
     validate(need(kgg$all, "Load file to render ChordPlot"))
     rowsAll <- rowsAll()
-    if(is.null(rowsAll)){rowsAll <- c(1:10)}
+    if(is.null(rowsAll)){
+        if( dim(kgg$all)[1]<10 ){rowsAll <-  seq_len(nrow(kgg$all)) }
+        else{ rowsAll <-  seq_len(10)  }
+        }
     chordPlot(kgg$all[rowsAll, ], nRows = length(rowsAll), orderby = "P.DE")
+  })
+output$legendChorAll <- renderPlot({
+    validate(need(kgg$all, "Load file to render ChordPlot"))
+    rowsAll <- rowsAll()
+    if(is.null(rowsAll)){
+        if( dim(kgg$all)[1]<10 ){rowsAll <-  seq_len(nrow(kgg$all)) }
+        else{ rowsAll <-  seq_len(10)  }
+        }
+    legendChorplot(kgg$all[rowsAll, ] )
   })
   # KEGG dotplot All ################### 
   output$keggDotAll <- renderPlot({
@@ -676,15 +707,31 @@ server <- function(input, output, session) {
   output$keggPlot <- renderPlotly ({
     validate(need(kgg$up, "Load file to render BarPlot"))
     rowsUp <- rowsUp()
-    if(is.null(rowsUp)){rowsUp <- c(1:10)}
+    if(is.null(rowsUp)){
+        if( dim(kgg$up)[1]<10 ){rowsUp <-  seq_len(nrow(kgg$up)) }
+        else{ rowsUp <-  seq_len(10)  }
+        }
     plotKegg(enrichdf = kgg$up[rowsUp,], nrows = length(rowsUp), colors = c(input$upColor))
   })
   # KEGG chordiag plot up ###############
   output$keggChord <- renderChorddiag({
     validate(need(kgg$up, "Load file to render ChordPlot"))
     rowsUp<- rowsUp()
-    if(is.null(rowsUp)){rowsUp <- c(1:10)}
+    if(is.null(rowsUp)){
+        if( dim(kgg$up)[1]<10 ){rowsUp <-  seq_len(nrow(kgg$up)) }
+        else{ rowsUp <-  seq_len(10)  }
+        }
     chordPlot(kgg$up[rowsUp, ], nRows = length(rowsUp), orderby = "P.DE")
+  })
+ output$legendChorUp <- renderPlot({
+    validate(need(kgg$up, "Load file to render ChordPlot"))
+    rowsUp <- rowsUp()
+    if(is.null(rowsUp)){
+        if (dim(kgg$up)[1] < 10) {rowsUp <-  seq_len(nrow(kgg$up))}
+        else{rowsUp <-  seq_len(10)}
+        
+        }
+    legendChorplot(kgg$up[rowsUp, ] )
   })
   # KEGG dotplot UP ################### 
   output$keggDotUp <- renderPlot({
@@ -725,7 +772,10 @@ server <- function(input, output, session) {
   output$keggPlotDown <- renderPlotly ({
     validate(need(kgg$down, "Load file to render BarPlot"))
     rowsdown <- rowsdown()
-    if(is.null(rowsdown)){rowsdown <- c(1:10)}
+    if(is.null(rowsdown)){
+        if( dim(kgg$down)[1]<10 ){rowsdown <-  seq_len(nrow(kgg$down)) }
+        else{ rowsdown <-  seq_len(10)  }
+        }
     plotKegg(enrichdf = kgg$down[rowsdown,], nrows = length(rowsdown), 
              colors = c(input$downColor))
   })
@@ -733,8 +783,20 @@ server <- function(input, output, session) {
   output$keggChordDown <- renderChorddiag({
     validate(need(kgg$down, "Load file to render ChordPlot"))
     rowsdown <- rowsdown()
-    if(is.null(rowsdown)){rowsdown <- c(1:10)}
+    if(is.null(rowsdown)){
+        if( dim(kgg$down)[1]<10 ){rowsdown <-  seq_len(nrow(kgg$down)) }
+        else{ rowsdown <-  seq_len(10)  }
+        }
     chordPlot(kgg$down[rowsdown, ], nRows = length(rowsdown), orderby = "P.DE")
+  })
+  output$legendChorDown <- renderPlot({
+    validate(need(kgg$down, "Load file to render ChordPlot"))
+    rowsdown <- rowsdown()
+    if(is.null(rowsdown)){
+        if( dim(kgg$down)[1]<10 ){rowsdown <-  seq_len(nrow(kgg$down)) }
+        else{ rowsdown <-  seq_len(10)  }
+        }
+    legendChorplot(kgg$down[rowsdown, ] )
   })
   # KEGG dotplot Down ################### 
   output$keggDotDown <- renderPlot({
@@ -757,6 +819,7 @@ server <- function(input, output, session) {
     rowsdown <- rowsdown()
     customCnetKegg(kgg$down, rowsdown())
   })
+
   # GO table BP ALL #####################
   output$tableBPall <- DT::renderDataTable(server=TRUE,{
     validate(need(goDT$all, "Load file to render table"))
@@ -1085,6 +1148,7 @@ server <- function(input, output, session) {
                    rownames=FALSE,
                    filter = list(position="top", clear=FALSE),
                    options = list(order = list(list(4, 'asc')),
+                     lengthMenu = list(c(10,25,50,100,-1), c(10,25,50,100,"All")),
                      columnDefs = list(list(orderable = FALSE,
                                             className = "details-control",
                                             targets = 1)

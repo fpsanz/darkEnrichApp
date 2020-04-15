@@ -79,9 +79,16 @@ fluidPage(
                                                   width = 9
                                               ))),  #barplot
                         tabPanel(title = "Chordplot",
-                                 chorddiagOutput("keggChordAll",
-                                                 width = "600px", 
-                                                 height = "600px") ), #cordplot
+                                 tagList(fluidRow(column(width = 8,
+                                                         chorddiagOutput("keggChordAll",
+                                                                         width = "100%",
+                                                                         height = "600px") 
+                                                         ),
+                                                  column(width = 4,
+                                                         plotOutput("legendChorAll", width="100%",
+                                                                    height="600px")
+                                                         )) )
+                                 ), #cordplot
                         tabPanel(title = "Dotplot",
                                  plotOutput("keggDotAll")
                                  ), # dotplot
@@ -153,9 +160,21 @@ fluidPage(
                                  plotlyOutput("keggPlot")
                                               ),  #barplot
                         tabPanel(title = "Chordplot",
-                                 chorddiagOutput("keggChord",
-                                                 width = "600px", 
-                                                 height = "600px") ), #cordplot
+                                 tagList(fluidRow(
+                                     column(
+                                         width = 8,
+                                         chorddiagOutput("keggChord",
+                                                         width = "100%",
+                                                         height = "600px")
+                                     ),
+                                     column(
+                                         width = 4,
+                                         plotOutput("legendChorUp", 
+                                                    width ="100%",
+                                                    height ="600px")
+                                     )
+                                 ))
+                                 ), #cordplot
                         tabPanel(title = "Dotplot",
                                  plotOutput("keggDotUp")
                                  ), # dotplot
@@ -227,9 +246,21 @@ fluidPage(
                                  plotlyOutput("keggPlotDown")
                                               ),  #barplot
                         tabPanel(title = "Chordplot",
-                                 chorddiagOutput("keggChordDown",
-                                                 width = "600px", 
-                                                 height = "600px") ), #cordplot
+                                 tagList(fluidRow(
+                                     column(
+                                         width = 8,
+                                         chorddiagOutput("keggChordDown",
+                                                         width = "100%",
+                                                         height = "600px")
+                                     ),
+                                     column(
+                                         width = 4,
+                                         plotOutput("legendChorDown",
+                                                    width ="100%",
+                                                    height ="600px")
+                                     )
+                                     ))
+                                 ), #cordplot
                         tabPanel(title = "Dotplot",
                                  plotOutput("keggDotDown")
                                  ), # dotplot
