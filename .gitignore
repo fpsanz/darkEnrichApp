@@ -3,4 +3,5 @@
 .RData
 .Ruserdata
 *.old
+shiny_bookmarks/
 barplotTest.R
