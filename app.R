@@ -619,7 +619,6 @@ output$pca3d <- renderRglwidget({
     rglwidget()
   })
   
-
   # view Volcano plot data ###################
   output$volcano <- renderPlot( {
     #validate(need(datos$dds, "Load file and condition to render Volcano"))
