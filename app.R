@@ -55,11 +55,8 @@ sidebar <- dashboardSidebar(useShinyalert(),
                             sidebarMenu(
                               menuItem(
                                   uiOutput("deseqFile")
-                                # fileInput("deseqFile",
-                                #           "Choose RDS with DESeq object",
-                                #           placeholder = "RDS DESeq", accept = ".Rds")
                                 )),
-                            sidebarMenu(
+                            sidebarMenu(id="menupreview",
                               menuItem("App Information",
                                        tabName = "info",
                                        icon = icon("info")),
@@ -79,6 +76,7 @@ sidebar <- dashboardSidebar(useShinyalert(),
                                 menuItem(
                                   fluidRow(column(12, align = "center", offset=0, uiOutput("pdf")))))
                             )
+
 ### BODY ###############
 body <- dashboardBody(
      tags$head(
@@ -180,7 +178,7 @@ server <- function(input, output, session) {
                imageUrl = "dna-svg-small-13.gif", 
                imageWidth = 200, imageHeight = 100)})
 
-# toggle para show/hide tabla preview ##############
+# Definir reactiveVariables globales ##############
   data <- reactiveValues() # genes
   goDT <- reactiveValues() #pretabla GO
   kgg <- reactiveValues() # enrich kegg
@@ -193,11 +191,9 @@ server <- function(input, output, session) {
   vsd <- reactiveValues()
   rlog <- reactiveValues()
   coloresPCA <- reactiveValues(niveles=NULL, numNiveles=NULL)
+  
   observeEvent(input$deseqFile, {
       datos$dds <- readRDS(input$deseqFile$datapath)
-      colData(datos$dds)@listData <- colData(datos$dds)@listData %>%
-          as.data.frame() %>% mutate_at(vars(-sizeFactor, -replaceable), as.character ) %>%
-          mutate_at(vars(-sizeFactor, -replaceable), as.factor  ) %>% as.list()
   })
   
   coloresPCA$colores <- reactive({
@@ -208,18 +204,20 @@ server <- function(input, output, session) {
       return(tmp)
   })
 
+  # Acciones al cargar fichero deseq ##########################
   observeEvent(datos$dds, {
     validate(need(datos$dds, ""))
-    # if(!is(datos$dds, "DESeqDataSet") | !("results" %in% mcols(mcols(datos$dds))$type) ){
-    #   shinyalert("File format error",
-    #   "File must be a DESeqDataSet class object
-    #   and you should have run DESeq()", type = "error")} 
       if(!is(datos$dds, "DESeqDataSet") | !("results" %in% mcols(mcols(datos$dds))$type) ){
           createAlert(session, "alert", "fileAlert",title = "Oops!!", 
           content = "File must be a DESeqDataSet class object
            and you should have run DESeq()", append=FALSE, style = "error")
       }
       else {
+        closeAlert(session, "alert")
+          colData(datos$dds)@listData <-
+              colData(datos$dds)@listData %>%
+              as.data.frame() %>% mutate_at(vars(-sizeFactor,-replaceable), as.character) %>%
+              mutate_at(vars(-sizeFactor,-replaceable), as.factor) %>% as.list()
         res$sh <- as.data.frame(lfcShrink(datos$dds, coef=2, type="apeglm", res = results(datos$dds)))
         conversion <- geneIdConverter(rownames(res$sh), specie() )
         res$sh$baseMean <- round(res$sh$baseMean,4)
@@ -240,7 +238,7 @@ server <- function(input, output, session) {
         closeAlert(session, "fileAlert")
       }
   })
-  
+  # Acciones al pulsar el boton enrich #####################
   observeEvent(input$runEnrich, {
     data$genesUp <- getSigUpregulated(res$sh, padj(), logfc()[2], specie() ) 
     data$genesDown <- getSigDownregulated(res$sh, padj(), logfc()[1], specie() ) 
@@ -251,7 +249,6 @@ server <- function(input, output, session) {
     
     kgg$up <- customKegg(data$genesUp, species = specie() )#"Mm")#, species.KEGG = "mmu")
     kggDT$up <- kegg2DT(kgg$up, data$genesUp)
-    
     
     kgg$down <- customKegg(data$genesDown, species = specie() )# "Mm")#, species.KEGG = "mmu")
     kggDT$down <- kegg2DT(kgg$down, data$genesDown)
@@ -264,9 +261,9 @@ server <- function(input, output, session) {
     
     go$down <- customGO(data$genesDown, species = "Mm")
     goDT$down <- go2DT(enrichdf = go$down, data = data$genesDown )
-    
+    updateTabItems(session, "menupreview", "preview")
   })
-  
+  # Acciones al seleccionar variables ################
   observeEvent(input$variables, {
         if(!is.factor(colData(datos$dds)[[ variables()[1] ]] ) ){
           coloresPCA$niveles <- as.character(unique( colData(datos$dds)[[ variables()[1] ]] ))
@@ -314,7 +311,7 @@ server <- function(input, output, session) {
   pca3d <- reactive({input$pca3d})
   boxplotswitch <- reactive({input$boxplotswitch})
 
-  # InputFile
+  # InputFile #################
   output$deseqFile <- renderUI({
       validate(need(specie(), ""))
       fileInput("deseqFile",
@@ -322,7 +319,7 @@ server <- function(input, output, session) {
           placeholder = "RDS DESeq",
           accept = ".Rds")
   })
-  # side bar menu
+  # side bar menu ####################
   output$menu <- renderMenu({
       validate(need(kgg$all, ""))
       sidebarMenu(
@@ -401,6 +398,8 @@ server <- function(input, output, session) {
   # infoboxes ###############################
   output$allbox <- renderInfoBox({
       validate(need(res$sh, ""))
+      validate(need(padj(), ""))
+      validate(need(logfc(), ""))
       numall <- nrow( res$sh[ ((res$sh$log2FoldChange >= logfc()[2] |
                                     res$sh$log2FoldChange< logfc()[1]) &
                                    res$sh$padj <= padj() ),] ) 
@@ -408,31 +407,120 @@ server <- function(input, output, session) {
   })
   output$upbox <- renderInfoBox({
       validate(need(res$sh, ""))
+      validate(need(padj(), ""))
+      validate(need(logfc(), ""))
       numup <- nrow( res$sh[(res$sh$log2FoldChange >= logfc()[2]) & (res$sh$padj <= padj()), ]) 
       infoBox("Upregulated genes", numup, icon = icon("thumbs-up", lib = "glyphicon"), color = "light-blue", fill=TRUE)
   })
   output$downbox <- renderInfoBox({
       validate(need(res$sh, ""))
+      validate(need(padj(), ""))
+      validate(need(logfc(), ""))
       numdown <- nrow( res$sh[(res$sh$log2FoldChange <= logfc()[1]) & (res$sh$padj <= padj()), ]) 
       infoBox("Downregulated genes", numdown, icon = icon("thumbs-down", lib = "glyphicon"), color = "light-blue", fill=TRUE)
   })
-  output$fcup <- renderUI({
-      descriptionBlock(number = NULL, number_color = "#3c8dbc",
-                       header = logfc()[1],text = "Lower log_FC", right_border = TRUE, margin_bottom = FALSE)
-  })
+  
   output$fcdown <- renderUI({
-      descriptionBlock(number = NULL, number_color = "red",
-                       header = logfc()[2],text = "Upper log_FC", right_border = TRUE, margin_bottom = FALSE)
+        validate(need(logfcRange$min, ""))
+        validate(need(logfc(),""))
+        initMin <- round( logfcRange$min, 2)
+        initMax <- round( logfcRange$max, 2)
+        if(logfc()[1]>=0){
+            fgColor="#6baed6"
+            inputColor="white"
+            bgColor ="#46505a"
+            rotation="clockwise"
+            min=0
+            max=initMax
+            angleOffset = 0
+        }else{
+            fgColor="#46505a"
+            inputColor="white"
+            bgColor ="#e6550d"
+            rotation="clockwise"
+            min=initMin
+            max=0
+            angleOffset=180
+        }
+      knobInput(
+          inputId = "myKnobdown",
+          label = "Lower logFC cutoff",
+          value = round(logfc()[1],2),
+          min = min,
+          max=max,
+          rotation=rotation,
+          displayPrevious = TRUE,
+          fgColor = fgColor,
+          inputColor = inputColor,
+          bgColor = bgColor,
+          #angleArc = 180,
+          #angleOffset = angleOffset,
+          width = "80%",
+          height = "80%"
+      )
+  })
+  output$fcup <- renderUI({
+        validate(need(logfcRange$min, ""))
+        validate(need(logfc(),""))
+        initMin <- round( logfcRange$min, 2)
+        initMax <- round( logfcRange$max, 2)
+        if(logfc()[2]>=0){
+            fgColor="#6baed6"
+            inputColor="white"
+            bgColor ="#46505a" 
+            rotation="clockwise"
+            min=0
+            max=initMax
+            angleOffset = 0
+        }else{
+            fgColor="#46505a"
+            inputColor="white"
+            bgColor ="#e6550d"
+            rotation="clockwise"
+            min=initMin
+            max=0
+            angleOffset=180
+        }
+      knobInput(
+          inputId = "myKnobup",
+          label = "Upper LogFC cutoff",
+          value = round(logfc()[2], 2),
+          min = min,
+          max=max,
+          rotation=rotation,
+          displayPrevious = TRUE,
+          fgColor = fgColor,
+          inputColor = inputColor,
+          bgColor = bgColor,
+          #angleArc = 180,
+          #angleOffset = angleOffset,
+          width = "80%",
+          height = "80%"
+      )
   })
   output$pval <- renderUI({
-      descriptionBlock(number = NULL, number_color = "green",
-                       header = padj(),text = "p-value", right_border = FALSE, margin_bottom = FALSE)
+      validate(need(padj(), ""))
+      fgColor = "#74c476"
+      inputColor = "white"
+      bgColor = "#46505a"
+      knobInput(
+          inputId = "myKnobpval",
+          label = "P.adj cutoff",
+          value = round(padj(), 2),
+          min = 0,
+          max = 0.2,
+          rotation = "clockwise",
+          displayPrevious = TRUE,
+          fgColor = fgColor,
+          inputColor = inputColor,
+          bgColor = bgColor,
+          #angleArc = 180,
+          #angleOffset = 90,
+          width = "80%",
+          height = "80%"
+      )
   })
-  # output$params <- renderInfoBox({
-  #   validate(need(res$sh, ""))
-  #   infoBox("Statistics applied", paste0("P-adjusted: ", padj(), ", Foldchange up: ", logfc()[2], ", Foldchange down: ", logfc()[1]),
-  #           icon = icon("glyphicon glyphicon-stats", lib = "glyphicon"), color = "light-blue", fill=TRUE)
-  # })
+
   # preview samples ###################
   output$samples <- DT::renderDataTable(server = TRUE,{
     validate(need(datos$dds, "Load file to render table"))
@@ -485,28 +573,32 @@ server <- function(input, output, session) {
     )
   })
   # view pca plot data ###################
-  output$pca3 <- renderUI({
+output$pca3 <- renderUI({
       if (!isTRUE(pca3d())) {
           plotOutput("pca", width = "100%", height = "800px")
       } else{
           rglwidgetOutput("pca3d", width = "500px", height = "500px")
       }
   })
-  
-  output$pca <- renderPlot( {
-    validate(need( !isTRUE(pca3d()), "" ) )
+
+output$pca <- renderPlot({
+    validate(need(!isTRUE(pca3d()), ""))
     validate(need(datos$dds, ""))
-    validate(need(variables(),"Select condition to render PCA" ) )
-    validate(need(samplename(),"" ) )
-    validate(need(coloresPCA$colores(), "" ))
-    plotPCA(rlog$datos, intgroup = variables(),
-            labels = samplename(), customColor = coloresPCA$colores() )+
-      theme(plot.margin=unit(c(0.5,0.5,0.5,0.5),"cm"))+
+    validate(need(variables(), "Select condition to render PCA"))
+    validate(need(samplename(), ""))
+    validate(need(coloresPCA$colores(), ""))
+    plotPCA(
+        rlog$datos,
+        intgroup = variables(),
+        labels = samplename(),
+        customColor = coloresPCA$colores()
+    ) +
+        theme(plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), "cm")) +
         scale_size_manual(values = 4) +
-    theme(text = element_text(size=16))
-  })
-  
-  output$pca3d <- renderRglwidget({
+        theme(text = element_text(size = 16))
+})
+
+output$pca3d <- renderRglwidget({
     validate(need(datos$dds, ""))
     validate(need(variables(),"Select condition to render PCA" ) )
     validate(need(coloresPCA$colores(), "" ))
@@ -527,6 +619,7 @@ server <- function(input, output, session) {
     rglwidget()
   })
   
+
   # view Volcano plot data ###################
   output$volcano <- renderPlot( {
     #validate(need(datos$dds, "Load file and condition to render Volcano"))

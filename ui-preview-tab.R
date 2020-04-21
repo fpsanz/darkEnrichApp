@@ -2,20 +2,15 @@ fluidPage(
     fluidRow(infoBoxOutput("allbox", width = 4),
              infoBoxOutput("upbox", width = 4),
              infoBoxOutput("downbox", width = 4)),
-    fluidRow(column(width = 12,
-             boxPlus(solidHeader = FALSE, width = 12, height = "100px",
-                     collapsible = TRUE, closable = FALSE,
-                 title = "Statistics applied",
-                 column(width = 4,
-                 uiOutput("fcup")),
-                 column(width=4,
+    fluidRow(column(width = 2, offset = 3,
                  uiOutput("fcdown")),
-                 column(width = 4,
+             column(width=2,
+                 uiOutput("fcup")),
+             column(width = 2,
                  uiOutput("pval"))
-                    #infoBoxOutput("params", width = 3)
-             ))
              ),
     # fin fluidrow boxinfos
+    tags$br(),
     fluidRow(
         column(
             width = 4,
@@ -255,8 +250,7 @@ fluidPage(
                                             inputId = "infobox",
                                             icon = icon("info"),
                                             size = "xs",
-                                            status = "primary"
-                                          ),
+                                            status = "primary"),
                                           bsTooltip(
                                             "infobox",
                                             paste0("Change here the way you want to represent ",
