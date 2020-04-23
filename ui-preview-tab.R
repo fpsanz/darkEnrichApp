@@ -171,6 +171,31 @@ fluidPage(
                                         #rglwidgetOutput("pca3d", width = "100%", height = "800px")
                                      )
                                      ))),
+                                                                  tabPanel(
+                                     title = "Box/violin plot",
+                                     circleButton(
+                                            inputId = "infobox",
+                                            icon = icon("info"),
+                                            size = "xs",
+                                            status = "primary"),
+                                          bsTooltip(
+                                            "infobox",
+                                            paste0("Change here the way you want to represent ",
+                                            "the profile of the counts per gene for the normalized samples. ",
+                                            "Only the first condition selected will be taken into ",
+                                            "account to group the samples."),
+                                            trigger = "hover",
+                                            placement = "right"
+                                          ),
+                                     tagList(fluidRow(
+                                     column(width=3,
+                                        materialSwitch(inputId = "boxplotswitch", label = "Violin plot",
+                                                       status = "primary")
+                                            ),
+                                     column(width=9,
+                                        plotlyOutput("boxviolin", width="100%", height = "800px")
+                                     )
+                                     ))),
                                  tabPanel(title = "Heatmap",
                                           circleButton(
                                             inputId = "information4",
@@ -243,32 +268,7 @@ fluidPage(
                                             ),
                                             column(width = 9,
                                                    plotOutput("top1", height = "800px"))
-                                          ))),
-                                 tabPanel(
-                                     title = "Box/violin plot",
-                                     circleButton(
-                                            inputId = "infobox",
-                                            icon = icon("info"),
-                                            size = "xs",
-                                            status = "primary"),
-                                          bsTooltip(
-                                            "infobox",
-                                            paste0("Change here the way you want to represent ",
-                                            "the profile of the counts per gene for the normalized samples. ",
-                                            "Only the first condition selected will be taken into ",
-                                            "account to group the samples."),
-                                            trigger = "hover",
-                                            placement = "right"
-                                          ),
-                                     tagList(fluidRow(
-                                     column(width=3,
-                                        materialSwitch(inputId = "boxplotswitch", label = "Violin plot",
-                                                       status = "primary")
-                                            ),
-                                     column(width=9,
-                                        plotlyOutput("boxviolin", width="100%", height = "800px")
-                                     )
-                                     )))
+                                          )))
                                  )
                              )
                       ), 
@@ -278,58 +278,58 @@ fluidPage(
                   width = NULL,
                 tagList(
                     tags$p("Volcano & MA plots color scheme"),
-                spectrumInput(
-                 inputId = "logfcColor",
-                 label = "Pick log FC color:",
-                 selected = '#2ca25f',
-                 width = "60%",
-                 choices = list(
-                     list("#b30000","#e34a33","#fc8d59","#fdbb84","#fdd49e","#fef0d9"),
-                     list('#045a8d','#2b8cbe','#74a9cf','#a6bddb','#d0d1e6','#f1eef6'),
-                     list('#006d2c', '#2ca25f', '#66c2a4', '#99d8c9', '#ccece6','#edf8fb'),
-                     list('#252525', '#636363', '#969696', '#bdbdbd', '#d9d9d9', '#f7f7f7')
-                 ),
-                 options = list(`toggle-palette-more-text` = "Show more")
-             ),
-                          spectrumInput(
-                 inputId = "padjColor",
-                 label = "Pick p-val color:",
-                 selected = '#2b8cbe',
-                 width = "60%",
-                 choices = list(
-                     list("#b30000","#e34a33","#fc8d59","#fdbb84","#fdd49e","#fef0d9"),
-                     list('#045a8d','#2b8cbe','#74a9cf','#a6bddb','#d0d1e6','#f1eef6'),
-                     list('#006d2c', '#2ca25f', '#66c2a4', '#99d8c9', '#ccece6','#edf8fb'),
-                     list('#252525', '#636363', '#969696', '#bdbdbd', '#d9d9d9', '#f7f7f7')
-                 ),
-                 options = list(`toggle-palette-more-text` = "Show more")
-             ),
-                          spectrumInput(
-                 inputId = "bothColor",
-                 label = "Pick logFC & p-pval color:",
-                 selected = "#e34a33",
-                 width = "60%",
-                 choices = list(
-                     list("#b30000","#e34a33","#fc8d59","#fdbb84","#fdd49e","#fef0d9"),
-                     list('#045a8d','#2b8cbe','#74a9cf','#a6bddb','#d0d1e6','#f1eef6'),
-                     list('#006d2c', '#2ca25f', '#66c2a4', '#99d8c9', '#ccece6','#edf8fb'),
-                     list('#252525', '#636363', '#969696', '#bdbdbd', '#d9d9d9', '#f7f7f7')
-                 ),
-                 options = list(`toggle-palette-more-text` = "Show more")
-             ),
-                          spectrumInput(
-                 inputId = "nsColor",
-                 label = "Pick no significant color:",
-                 selected = '#969696',
-                 width = "60%",
-                 choices = list(
-                     list("#b30000","#e34a33","#fc8d59","#fdbb84","#fdd49e","#fef0d9"),
-                     list('#045a8d','#2b8cbe','#74a9cf','#a6bddb','#d0d1e6','#f1eef6'),
-                     list('#006d2c', '#2ca25f', '#66c2a4', '#99d8c9', '#ccece6','#edf8fb'),
-                     list('#252525', '#636363', '#969696', '#bdbdbd', '#d9d9d9', '#f7f7f7')
-                 ),
-                 options = list(`toggle-palette-more-text` = "Show more")
-             ),
+             #    spectrumInput(
+             #     inputId = "logfcColor",
+             #     label = "Pick log FC color:",
+             #     selected = '#2ca25f',
+             #     width = "60%",
+             #     choices = list(
+             #         list("#b30000","#e34a33","#fc8d59","#fdbb84","#fdd49e","#fef0d9"),
+             #         list('#045a8d','#2b8cbe','#74a9cf','#a6bddb','#d0d1e6','#f1eef6'),
+             #         list('#006d2c', '#2ca25f', '#66c2a4', '#99d8c9', '#ccece6','#edf8fb'),
+             #         list('#252525', '#636363', '#969696', '#bdbdbd', '#d9d9d9', '#f7f7f7')
+             #     ),
+             #     options = list(`toggle-palette-more-text` = "Show more")
+             # ),
+             #              spectrumInput(
+             #     inputId = "padjColor",
+             #     label = "Pick p-val color:",
+             #     selected = '#2b8cbe',
+             #     width = "60%",
+             #     choices = list(
+             #         list("#b30000","#e34a33","#fc8d59","#fdbb84","#fdd49e","#fef0d9"),
+             #         list('#045a8d','#2b8cbe','#74a9cf','#a6bddb','#d0d1e6','#f1eef6'),
+             #         list('#006d2c', '#2ca25f', '#66c2a4', '#99d8c9', '#ccece6','#edf8fb'),
+             #         list('#252525', '#636363', '#969696', '#bdbdbd', '#d9d9d9', '#f7f7f7')
+             #     ),
+             #     options = list(`toggle-palette-more-text` = "Show more")
+             # ),
+             #              spectrumInput(
+             #     inputId = "bothColor",
+             #     label = "Pick logFC & p-pval color:",
+             #     selected = "#e34a33",
+             #     width = "60%",
+             #     choices = list(
+             #         list("#b30000","#e34a33","#fc8d59","#fdbb84","#fdd49e","#fef0d9"),
+             #         list('#045a8d','#2b8cbe','#74a9cf','#a6bddb','#d0d1e6','#f1eef6'),
+             #         list('#006d2c', '#2ca25f', '#66c2a4', '#99d8c9', '#ccece6','#edf8fb'),
+             #         list('#252525', '#636363', '#969696', '#bdbdbd', '#d9d9d9', '#f7f7f7')
+             #     ),
+             #     options = list(`toggle-palette-more-text` = "Show more")
+             # ),
+             #              spectrumInput(
+             #     inputId = "nsColor",
+             #     label = "Pick no significant color:",
+             #     selected = '#969696',
+             #     width = "60%",
+             #     choices = list(
+             #         list("#b30000","#e34a33","#fc8d59","#fdbb84","#fdd49e","#fef0d9"),
+             #         list('#045a8d','#2b8cbe','#74a9cf','#a6bddb','#d0d1e6','#f1eef6'),
+             #         list('#006d2c', '#2ca25f', '#66c2a4', '#99d8c9', '#ccece6','#edf8fb'),
+             #         list('#252525', '#636363', '#969696', '#bdbdbd', '#d9d9d9', '#f7f7f7')
+             #     ),
+             #     options = list(`toggle-palette-more-text` = "Show more")
+             # ),
              spectrumInput(
                  inputId = "upColor",
                  label = "Pick upregulated color:",

@@ -623,8 +623,8 @@ datatable2 <- function(x, vars = NULL, opts = NULL, ...) {
                                 ),
               lengthMenu = list(c(10,25,50,100,-1), c(10,25,50,100,"All")),
               rowCallback = JS(js),
-              dom = "Bfrtipl",
-              buttons = c("copy", "csv", "excel", "pdf", "print") ) )
+              dom = "Bfrtipl"
+              ) )
   datatable(x, ..., extensions = "Buttons", options = opts, 
             callback = JS(.callback2(x = x, pos = c(0, pos) ) ) )
 }
@@ -1383,9 +1383,9 @@ CustomVolcano <- function (toptable, lab, x, y, selectLab = NULL, xlim = c(min(t
   toptable$Sig[toptable[[x]] >= FCcutoffUP] <- "FC"
   toptable$Sig[toptable[[x]] <= FCcutoffDOWN] <- "FC"
   toptable$Sig[(toptable[[y]] < pCutoff)] <- "P"
-  toptable$Sig[(toptable[[y]] < pCutoff) & (toptable[[x]] >= FCcutoffUP)] <- "FC_P"
-  toptable$Sig[(toptable[[y]] < pCutoff) & (toptable[[x]] <= FCcutoffDOWN)] <- "FC_P"
-  toptable$Sig <- factor(toptable$Sig, levels = c("NS", "FC", "P", "FC_P"))
+  toptable$Sig[(toptable[[y]] < pCutoff) & (toptable[[x]] >= FCcutoffUP)] <- "FC_Pup"
+  toptable$Sig[(toptable[[y]] < pCutoff) & (toptable[[x]] <= FCcutoffDOWN)] <- "FC_Pdown"
+  toptable$Sig <- factor(toptable$Sig, levels = c("NS", "FC", "P", "FC_Pup","FC_Pdown"))
   
   if (min(toptable[[y]], na.rm = TRUE) == 0) {
     warning(paste("One or more p-values is 0.", "Converting to 10^-1 * current", 
@@ -1440,8 +1440,10 @@ CustomVolcano <- function (toptable, lab, x, y, selectLab = NULL, xlim = c(min(t
                      shape = factor(Sig)), alpha = colAlpha, size = pointSize, 
                  na.rm = TRUE) + scale_color_manual(values = colCustom) + 
       scale_shape_manual(values = c(NS = shape[1], FC = shape[2], 
-                                    P = shape[3], FC_P = shape[4]), labels = c(NS = legendLabels[1], 
-                                    FC = legendLabels[2], P = legendLabels[3], FC_P = legendLabels[4]), 
+                                    P = shape[3], FC_Pup = shape[4], FC_Pdown = shape[4] ),
+                         labels = c(NS = legendLabels[1], 
+                                    FC = legendLabels[2], P = legendLabels[3], FC_Pup = legendLabels[4],
+                                    FC_Pdown = legendLabels[4]), 
                                     guide = TRUE)
   }
   else if (is.null(colCustom) & !is.null(shapeCustom)) {
@@ -1451,8 +1453,11 @@ CustomVolcano <- function (toptable, lab, x, y, selectLab = NULL, xlim = c(min(t
       geom_point(aes(color = factor(Sig), shape = factor(names(shapeCustom))), 
                  alpha = colAlpha, size = pointSize, na.rm = TRUE) + 
       scale_color_manual(values = c(NS = col[1], FC = col[2], 
-                                    P = col[3], FC_P = col[4]), labels = c(NS = legendLabels[1], 
-                                                                           FC = legendLabels[2], P = legendLabels[3], FC_P = legendLabels[4])) + 
+                                    P = col[3], FC_Pup = col[4], FC_Pdown = col[5] ),
+                         labels = c(NS = legendLabels[1],
+                                    FC = legendLabels[2], P = legendLabels[3],
+                                    FC_Pup = legendLabels[4],
+                                    FC_Pdown = legendLabels[4])) + 
       scale_shape_manual(values = shapeCustom)
   }
   else if (is.null(colCustom) & is.null(shapeCustom) & length(shape) == 
@@ -1461,21 +1466,27 @@ CustomVolcano <- function (toptable, lab, x, y, selectLab = NULL, xlim = c(min(t
       th + guides(colour = guide_legend(order = 1, override.aes = list(shape = shape, 
                size = legendIconSize))) + geom_point(aes(color = factor(Sig)), 
                alpha = colAlpha, shape = shape, size = pointSize, 
-               na.rm = TRUE, show.legend = legendVisible) + scale_color_manual(values = c(NS = col[1], 
-               FC = col[2], P = col[3], FC_P = col[4]), labels = c(NS = legendLabels[1], 
-               FC = legendLabels[2], P = legendLabels[3], FC_P = legendLabels[4]))
+               na.rm = TRUE, show.legend = legendVisible) + scale_color_manual(values = c(NS = col[1], FC = col[2], 
+                                    P = col[3], FC_Pup = col[4], FC_Pdown = col[5] ),
+                         labels = c(NS = legendLabels[1],
+                                    FC = legendLabels[2], P = legendLabels[3],
+                                    FC_Pup = legendLabels[4],
+                                    FC_Pdown = legendLabels[4]))
   }
   else if (is.null(colCustom) & is.null(shapeCustom) & length(shape) == 4) {
     plot <- ggplot(toptable, aes(x = xvals, y = -log10(yvals))) + 
       th + guides(colour = guide_legend(order = 1, override.aes = list(shape = c(NS = shape[1], 
-      FC = shape[2], P = shape[3], FC_P = shape[4]), size = legendIconSize))) + 
+      FC = shape[2], P = shape[3], FC_Pup = shape[4],FC_Pdown = shape[4]), size = legendIconSize))) + 
       geom_point(aes(color = factor(Sig), shape = factor(Sig)), 
                  alpha = colAlpha, size = pointSize, na.rm = TRUE, 
-                 show.legend = legendVisible) + scale_color_manual(values = c(NS = col[1], 
-                 FC = col[2], P = col[3], FC_P = col[4]), labels = c(NS = legendLabels[1], 
-                 FC = legendLabels[2], P = legendLabels[3], FC_P = legendLabels[4])) + 
+                 show.legend = legendVisible) + scale_color_manual(values = c(NS = col[1], FC = col[2], 
+                                    P = col[3], FC_Pup = col[4], FC_Pdown = col[5] ),
+                         labels = c(NS = legendLabels[1],
+                                    FC = legendLabels[2], P = legendLabels[3],
+                                    FC_Pup = legendLabels[4],
+                                    FC_Pdown = legendLabels[4])) + 
       scale_shape_manual(values = c(NS = shape[1], FC = shape[2], 
-                                    P = shape[3], FC_P = shape[4]), guide = FALSE)
+                                    P = shape[3], FC_Pup = shape[4], FC_Pdown = shape[4]), guide = FALSE)
   }
   plot <- plot + xlab(xlab) + ylab(ylab) + xlim(xlim[1], xlim[2]) + 
     ylim(ylim[1], ylim[2]) + geom_vline(xintercept = c(FCcutoffDOWN,FCcutoffUP), linetype = cutoffLineType, colour = cutoffLineCol, 
