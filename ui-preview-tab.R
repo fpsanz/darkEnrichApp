@@ -1,7 +1,7 @@
 fluidPage(
     fluidRow(infoBoxOutput("allbox", width = 4),
-             infoBoxOutput("upbox", width = 4),
-             infoBoxOutput("downbox", width = 4)),
+             infoBoxOutput("downbox", width = 4),
+             infoBoxOutput("upbox", width = 4)),
     fluidRow(column(width = 2, offset = 3,
                  uiOutput("fcdown")),
              column(width=2,
@@ -40,11 +40,7 @@ fluidPage(
             width = NULL,
             uiOutput("logfc"),
             tags$br(),
-            uiOutput("padj"),
-            tags$br(),
-            strong("Click to compute enrichment"),
-            tags$br(),
-            actionButton("runEnrich", "Apply values")
+            uiOutput("padj")
         )
     ),
     column(
@@ -245,7 +241,7 @@ fluidPage(
                                             trigger = "hover",
                                             placement = "right"
                                           ),
-                                          plotOutput("top6", width="100%", height = "800px")),
+                                          plotlyOutput("top6", width="100%", height = "800px")),
                                  tabPanel(title = "Top unique gene",
                                           circleButton(
                                             inputId = "information100",
@@ -264,10 +260,11 @@ fluidPage(
                                           tagList(fluidRow(
                                             column(
                                               width = 3,
-                                              textInput("gene", value="", label = "Select the ensembl gene of interest")
+                                              textInput("gene", value="", label = "Select the ensembl gene of interest"),
+                                              htmlOutput("top1text")
                                             ),
                                             column(width = 9,
-                                                   plotOutput("top1", height = "800px"))
+                                                   plotlyOutput("top1", height = "800px"))
                                           )))
                                  )
                              )
@@ -372,5 +369,10 @@ fluidPage(
                 title = "MA plot",
                   plotOutput("MA", width = "100%", height = "800px")
             )
- )))
+ ))),
+ fluidRow(column(width = 4, offset = 4,
+            strong("Click to compute enrichment"),
+            tags$br(),
+            actionButton("runEnrich", "Apply values", width = "100%")
+             ))
 ) # fin page

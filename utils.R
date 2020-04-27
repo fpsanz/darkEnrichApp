@@ -1249,10 +1249,10 @@ buildKeggDataset <- function(specie="mmu"){
   }
 
 # Función para hacer GSEA pathway #################################
-gseaKegg <- function(dds){
+gseaKegg <- function(res){
   pathwayDataSet <- readRDS("resources/keggDataGSEA.Rds")
-  
-  res.sh <- as.data.frame(lfcShrink(dds, coef=2, type="apeglm", res = results(dds)))
+  res.sh <- res
+  #res.sh <- as.data.frame(lfcShrink(dds, coef=2, type="apeglm", res = results(dds)))
   res.sh <- res.sh[order(res.sh$log2FoldChange, decreasing = TRUE), ]
   res.sh$ENSEMBL <- rownames(res.sh)
   geneRank <- geneIdConverter( res.sh$ENSEMBL)
@@ -1837,14 +1837,14 @@ plotCountsSymbol <- function (dds, gene, intgroup = "condition", normalized = TR
     }
   }
   if (missing(pc)) {
-    pc <- if (transform)
-      0.5
+    pc <- if(transform) 0.5
     else 0
   }
   if (is.null(sizeFactors(dds)) & is.null(normalizationFactors(dds))) {
     dds <- estimateSizeFactors(dds)
   }
-  cnts <- counts(dds, normalized = normalized, replaced = replaced)[gene,]
+  geneE <- mapIds(orgdb, keys = gene, column = "ENSEMBL", keytype = "SYMBOL")
+  cnts <- counts(dds, normalized = normalized, replaced = replaced)[geneE,]
   intgroup <- intgroup[1]
   group <- if (length(intgroup) == 1) {
     colData(dds)[[intgroup]]
@@ -1863,14 +1863,11 @@ plotCountsSymbol <- function (dds, gene, intgroup = "condition", normalized = TR
   }
   #rownames(cnts) <- res$GeneName_Symbol
   data <- data.frame(count = cnts + pc, group = as.integer(group))
-  logxy <- if (transform)
-    "y"
-  else ""
+  logxy <- if (transform) "y" else ""
   ylab <- ifelse(normalized, "normalized counts")
   #colors = c("#008000","#800080")
   if (returnData)
     return(data.frame(count = data$count, colData(dds)[intgroup]))
-  gene <- 
   plot(data$group + runif(ncol(dds), -0.05, 0.05), data$count, #col=colors[(dds)[intergroup]],
        xlim = c(0.5, max(data$group) + 0.5), log = logxy, xaxt = "n",
        xlab = xlab, ylab = ylab, main = paste0("Expression of ", gene), ...)
@@ -1925,4 +1922,3 @@ choices_brewer2 <- list(
   as.list(rev(brewer_pal(palette = "Purples")(9))),
   as.list(rev(brewer_pal(palette = "Greys")(9)))
 )
-

@@ -5,6 +5,7 @@ library(org.Hs.eg.db) #Homo sapiens
 #library(org.Dr.eg.db) #Danio rerio (zebra fish)
 library(org.Rn.eg.db) #Ratus norvegicus
 #library(org.Mmu.eg.db) #Macaca mulata
+library(chorddiag)
 library(EnsDb.Mmusculus.v79)
 library(EnsDb.Hsapiens.v86)
 library(EnsDb.Rnorvegicus.v79)
@@ -15,7 +16,6 @@ library(RColorBrewer)
 library(purrr)
 library(plotly)
 library(ggpubr)
-library(chorddiag)
 library(DESeq2)
 library(fgsea)
 library(shinyalert)
@@ -28,6 +28,8 @@ library(shinythemes)
 library(rgl)
 library(rglwidget)
 library(scales)
+library(stringr)
+library(chromoMap)
 source("utils.R")
 options(shiny.maxRequestSize = 3000*1024^2)
 
@@ -556,7 +558,7 @@ server <- function(input, output, session) {
     validate(need(res$sh, "Load file to render table"))
     res.sh <- res$sh
     res.sh <- res.sh[ ((res.sh$log2FoldChange >= logfc()[2] |
-                          res.sh$log2FoldChange< logfc()[1]) &
+                          res.sh$log2FoldChange < logfc()[1]) &
                          res.sh$padj <= padj() ),]
     tituloTabla <- paste0("Table: Expression values | ","log2FC: ",logfc()[1],"_",logfc()[2]," | ","padj: ",padj()," | ",
                           "Num genes Up/down: ",numgenesDE$up,"/",numgenesDE$down)
@@ -597,13 +599,13 @@ server <- function(input, output, session) {
   # view pca plot data ###################
 output$pca3 <- renderUI({
       if (!isTRUE(pca3d())) {
-          plotOutput("pca", width = "100%", height = "800px")
+          plotlyOutput("pca", width = "100%", height = "800px")
       } else{
           rglwidgetOutput("pca3d", width = "500px", height = "500px")
       }
   })
 
-output$pca <- renderPlot({
+output$pca <- renderPlotly({
     validate(need(!isTRUE(pca3d()), ""))
     validate(need(datos$dds, ""))
     validate(need(variables(), "Select condition to render PCA"))
@@ -616,7 +618,7 @@ output$pca <- renderPlot({
         customColor = coloresPCA$colores()
     ) +
         theme(plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), "cm")) +
-        scale_size_manual(values = 4) +
+        scale_size_manual(values = 3) +
         theme(text = element_text(size = 16))
 })
 
@@ -674,7 +676,7 @@ output$pca3d <- renderRglwidget({
        ggtheme = theme_classic()
     )
   })
-  # view heatmap data ###################
+  # view HEATMAP data ###################
   output$heat <- renderPlot( {
     validate(need(datos$dds, ""))
     validate(need(vsd$data, "Load file to render plot"))
@@ -683,7 +685,7 @@ output$pca3d <- renderRglwidget({
     heat(vsd$data, n=numheatmap(), intgroup = variables(), sampleName = samplename(),
          specie=specie(), customColor = coloresPCA$colores() )
   })
-  # view cluster data ###################
+  # view CLUSTER data ###################
   output$cluster <- renderPlot( {
     validate(need(datos$dds, ""))
     validate(need(vsd$data, "Load file to render plot"))
@@ -691,8 +693,8 @@ output$pca3d <- renderRglwidget({
     validate(need(samplename(),"Load condition to render plot" ) )
     cluster(vsd$data, intgroup = samplename())
   })
-# view top6 data ###################
-  output$top6 <- renderPlot( {
+# view TOP6 data ###################
+  output$top6 <- renderPlotly( {
     validate(need(datos$dds, ""))
     validate(need(res$sh, "Load file to render plot"))
     validate(need(variables(),"Load condition to render plot" ) )
@@ -702,47 +704,62 @@ output$pca3d <- renderRglwidget({
     z <- lapply(topGenes, function(x) plotCounts(dds=datos$dds, gene=x,
                                                  res=res$sh, intgroup = variables(),
                                                  returnData = TRUE))
-    for(i in 1:6) z[[i]]$gene <- rep(topGenes[i], nrow(colData(datos$dds)))
+    z <- lapply(z, function(x){x %>% group_by(!!as.name(variables()[1])) %>%
+        mutate(mean = round(mean(count),2), sem = round(sd(count)/sqrt(n()),3 ), n = n() ) %>% 
+        mutate(text = paste0("Mean: ",mean,"\n","SEM: ",sem)) } )
     z <- do.call(rbind, z)
     z$symbol <- rep(topSymbol, each =(nrow(z)/6) ) 
     z[[variables()[1]]] <- as.factor(z[[variables()[1]]])
-    stat <- z %>% group_by(!!as.name(variables()[1]), symbol ) %>% 
-        summarise(mean = round(mean(count),2), sem = round(sd(count)/sqrt(n()),3 ) )
-    stat <- stat %>% arrange(symbol, !!as.name(variables()[1]))
-    
-    z <- z %>% arrange(symbol, !!as.name(variables()[1]))
-    titulo <- vector()
-    for(i in seq(1,nrow(stat),2)){
-        titulo <- append(titulo, apply(stat[i:(i+1),], 1, function(x){
-            paste0(x[2],": ", x[1],": mean ",x[3],", SEM ",x[4])}) %>%
-            paste(collapse = "\n"))
-    }
-    z$titulo <- rep(titulo, each=nrow(z)/6)
-    ggplot(z, aes_(as.name(variables()), ~count, colour = as.name(variables() ) ) ) + 
+    p <- ggplot(z, aes_(as.name(variables()), ~count, colour = as.name(variables()[1] ), text = ~text ) ) + 
       scale_y_log10() +
       geom_point(position = position_jitter(width = 0.1, height = 0), size = 2) +
-      facet_wrap(~titulo) + scale_color_manual( values = coloresPCA$colores() ) +
+      facet_wrap(~symbol) + scale_color_manual( values = coloresPCA$colores() ) +
       ggtitle("Expression of top 6 most significant genes")
+    p %>% ggplotly(tooltip = c("x","y","text"))
     })
-# view top1 data ###################  
-  output$top1 <- renderPlot( {
+# view TOP1 data ###################  
+  output$top1 <- renderPlotly( {
     validate(need(datos$dds, ""))
     validate(need(res$sh, "Load file to render plot"))
     validate(need(variables(),"Load condition to render plot" ) )
     validate(need(coloresPCA$colores(), ""))
-    validate(need(gene(), "Enter a gene of interest in Ensembl"))
-    z <- plotCounts(dds = datos$dds, gene = gene(), returnData = TRUE, intgroup = variables()[1] )
-    symbol = as.character(res$sh$GeneName_Symbol[rownames(res$sh)==gene()])
-    stat <- z %>% group_by(!!as.name(variables()[1])) %>% 
-        summarise(mean = round(mean(count),2), sem = round(sd(count)/sqrt(n()),3 ) )
-    titulo <- apply(stat, 1, function(x){paste0(x[1],": mean ",x[2],", SEM ",x[3])}) %>% paste(collapse = " | ")
-    z %>% ggplot(aes_(as.name(variables()[1]), ~count, colour = as.name(variables()[1] ) ) ) + 
-      scale_y_log10() +
-      geom_point(position = position_jitter(width = 0.1, height = 0), size = 2)+
+    validate(need(gene(), "Enter a gene of interest in Ensembl or symbol name"))
+    gene <- gene()
+    if (grepl("^ENS", gene, ignore.case = TRUE)) {
+        gene <- toupper(gene)
+        z <- plotCounts(dds = datos$dds,gene = gene, returnData = TRUE,
+                        intgroup = variables()[1])
+        symbol = as.character(res$sh$GeneName_Symbol[rownames(res$sh) == gene])
+    } else{
+        if (specie() == "Mm" | specie() == "Rn") {
+            gene <- stringr::str_to_title(gene)
+        }
+        else{
+            gene = toupper(gene)
+        }
+        z <- plotCountsSymbol(dds = datos$dds, gene = gene, returnData = TRUE,
+                              intgroup = variables()[1])
+        symbol <- gene
+    }
+    z <- z %>% group_by(!!as.name(variables()[1])) %>%
+        mutate(mean = round(mean(count),2), sem = round(sd(count)/sqrt(n()),3 ), n = n() ) %>% 
+        mutate(text = paste0("Mean: ",mean,"\n","SEM: ",sem))
+    p <- z %>% ggplot(aes_(as.name(variables()[1]), ~count, colour = as.name(variables()[1] ),
+                           text = ~text) ) + scale_y_log10() +
+        geom_point(position = position_jitter(width = 0.1, height = 0), size = 2)+
         scale_color_manual( values = coloresPCA$colores() )+
-        ggtitle(paste0("Expression of ", symbol,": ", titulo ) )
+        ggtitle(paste0(symbol) )
+    output$top1text <- renderUI({
+        validate(need(gene(), ""))
+        texto <- as.data.frame(unique(z[ ,c(variables()[1],"text") ] ))
+        txt <- paste0(apply(texto, 1, function(x){x} ), collapse = "<br/><br/>")
+        txt <- gsub("\n","<br/>",txt)
+        tags$h5(HTML(txt))
+    })
+    p %>% ggplotly(tooltip = c("x","y","text"))
   })
- # boxviolin plot #################################
+
+ # Boxviolin plot #################################
   output$boxviolin <- renderPlotly({
           validate(need(datos$dds, "Load file and condition to render Volcano"))
           validate(need(vsd$data, ""))
@@ -752,6 +769,7 @@ output$pca3d <- renderRglwidget({
           boxViolin( names = samplename() , vsd=vsd$data, boxplotswitch=boxplotswitch(),
                     intgroup=variables(), customColor = coloresPCA$colores()) 
   })
+
 # KEGG table All #####################################
   output$tableAll <- DT::renderDT(server=TRUE,{
     validate(need(kgg$all, "Load file to render table"))
@@ -1425,7 +1443,7 @@ output$legendChorAll <- renderPlot({
   # GSEA table ##########################
   output$gseaTable <- renderDataTable({
     validate(need(datos$dds, "Load file to render table"))
-    gsea$gsea <- gseaKegg(datos$dds)
+    gsea$gsea <- gseaKegg(res$sh)
     mygsea <- gsea$gsea
     #saveRDS(mygsea, "tmpResources/gsea.Rds")
     table <- mygsea@result[mygsea@result$p.adjust<=0.05 ,2:9] %>% 
