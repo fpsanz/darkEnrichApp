@@ -31,7 +31,6 @@ library(scales)
 library(stringr)
 source("utils.R")
 options(shiny.maxRequestSize = 3000*1024^2)
-
 ### HEADER ############ 
 header <- dashboardHeader(title = "RNAseq viewer and report App", 
                           titleWidth = 300, 
@@ -52,6 +51,17 @@ sidebar <- dashboardSidebar(useShinyalert(),
                                         selected = NULL
                                     ) 
                                 )
+                            ),
+                            sidebarMenu(
+                              menuItem( 
+                                pickerInput(
+                                  inputId = "design",
+                                  label = "2. Select design",
+                                  choices = list( "SOCS3_AD vs GFP_AD" = "opt1", "SOCS3_AD vs GFP_WT" = "opt2", "GFP_AD vs GFP_WT" = "opt3"),
+                                  options = list(title = "Design"),
+                                  selected = NULL
+                                ) 
+                              )
                             ),
                             sidebarMenu(
                               menuItem(
@@ -220,7 +230,18 @@ server <- function(input, output, session) {
               colData(datos$dds)@listData %>%
               as.data.frame() %>% mutate_at(vars(-sizeFactor,-replaceable), as.character) %>%
               mutate_at(vars(-sizeFactor,-replaceable), as.factor) %>% as.list()
-        res$sh <- as.data.frame(lfcShrink(datos$dds, coef=2, type="apeglm", res = results(datos$dds)))
+        if(design() == "opt1" ){
+          res$sh <- as.data.frame(lfcShrink(datos$dds, coef="replicates_Astro_SOCS3_AD_vs_Astro_GFP_AD", type="apeglm", 
+                    res = results(datos$dds, contrast=c("replicates","Astro_SOCS3_AD","Astro_GFP_AD")) ))
+        } else if(design() == "opt2" ){
+          res$sh <- as.data.frame(results(datos$dds, contrast=c("replicates","Astro_SOCS3_AD","Astro_GFP_WT")))
+          res$sh <-  res$sh %>% select(-c(stat))
+        } else {
+          res$sh <- as.data.frame(lfcShrink(datos$dds, coef="replicates_Astro_GFP_WT_vs_Astro_GFP_AD", type="apeglm", 
+                    res = results(datos$dds, contrast=c("replicates","Astro_GFP_WT","Astro_GFP_AD")) ))
+        }
+        #res$sh <- as.data.frame(lfcShrink(datos$dds, coef=2, type="apeglm", res = results(datos$dds)))
+        res$sh <- res$sh[!is.na(res$sh$padj),]
         conversion <- geneIdConverter(rownames(res$sh), specie() )
         res$sh$baseMean <- round(res$sh$baseMean,4)
         res$sh$lfcSE <- round(res$sh$lfcSE,4)
@@ -312,6 +333,7 @@ server <- function(input, output, session) {
   typeBarCcAll <- reactive({input$selectccall})
   pca3d <- reactive({input$pca3d})
   boxplotswitch <- reactive({input$boxplotswitch})
+    design <- reactive({input$design})
 
   # InputFile #################
   output$deseqFile <- renderUI({
@@ -1441,12 +1463,13 @@ output$legendChorAll <- renderPlot({
   })
   # GSEA table ##########################
   output$gseaTable <- renderDataTable({
-    validate(need(datos$dds, "Load file to render table"))
+    validate(need(res$sh, "Load file to render table"))
     gsea$gsea <- gseaKegg(res$sh)
     mygsea <- gsea$gsea
     #saveRDS(mygsea, "tmpResources/gsea.Rds")
     table <- mygsea@result[mygsea@result$p.adjust<=0.05 ,2:9] %>% 
       mutate_at(vars(3:7), ~round(., 4))
+
     tituloTabla <- paste0("Table: GSEA pathway | ","log2FC: ",logfc()[1],"_",logfc()[2]," | ","padj: ",padj()," | ",
                           "Num genes Up/down: ",numgenesDE$up,"/",numgenesDE$down)
     customButtons <- list(
@@ -1479,8 +1502,7 @@ output$legendChorAll <- renderPlot({
     validate(need(gsea$gsea, "Load file to render table"))
     gseanr <- gsearow()
     if(is.null(gseanr)){gseanr <- c(1)}
-    enrichplot::gseaplot2(gsea$gsea, geneSetID = gseanr, pvalue_table = TRUE,
-                          ES_geom = "line")
+    enrichplot::gseaplot2(gsea$gsea, geneSetID = gseanr, pvalue_table = TRUE, ES_geom = "line")
   })
   # author name ######################
   author <- reactive({input$author})
