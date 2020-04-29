@@ -29,6 +29,7 @@ library(rgl)
 library(rglwidget)
 library(scales)
 library(stringr)
+library(shinybusy)
 source("utils.R")
 options(shiny.maxRequestSize = 3000*1024^2)
 ### HEADER ############ 
@@ -52,21 +53,8 @@ sidebar <- dashboardSidebar(useShinyalert(),
                                     ) 
                                 )
                             ),
-                            sidebarMenu(
-                              menuItem( 
-                                pickerInput(
-                                  inputId = "design",
-                                  label = "2. Select design",
-                                  choices = list( "SOCS3_AD vs GFP_AD" = "opt1", "SOCS3_AD vs GFP_WT" = "opt2", "GFP_AD vs GFP_WT" = "opt3"),
-                                  options = list(title = "Design"),
-                                  selected = NULL
-                                ) 
-                              )
-                            ),
-                            sidebarMenu(
-                              menuItem(
-                                  uiOutput("deseqFile")
-                                )),
+                            sidebarMenu(menuItem(uiOutput("deseqFile"))),
+                            sidebarMenu(menuItem(uiOutput("design"))),
                             sidebarMenu(id="menupreview",
                               menuItem("App Information",
                                        tabName = "info",
@@ -76,36 +64,33 @@ sidebar <- dashboardSidebar(useShinyalert(),
                                        icon = icon("eye"))
                               ),
                             sidebarMenu("", sidebarMenuOutput("menu")),
-                             sidebarMenu(
-                                menuItem(
-                                  textInput("author", value="your name...", label = h4("Author report name")
-                                  ))),
-                              sidebarMenu( 
-                                menuItem(
-                                  fluidRow(column(12, align = "center", offset=0, uiOutput("report"))))),
-                              sidebarMenu(
-                                menuItem(
-                                  fluidRow(column(12, align = "center", offset=0, uiOutput("pdf")))))
+                             sidebarMenu(menuItem(
+                                  textInput("author", value="your name...",
+                                            label = h4("Author report name")))),
+                              sidebarMenu(menuItem(
+                                  fluidRow(column(12, align = "center",
+                                                  offset=0, uiOutput("report"))))),
+                              sidebarMenu(menuItem(
+                                  fluidRow(column(12, align = "center", offset=0,
+                                                  uiOutput("pdf")))))
                             )
 
 ### BODY ###############
 body <- dashboardBody(
+    add_busy_gif(src="dna-mini.gif", position = "full-page", width = 10, height = 10 ),
      tags$head(
        tags$link(rel = "stylesheet", type = "text/css", href = "customDark.css")
      ),
     setShadow(class = "shiny-plot-output"),
     setShadow( class = "box"),
     setShadow( class = "svg-container"),
-    shiny::tagList(shiny::tags$head(
-        shiny::tags$link(rel = "stylesheet", type = "text/css", href = "busystyle.css"),
-        shiny::tags$script(type = "text/javascript", src = "busy.js")
-    )),
-    div(
-        class = "busy",
-        #h4("Loading data, please be patient..."),
-        img(src = "dna-svg-small-13.gif", style = "width: 150px"),
-        style = "z-index: 99"
-    ), 
+    # shiny::tagList(shiny::tags$head(
+    #     shiny::tags$link(rel = "stylesheet", type = "text/css", href = "busystyle.css"),
+    #     shiny::tags$script(type = "text/javascript", src = "busy.js"))),
+    # div( class = "busy",
+    #     #h4("Loading data, please be patient..."),
+    #     img(src = "dna-svg-small-13.gif", style = "width: 150px"),
+    #     style = "z-index: 99"), 
   bsAlert("alert"),
   tabItems(
     # Initial INFO
@@ -208,39 +193,30 @@ server <- function(input, output, session) {
       datos$dds <- readRDS(input$deseqFile$datapath)
   })
   
+  observeEvent(datos$dds,{
+        validate(need(datos$dds, ""))
+          if(!is(datos$dds, "DESeqDataSet") | !("results" %in% mcols(mcols(datos$dds))$type) ){
+          createAlert(session, "alert", "fileAlert",title = "Oops!!", 
+          content = "File must be a DESeqDataSet class object
+           and you should have run DESeq()", append=FALSE, style = "error")}
+  })
+  
   coloresPCA$colores <- reactive({
         tmp = NULL
       for(i in seq_len(coloresPCA$numNiveles)){
-          tmp <- c(tmp, input[[ coloresPCA$niveles[i] ]] )
-      }
+          tmp <- c(tmp, input[[ coloresPCA$niveles[i] ]] )}
       return(tmp)
   })
 
   # Acciones al cargar fichero deseq ##########################
-  observeEvent(datos$dds, {
-    validate(need(datos$dds, ""))
-      if(!is(datos$dds, "DESeqDataSet") | !("results" %in% mcols(mcols(datos$dds))$type) ){
-          createAlert(session, "alert", "fileAlert",title = "Oops!!", 
-          content = "File must be a DESeqDataSet class object
-           and you should have run DESeq()", append=FALSE, style = "error")
-      }
-      else {
+  observeEvent(design(), {
+    validate(need(design(), ""))
         closeAlert(session, "alert")
-          colData(datos$dds)@listData <-
+        colData(datos$dds)@listData <-
               colData(datos$dds)@listData %>%
               as.data.frame() %>% mutate_at(vars(-sizeFactor,-replaceable), as.character) %>%
               mutate_at(vars(-sizeFactor,-replaceable), as.factor) %>% as.list()
-        if(design() == "opt1" ){
-          res$sh <- as.data.frame(lfcShrink(datos$dds, coef="replicates_Astro_SOCS3_AD_vs_Astro_GFP_AD", type="apeglm", 
-                    res = results(datos$dds, contrast=c("replicates","Astro_SOCS3_AD","Astro_GFP_AD")) ))
-        } else if(design() == "opt2" ){
-          res$sh <- as.data.frame(results(datos$dds, contrast=c("replicates","Astro_SOCS3_AD","Astro_GFP_WT")))
-          res$sh <-  res$sh %>% select(-c(stat))
-        } else {
-          res$sh <- as.data.frame(lfcShrink(datos$dds, coef="replicates_Astro_GFP_WT_vs_Astro_GFP_AD", type="apeglm", 
-                    res = results(datos$dds, contrast=c("replicates","Astro_GFP_WT","Astro_GFP_AD")) ))
-        }
-        #res$sh <- as.data.frame(lfcShrink(datos$dds, coef=2, type="apeglm", res = results(datos$dds)))
+        res$sh <- as.data.frame(lfcShrink(datos$dds, coef=(as.numeric(design())+1), type="apeglm"))
         res$sh <- res$sh[!is.na(res$sh$padj),]
         conversion <- geneIdConverter(rownames(res$sh), specie() )
         res$sh$baseMean <- round(res$sh$baseMean,4)
@@ -259,7 +235,7 @@ server <- function(input, output, session) {
         logfcRange$min <- min(res$sh$log2FoldChange)
         logfcRange$max <- max(res$sh$log2FoldChange)
         closeAlert(session, "fileAlert")
-      }
+
   })
   # Acciones al pulsar el boton enrich #####################
   observeEvent(input$runEnrich, {
@@ -333,9 +309,9 @@ server <- function(input, output, session) {
   typeBarCcAll <- reactive({input$selectccall})
   pca3d <- reactive({input$pca3d})
   boxplotswitch <- reactive({input$boxplotswitch})
-    design <- reactive({input$design})
+    design <- reactive({input$designPicker})
 
-  # InputFile #################
+  # InputFile #########################
   output$deseqFile <- renderUI({
       validate(need(specie(), ""))
       fileInput("deseqFile",
@@ -343,6 +319,19 @@ server <- function(input, output, session) {
           placeholder = "RDS DESeq",
           accept = ".Rds")
   })
+# InputDesign ###########################
+  output$design <- renderUI({
+        validate(need(datos$dds,""))
+          opciones <- as.list(seq_len(length(resultsNames(datos$dds)[-1] )))
+          names(opciones) <- resultsNames(datos$dds)[-1]
+          pickerInput(
+          inputId = "designPicker",
+          label = "Select design",
+          choices = opciones,
+          options = list(title = "Design"),
+          selected = NULL
+        ) 
+          }) 
   # side bar menu ####################
   output$menu <- renderMenu({
       validate(need(kgg$all, ""))
@@ -759,7 +748,7 @@ output$pca3d <- renderRglwidget({
             gene = toupper(gene)
         }
         z <- plotCountsSymbol(dds = datos$dds, gene = gene, returnData = TRUE,
-                              intgroup = variables()[1])
+                              intgroup = variables()[1], org = specie() )
         symbol <- gene
     }
     z <- z %>% group_by(!!as.name(variables()[1])) %>%
@@ -1461,12 +1450,16 @@ output$legendChorAll <- renderPlot({
     gosCC <- go$down[go$down$Ont=="CC",]
     dotPlotGO(gosCC[ccrowsdown,], n = length(ccrowsdown))
   })
-  # GSEA table ##########################
+# GSEA table ##########################
   output$gseaTable <- renderDataTable({
     validate(need(res$sh, "Load file to render table"))
     gsea$gsea <- gseaKegg(res$sh)
     mygsea <- gsea$gsea
-    #saveRDS(mygsea, "tmpResources/gsea.Rds")
+    if( length(which(mygsea@result$p.adjust<=0.05)) == 0 ){
+        createAlert(session, anchorId = "gsea", title = "Oops!!", 
+          content = "Sorry, I didn't get any significant results for this analysis",
+          append=FALSE, style = "info")
+    } else{
     table <- mygsea@result[mygsea@result$p.adjust<=0.05 ,2:9] %>% 
       mutate_at(vars(3:7), ~round(., 4))
 
@@ -1496,13 +1489,21 @@ output$legendChorAll <- renderPlot({
                      list(pageLength = 10, white_space = "normal")
                    )
     )
+    }
   })
   # GSEA plot ##########################
   output$gseaPlot <- renderPlot({
     validate(need(gsea$gsea, "Load file to render table"))
     gseanr <- gsearow()
     if(is.null(gseanr)){gseanr <- c(1)}
-    enrichplot::gseaplot2(gsea$gsea, geneSetID = gseanr, pvalue_table = TRUE, ES_geom = "line")
+    mygsea <- gsea$gsea
+    if( length(which(mygsea@result$p.adjust<=0.05)) == 0 ){
+        createAlert(session, anchorId = "gseaPlot", title = "Oops!!", 
+          content = "Sorry, I didn't get any significant results for this analysis",
+          append=FALSE, style = "info")
+    } else{
+        enrichplot::gseaplot2(gsea$gsea, geneSetID = gseanr, pvalue_table = TRUE, ES_geom = "line")
+        }
   })
   # author name ######################
   author <- reactive({input$author})

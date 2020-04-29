@@ -29,6 +29,7 @@ library(rgl)
 library(rglwidget)
 library(scales)
 library(stringr)
+library(shinybusy)
 source("utils.R")
 options(shiny.maxRequestSize = 3000*1024^2)
 
@@ -53,10 +54,8 @@ sidebar <- dashboardSidebar(useShinyalert(),
                                     ) 
                                 )
                             ),
-                            sidebarMenu(
-                              menuItem(
-                                  uiOutput("deseqFile")
-                                )),
+                            sidebarMenu(menuItem(uiOutput("deseqFile"))),
+                            sidebarMenu(menuItem(uiOutput("design"))),
                             sidebarMenu(id="menupreview",
                               menuItem("App Information",
                                        tabName = "info",
@@ -80,22 +79,21 @@ sidebar <- dashboardSidebar(useShinyalert(),
 
 ### BODY ###############
 body <- dashboardBody(
+      add_busy_gif(src="dna-mini.gif", position = "full-page", width = 10, height = 10 ),
      tags$head(
        tags$link(rel = "stylesheet", type = "text/css", href = "customDark.css")
      ),
     setShadow(class = "shiny-plot-output"),
     setShadow( class = "box"),
     setShadow( class = "svg-container"),
-    shiny::tagList(shiny::tags$head(
-        shiny::tags$link(rel = "stylesheet", type = "text/css", href = "busystyle.css"),
-        shiny::tags$script(type = "text/javascript", src = "busy.js")
-    )),
-    div(
-        class = "busy",
-        #h4("Loading data, please be patient..."),
-        img(src = "dna-svg-small-13.gif", style = "width: 150px"),
-        style = "z-index: 99"
-    ), 
+    # shiny::tagList(shiny::tags$head(
+    #     shiny::tags$link(rel = "stylesheet", type = "text/css", href = "busystyle.css"),
+    #     shiny::tags$script(type = "text/javascript", src = "busy.js"))),
+    # div( class = "busy",
+    #     #h4("Loading data, please be patient..."),
+    #     img(src = "dna-svg-small-13.gif", style = "width: 150px"),
+    #     style = "z-index: 99"
+    # ), 
   bsAlert("alert"),
   tabItems(
     # Initial INFO
@@ -198,6 +196,13 @@ server <- function(input, output, session) {
       datos$dds <- readRDS(input$deseqFile$datapath)
   })
   
+  observeEvent(datos$dds,{
+        validate(need(datos$dds, ""))
+          if(!is(datos$dds, "DESeqDataSet") | !("results" %in% mcols(mcols(datos$dds))$type) ){
+          createAlert(session, "alert", "fileAlert",title = "Oops!!", 
+          content = "File must be a DESeqDataSet class object
+           and you should have run DESeq()", append=FALSE, style = "error")}
+  })
   coloresPCA$colores <- reactive({
         tmp = NULL
       for(i in seq_len(coloresPCA$numNiveles)){
@@ -207,20 +212,15 @@ server <- function(input, output, session) {
   })
 
   # Acciones al cargar fichero deseq ##########################
-  observeEvent(datos$dds, {
-    validate(need(datos$dds, ""))
-      if(!is(datos$dds, "DESeqDataSet") | !("results" %in% mcols(mcols(datos$dds))$type) ){
-          createAlert(session, "alert", "fileAlert",title = "Oops!!", 
-          content = "File must be a DESeqDataSet class object
-           and you should have run DESeq()", append=FALSE, style = "error")
-      }
-      else {
+  observeEvent(design(), {
+    validate(need(design(), ""))
         closeAlert(session, "alert")
           colData(datos$dds)@listData <-
               colData(datos$dds)@listData %>%
               as.data.frame() %>% mutate_at(vars(-sizeFactor,-replaceable), as.character) %>%
               mutate_at(vars(-sizeFactor,-replaceable), as.factor) %>% as.list()
-        res$sh <- as.data.frame(lfcShrink(datos$dds, coef=2, type="apeglm", res = results(datos$dds)))
+        res$sh <- as.data.frame(lfcShrink(datos$dds, coef=(as.numeric(design())+1), type="apeglm"))
+        res$sh <- res$sh[!is.na(res$sh$padj),]
         conversion <- geneIdConverter(rownames(res$sh), specie() )
         res$sh$baseMean <- round(res$sh$baseMean,4)
         res$sh$lfcSE <- round(res$sh$lfcSE,4)
@@ -238,7 +238,7 @@ server <- function(input, output, session) {
         logfcRange$min <- min(res$sh$log2FoldChange)
         logfcRange$max <- max(res$sh$log2FoldChange)
         closeAlert(session, "fileAlert")
-      }
+      
   })
   # Acciones al pulsar el boton enrich #####################
   observeEvent(input$runEnrich, {
@@ -312,7 +312,7 @@ server <- function(input, output, session) {
   typeBarCcAll <- reactive({input$selectccall})
   pca3d <- reactive({input$pca3d})
   boxplotswitch <- reactive({input$boxplotswitch})
-
+  design <- reactive({input$designPicker})
   # InputFile #################
   output$deseqFile <- renderUI({
       validate(need(specie(), ""))
@@ -321,6 +321,19 @@ server <- function(input, output, session) {
           placeholder = "RDS DESeq",
           accept = ".Rds")
   })
+  # InputDesign ###########################
+  output$design <- renderUI({
+        validate(need(datos$dds,""))
+          opciones <- as.list(seq_len(length(resultsNames(datos$dds)[-1] )))
+          names(opciones) <- resultsNames(datos$dds)[-1]
+          pickerInput(
+          inputId = "designPicker",
+          label = "Select design",
+          choices = opciones,
+          options = list(title = "Design"),
+          selected = NULL
+        ) 
+          })
   # side bar menu ####################
   output$menu <- renderMenu({
       validate(need(kgg$all, ""))
@@ -737,7 +750,7 @@ output$pca3d <- renderRglwidget({
             gene = toupper(gene)
         }
         z <- plotCountsSymbol(dds = datos$dds, gene = gene, returnData = TRUE,
-                              intgroup = variables()[1])
+                              intgroup = variables()[1], specie=specie())
         symbol <- gene
     }
     z <- z %>% group_by(!!as.name(variables()[1])) %>%

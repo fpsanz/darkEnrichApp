@@ -30,6 +30,7 @@ fluidPage(
                  solidHeader = FALSE,
                  status = "primary",
                  width = NULL,
+                 bsAlert("gsea"),
                  DTOutput("gseaTable")
                  )
         )
@@ -53,6 +54,7 @@ fluidPage(
                   solidHeader = FALSE,
                   status = "primary",
                   width = NULL,
+                  bsAlert("gseaPlot"),
                   plotOutput("gseaPlot")
               )
       )

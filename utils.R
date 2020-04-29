@@ -1825,7 +1825,7 @@ cluster <- function(vsd, intgroup = "condition")
 
 plotCountsSymbol <- function (dds, gene, intgroup = "condition", normalized = TRUE,
                               transform = TRUE, main, xlab = "group", returnData = FALSE,
-                              replaced = FALSE, pc, ...){
+                              replaced = FALSE, pc, specie, ...){
   stopifnot(length(gene) == 1 & (is.character(gene) | (is.numeric(gene) &
                                                          (gene >= 1 & gene <= nrow(dds)))))
   if (!all(intgroup %in% names(colData(dds))))
@@ -1843,6 +1843,14 @@ plotCountsSymbol <- function (dds, gene, intgroup = "condition", normalized = TR
   if (is.null(sizeFactors(dds)) & is.null(normalizationFactors(dds))) {
     dds <- estimateSizeFactors(dds)
   }
+  if(specie=="Mm"){
+      ensdb <- EnsDb.Mmusculus.v79
+      orgdb <- org.Mm.eg.db
+  }
+    else{
+        ensdb <- EnsDb.Hsapiens.v86
+        orgdb <- org.Hs.eg.db
+    }
   geneE <- mapIds(orgdb, keys = gene, column = "ENSEMBL", keytype = "SYMBOL")
   cnts <- counts(dds, normalized = normalized, replaced = replaced)[geneE,]
   intgroup <- intgroup[1]
