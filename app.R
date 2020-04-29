@@ -1454,12 +1454,17 @@ output$legendChorAll <- renderPlot({
   })
   # GSEA table ##########################
   output$gseaTable <- renderDataTable({
-    validate(need(datos$dds, "Load file to render table"))
+    validate(need(res$sh, "Load file to render table"))
     gsea$gsea <- gseaKegg(res$sh)
     mygsea <- gsea$gsea
-    #saveRDS(mygsea, "tmpResources/gsea.Rds")
+    if( length(which(mygsea@result$p.adjust<=0.05)) == 0 ){
+        createAlert(session, anchorId = "gsea", title = "Oops!!", 
+          content = "Sorry, I didn't get any significant results for this analysis",
+          append=FALSE, style = "info")
+    } else{
     table <- mygsea@result[mygsea@result$p.adjust<=0.05 ,2:9] %>% 
       mutate_at(vars(3:7), ~round(., 4))
+
     tituloTabla <- paste0("Table: GSEA pathway | ","log2FC: ",logfc()[1],"_",logfc()[2]," | ","padj: ",padj()," | ",
                           "Num genes Up/down: ",numgenesDE$up,"/",numgenesDE$down)
     customButtons <- list(
@@ -1486,14 +1491,21 @@ output$legendChorAll <- renderPlot({
                      list(pageLength = 10, white_space = "normal")
                    )
     )
+    }
   })
   # GSEA plot ##########################
   output$gseaPlot <- renderPlot({
     validate(need(gsea$gsea, "Load file to render table"))
     gseanr <- gsearow()
     if(is.null(gseanr)){gseanr <- c(1)}
-    enrichplot::gseaplot2(gsea$gsea, geneSetID = gseanr, pvalue_table = TRUE,
-                          ES_geom = "line")
+    mygsea <- gsea$gsea
+    if( length(which(mygsea@result$p.adjust<=0.05)) == 0 ){
+        createAlert(session, anchorId = "gseaPlot", title = "Oops!!", 
+          content = "Sorry, I didn't get any significant results for this analysis",
+          append=FALSE, style = "info")
+    } else{
+        enrichplot::gseaplot2(gsea$gsea, geneSetID = gseanr, pvalue_table = TRUE, ES_geom = "line")
+        }
   })
   # author name ######################
   author <- reactive({input$author})
