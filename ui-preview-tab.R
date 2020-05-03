@@ -265,7 +265,25 @@ fluidPage(
                                             ),
                                             column(width = 9,
                                                    plotlyOutput("top1", height = "800px"))
-                                          )))
+                                          ))),
+                                 tabPanel(title = "KaryoPlot",
+                                          circleButton(
+                                            inputId = "karyoInfo",
+                                            icon = icon("info"),
+                                            size = "xs",
+                                            status = "primary"
+                                          ),
+                                          bsTooltip(
+                                            "karyoInfo",
+                                            paste0("Pon lo que te salga del ornotorrinco "),
+                                            trigger = "hover",
+                                            placement = "right"
+                                          ),
+                                          tagList(
+                                            fluidRow(
+                                              column(width=10, offset=1,
+                                                     plotOutput("karyoPlot", height = "800px") )))
+                                          )
                                  )
                              )
                       ), 

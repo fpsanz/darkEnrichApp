@@ -226,7 +226,7 @@ server <- function(input, output, session) {
         res$sh$lfcSE <- round(res$sh$lfcSE,4)
         res$sh$log2FoldChange <- round(res$sh$log2FoldChange,4)
         res$sh <- cbind(`Description`=conversion$description, res$sh)
-        res$sh <- cbind(`GeneName_Symbol`=conversion$consensus, res$sh)
+          res$sh <- cbind(`GeneName_Symbol`=conversion$consensus, res$sh)
         res$sh <-  res$sh %>% select(-c(pvalue))
         if(specie() == "Mm" ){spc = "Mus_musculus"}
         else {spc = "Homo_sapiens"}
@@ -770,6 +770,12 @@ output$pca3d <- renderRglwidget({
     })
     p %>% ggplotly(tooltip = c("x","y","text"))
   })
+## karyoplot ######################################
+output$karyoPlot <- renderPlot({
+    validate(need(res$sh, "Load file to render plot"))
+    krtp(res$sh, specie = specie(), pval = padj(), fcdown = logfc()[1],
+         fcup = logfc()[2], bg="#46505a", coldown="#4ADBFF" , colup="#f7665c")
+})
 
  # Boxviolin plot #################################
   output$boxviolin <- renderPlotly({

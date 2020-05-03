@@ -1883,6 +1883,7 @@ plotCountsSymbol <- function (dds, gene, intgroup = "condition", normalized = TR
   #text(data$group + runif(ncol(dds), -0.05, 0.05), data$count, labels=colnames(dds))
 }
 
+
 # Boxplot Violin plot ###########################
 boxViolin <- function(datos=NULL, vsd=NULL, names=NULL, boxplotswitch=NULL,
                       intgroup=NULL, customColor = NULL){
@@ -1930,3 +1931,259 @@ choices_brewer2 <- list(
   as.list(rev(brewer_pal(palette = "Purples")(9))),
   as.list(rev(brewer_pal(palette = "Greys")(9)))
 )
+
+
+## karyoplotter ########################
+customkaryploter <- function(genome = "mm10", plot.type = 1, ideogram.plotter = kpAddCytobands, labels.plotter = kpAddChromosomeNames, chromosomes = "auto", zoom = NULL, cytobands = NULL, plot.params = NULL, use.cache = TRUE, main = NULL, bg="white" ){
+  require("karyoploteR")
+    if (is.null(genome)) 
+        stop("genome cannot be NULL.")
+    if (!is.null(cytobands)) {
+        cytobands <- tryCatch(toGRanges(cytobands), error = function(e) {
+        })
+        if (!methods::is(cytobands, "GRanges")) 
+            stop("'cytobands' must be NULL, a GRanges or something accepted by regioneR::toGRanges")
+    }
+    if (!is.null(zoom)) {
+        zoom <- regioneR::toGRanges(zoom)
+        if (!methods::is(zoom, "GRanges")) 
+            stop("'zoom' must be NULL or a GRanges object")
+        if (length(zoom) > 1) {
+            warning("The zoom parameter has more than one region. Only the first one will be used.")
+            zoom <- zoom[1]
+        }
+    }
+    if (is.null(plot.params)) {
+        plot.params <- getDefaultPlotParams(plot.type)
+    }
+    gr.genome <- NULL
+    genome.name <- NULL
+    if (methods::is(genome, "GRanges")) {
+        gr.genome <- genome
+    } else {
+        if (methods::is(genome, "BSgenome")) {
+            genome <- seqinfo(genome)
+        }
+        if (methods::is(genome, "Seqinfo")) {
+            gr.genome <- as(genome, "GRanges")
+            genome.name <- genome(genome)[1]
+        }
+        else {
+            if (methods::is(genome, "character") & use.cache == 
+                TRUE) {
+                if (genome %in% names(karyoploteR:::data.cache[["genomes"]])) {
+                    gr.genome <- karyoploteR:::data.cache[["genomes"]][[genome]]
+                    genome.name <- genome
+                }
+            }
+        }
+    }
+    if (is.null(gr.genome)) {
+        gr.genome <- tryCatch(regioneR::getGenomeAndMask(genome = genome, 
+            mask = NA)$genome, error = function(e) {
+            stop("It was not possible to identify or load the requested genome. ", 
+                e)
+        })
+    }
+    chr.names <- as.character(GenomeInfoDb::seqnames(gr.genome))
+    if (any(duplicated(chr.names))) {
+        stop(paste0("There are duplicate chromosome names in the genome. Chromosome names must be unique. Chromosome names are: ", 
+            paste0(chr.names, collapse = ", ")))
+    }
+    names(gr.genome) <- chr.names
+    if (!is.null(zoom)) {
+        if (!IRanges::overlapsAny(zoom, gr.genome)) {
+            stop("You are trying to set the zoom to a region not part of the current genome.")
+        }
+        else {
+            chromosomes <- as.character(GenomeInfoDb::seqnames(zoom))
+        }
+    }
+    if (!is.null(chromosomes) && any(chromosomes != "all")) {
+        if (length(chromosomes) == 1 && (chromosomes %in% c("canonical", 
+            "autosomal", "auto"))) {
+            if (!is.null(genome.name) && is.character(genome.name)) {
+                if (chromosomes == "auto") 
+                    chromosomes <- "canonical"
+                tryCatch(expr = {
+                    gr.genome <- filterChromosomes(gr.genome, 
+                        organism = genome.name, chr.type = chromosomes)
+                }, error = function(e) {
+                    message("WARNING: There was an error when filtering the chromosomes and selecting only ", 
+                        chromosomes, " chromosomes.  Falling back to using the unfiltered genome. \n", 
+                        e)
+                })
+            }
+            else {
+                if (chromosomes != "auto") {
+                    message("NOTE: It is only possible to filter chromosomes using named ", 
+                        "chromosome classes (i.e. 'canonical', 'autosomal') when the genome ", 
+                        "is specified by name (i.e. 'hg19', 'mm10'). Please, either ", 
+                        "use a genome specified by name or explicitly select the ", 
+                        "chromosomes to plot (i.e. chromosomes=c('chr1', 'chr2') ). ", 
+                        " Falling back to using the unfiltered genome.")
+                }
+            }
+        }
+        else {
+            if (!all(chromosomes %in% as.character(seqnames(gr.genome)))) {
+                message("NOTE: Not all requested chromosomes are part of the genome. Trying to filter as requested. ", 
+                    "   * Requested Chromosomes: ", paste0(chromosomes, 
+                        collapse = ", "), "   * Chromosomes in the genome: ", 
+                    paste0(as.character(seqnames(gr.genome)), 
+                        collapse = ", "))
+            }
+            tryCatch(expr = {
+                gr.genome <- filterChromosomes(gr.genome, keep.chr = chromosomes)[chromosomes]
+            }, error = function(e) {
+                message("WARNING: There was an error when filtering the chromosomes. Falling back to using the unfiltered genome. \n", 
+                    e)
+            })
+        }
+    }
+    if (length(gr.genome) == 0) {
+        stop("The genome has no chromosomes left after filtering. Cannot plot with no chromosomes.")
+    }
+    if (is.null(cytobands)) {
+        if (!is.null(genome.name) && all(is.character(genome.name))) {
+            cytobands <- getCytobands(genome.name)
+        }
+        else {
+            if (all(is.character(genome))) {
+                cytobands <- getCytobands(genome)
+            }
+        }
+        if (!is.null(cytobands) && length(cytobands) > 0) {
+            cytobands <- GenomeInfoDb::keepSeqlevels(cytobands, 
+                value = GenomeInfoDb::seqlevels(gr.genome), 
+                pruning.mode = "coarse")
+        }
+    }
+    kp <- list()
+    class(kp) <- "KaryoPlot"
+    kp$plot.params <- plot.params
+    if (!is.null(genome.name)) {
+        kp$genome.name <- genome.name
+    } else {
+        kp$genome.name <- "custom"
+    }
+    kp$chromosomes <- as.character(GenomeInfoDb::seqlevels(gr.genome))
+    kp$chromosome.lengths <- stats::setNames(end(gr.genome), 
+        seqnames(gr.genome))
+    kp$genome <- gr.genome
+    kp$cytobands <- cytobands
+    kp$plot.type <- plot.type
+    if (is.null(zoom)) {
+        kp$plot.region <- kp$genome
+        kp$zoom <- FALSE
+    } else {
+        kp$plot.region <- zoom
+        names(kp$plot.region) <- as.character(seqnames(kp$plot.region))
+        kp$zoom <- TRUE
+    }
+    coordChangeFunctions <- karyoploteR:::getCoordChangeFunctions(karyoplot = kp)
+    kp$coord.change.function <- coordChangeFunctions$coordChangeFunction
+    kp$ideogram.mid <- coordChangeFunctions$ideogramMid
+    kp$chromosome.height <- coordChangeFunctions$chr.height
+    kp$graphical.par <- list()
+    kp$graphical.par$old.par <- graphics::par(no.readonly = TRUE)
+    graphics::par(mar = c(0, 0, 0, 0) + 0.1)
+    graphics::par(bg=bg)
+    graphics::par(col = "white")
+    kp$beginKpPlot <- function() {
+        graphics::par(kp$graphical.par$new.par)
+    }
+    kp$endKpPlot <- function() {
+        graphics::par(kp$graphical.par$old.par)
+    }
+    on.exit(kp$endKpPlot())
+    pp <- plot.params
+    if (plot.type %in% c(1, 2, 6)) {
+        xlim <- c(0, 1)
+        ylim <- c(0, pp$bottommargin + length(gr.genome) * kp$chromosome.height + 
+            pp$topmargin)
+    } else {
+        if (plot.type %in% c(3, 4, 5, 7)) {
+            xlim <- c(0, 1)
+            ylim <- c(0, pp$bottommargin + kp$chromosome.height + 
+                pp$topmargin)
+        }
+    }
+    graphics::plot(0, type = "n", xlim = xlim, ylim = ylim, 
+        axes = FALSE, ylab = "", xlab = "", xaxs = "i", yaxs = "i")
+    kp$plot <- list()
+    p <- graphics::par("usr")
+    kp$plot$xmin <- p[1]
+    kp$plot$xmax <- p[2]
+    kp$plot$ymin <- p[3]
+    kp$plot$ymax <- p[4]
+    kp$graphical.par$new.par <- graphics::par(no.readonly = TRUE)
+    if (!is.null(ideogram.plotter)) {
+        kpAddCytobands(kp, color.table = )
+    }
+    if (!is.null(labels.plotter)) {
+        kpAddChromosomeNames(kp, col="white")
+    }
+    if (!is.null(main)) {
+        kpAddMainTitle(kp, main)
+    }
+    return(kp)
+}
+  
+  
+krtp <- function(res, specie="Mm", pval, fcdown, 
+                 fcup, bg="white", coldown="87BEEC", colup="DC143C"){
+  require(karyoploteR)
+  fileAnnot <- paste0("./resources/",specie,"/cytoband/",specie,"_annot.Rds")
+  annot <- readRDS(fileAnnot)
+  res2 <- res[ res$padj <pval & (res$log2FoldChange<(fcdown) | res$log2FoldChange>fcup),]
+  res3 <- as.data.frame(res2)
+  res3$genes <- rownames(res3)
+  genes <- left_join(annot, res3, by = c("V1"="genes"))
+  sig <- which( !is.na(genes$padj) )
+  genes <- genes[sig,]
+  A <- data.frame(chr = paste0("chr",genes$V2), start = genes$V3,
+                  end=genes$V4, x = genes$V1, y = genes$log2FoldChange)
+  genesSig <- toGRanges(A)
+  one <- getDefaultPlotParams(2)
+  one$ideogramheight <- 300
+  one$data2height <- 300
+  dfRanges <- readRDS(paste0("./resources/",specie,"/cytoband/",specie,"_genomicRanges.Rds") )
+  dfIdeoBanda <- readRDS(paste0("./resources/",specie,"/cytoband/",specie,"_cytoBand.Rds"))
+  kp <- customkaryploter(genome = dfRanges, cytobands = dfIdeoBanda,
+                         plot.params = one, plot.type = 2, bg=bg, use.cache = FALSE) %>%
+  kpPlotRegions(genesSig[genesSig$y>0,], col = colup, data.panel = 1)  %>%
+      kpPlotRegions(genesSig[genesSig$y<0,], col = coldown, data.panel = 2)
+  #return(kp)
+}
+
+## funcion para generar datos para ideograma para una especie concreta #############
+
+cytoBandCreate <- function(specie = "Mm"){
+  library(dplyr)
+  #para ideobandas
+  specieUCSC <- switch(specie, Hs = "hg38", Mm = "mm10", Rn = "rn6",
+                       Ss = "susScr11", Bt = "bosTau9", Mmu = "rheMac10",
+                       Dr = "danRer11")
+  ruta <- paste0("https://api.genome.ucsc.edu/getData/track?genome=",
+                specieUCSC,
+                ";track=cytoBandIdeo")
+  dat <- curl::curl(url = ruta)
+  open(dat)
+  out <- readLines(dat)
+  datos <- jsonlite::prettify(out)
+  dfIdeoBand <- jsonlite::fromJSON(datos)
+  dfIdeoBanda <- as.data.frame.list(dfIdeoBand$cytoBandIdeo[[1]])
+  dfIdeoBandaLimpio <- dfIdeoBanda %>% dplyr::select(-c(4, 5)) %>%
+    group_by(chrom) %>%
+    summarise(min = min(chromStart), max = max(chromEnd)) %>%
+    dplyr::filter(!grepl("_", chrom)) %>% mutate(chrom = sub("chr", "", chrom))
+  dfIdeoSort <- dfIdeoBandaLimpio[gtools::mixedorder(dfIdeoBandaLimpio$chrom), ] %>%
+    mutate(chrom = paste0("chr", chrom)) %>% as.data.frame()
+  dfRanges <- regioneR::toGRanges(dfIdeoSort)
+  saveRDS(dfRanges, paste0("./resources/",specie,"/cytoband/",specie,"_genomicRanges.Rds"))
+  saveRDS(dfIdeoBanda, paste0("./resources/",specie,"/cytoband/",specie,"_cytoBand.Rds"))
+  # la anotacion aún no está arreglada, de momento por bash
+  # curl -L ftp://ftp.ensembl.org/pub/release-100/gff3/homo_sapiens/Homo_sapiens.GRCh38.100.chr.gff3.gz >mm10.gtf.gz
+  # zcat mm10.gtf.gz | awk '$3=="gene"{print $1,$4,$5,$9}' | awk 'BEGIN{OFS="\t"}{split($4,a,";");print a[1],$1,$2,$3}' | sed 's/ID=gene://g' >Mm_annot.txt
+}
