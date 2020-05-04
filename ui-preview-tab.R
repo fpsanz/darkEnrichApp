@@ -208,21 +208,23 @@ fluidPage(
                                             trigger = "hover",
                                             placement = "right"
                                           ),
-                                          tagList(fluidRow(
+                                          #tagList(
+                                            fluidRow(
                                             column(
                                               width = 3,
                                               sliderInput(
                                                 "numheatmap",
                                                 label = "Select number of genes",
                                                 min = 5,
-                                                max = 40,
+                                                max = 120,
                                                 value = 20,
                                                 step = 1
                                               )
                                             ),
                                             column(width = 9,
                                                    plotOutput("heat", height = "800px"))
-                                          ))),
+                                          )#)
+                                          ),
                                  tabPanel(
                                       title = "Cluster",
                                       plotOutput("cluster", width = "100%", height = "800px")

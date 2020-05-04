@@ -859,7 +859,7 @@ output$legendChorAll <- renderPlot({
     dotPlotkegg(kgg$all[rowsAll,], n = length(rowsAll))
   })
   # KEGG heatmap All #################
-  output$heatmapKeggAll <- renderPlot({
+  output$heatmapKeggAll <- renderPlotly({
     validate(need(kgg$all, "Load file and select to render Heatmap"))
     validate(need(rowsAll(), "Select the paths of interest to render HeatMap"))
     validate(need(kggDT$all, ""))

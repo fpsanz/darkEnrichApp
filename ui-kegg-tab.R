@@ -93,7 +93,7 @@ fluidPage(
                                  plotOutput("keggDotAll")
                                  ), # dotplot
                         tabPanel(title = "Heatmap",
-                                 plotOutput("heatmapKeggAll")
+                                 plotlyOutput("heatmapKeggAll", height = "600px")
                                  ), # heatmap
                         tabPanel(title = "Netplot",
                                  plotOutput("cnetKeggAll")
@@ -179,7 +179,7 @@ fluidPage(
                                  plotOutput("keggDotUp")
                                  ), # dotplot
                         tabPanel(title = "Heatmap",
-                                 plotOutput("heatmapKeggUp")
+                                 plotOutput("heatmapKeggUp", height = "600px")
                                  ), # heatmap
                         tabPanel(title = "Netplot",
                                  plotOutput("cnetKeggUp")
@@ -265,7 +265,7 @@ fluidPage(
                                  plotOutput("keggDotDown")
                                  ), # dotplot
                         tabPanel(title = "Heatmap",
-                                 plotOutput("heatmapKeggDown")
+                                 plotOutput("heatmapKeggDown", height = "600px")
                                  ), # heatmap
                         tabPanel(title = "Netplot",
                                  plotOutput("cnetKeggDown")

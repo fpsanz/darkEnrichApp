@@ -1190,9 +1190,10 @@ dotPlotkegg <- function(data, n = 20){
   data$Pathway <- factor(data$Pathway, levels = data$Pathway)
   p <- ggplot(data, aes(y=Pathway, x=ratio, color=`p-val`))+
     geom_point(aes(size=DEG)  )+
+    scale_radius()+
     theme_bw()+
     labs(x = "ratio (DEG/N)") +
-    scale_color_continuous(low = "red", high = "blue", 
+    scale_color_continuous(low = "red", high = "blue",
                            guide = guide_colorbar(reverse = TRUE))+
     theme(text = element_text(size=20))
   return(p)
@@ -1208,6 +1209,7 @@ dotPlotGO <- function(data, n = 20){
   data$Term <- factor(data$Term, levels = data$Term)
   p <- ggplot(data, aes(y=Term, x=ratio, color=`p-val`))+
     geom_point(aes(size=DEG), stat="identity")+
+    scale_radius()+
     theme_bw()+
     labs(x = "ratio (DEG/N)") +
     scale_color_continuous(low = "red", high = "blue", 
@@ -1221,25 +1223,27 @@ heatmapKegg <- function(kdt, nr){
   kdt <- kdt[nr, ]
   colourCount <- length(unique(kdt$DEG)) # number of levels
   getPalette <- colorRampPalette(RColorBrewer::brewer.pal(9, "YlOrRd"))
-  kdt %>% dplyr::select(Pathway, genes, DEG) %>% 
+  kdt <- kdt %>% dplyr::select(Pathway, genes, DEG) %>% 
     separate_rows(genes) %>%
     mutate(Pathway = fct_inorder(Pathway)) %>% 
     mutate(Pathway = fct_rev(Pathway)) %>% 
     mutate(genes = fct_infreq(genes)) %>% 
-    mutate(DEG = factor(DEG)) %>% 
-    ggplot(aes_(~genes, ~Pathway)) + 
+    mutate(DEG = factor(DEG))
+    yNum <- length(unique(kdt$Pathway))
+    if(yNum <=35){ySize=12}else if(yNum>35 | yNum <=50){ySize=10}else{ySize=0}
+    xNum <- length(unique(kdt$genes))
+    if(xNum <=60){xSize=8}else if(xNum>60 | yNum <=80){xSize=7}else{xSize=0}
+    kdt %>% ggplot(aes_(~genes, ~Pathway)) + 
     geom_tile(aes_(fill = ~DEG), color = 'black', size =0.2) +
     xlab(NULL) + ylab(NULL) +
     theme_minimal() +
     theme(panel.grid.major = element_line(colour = "gray88", size = 0.8),
-          axis.text.x=element_text(angle = 90, hjust = 1, vjust = 0.5, size=10))+
+          axis.text.x=element_text(angle = 90, hjust = 1, vjust = 0.5, size=xSize))+
     # scale_fill_continuous(low="blue", high="red", name = "N")
     # scale_fill_brewer(palette = "YlOrRd")
     scale_fill_manual(values = getPalette(colourCount))+
-    theme(text = element_text(size=16, angle=0), plot.margin = unit(c(15,25,15,15), "pt"))
-  
+    theme(text = element_text(size=ySize, angle=0), plot.margin = unit(c(15,25,15,15), "pt"))
 }
-
 # Función para crear dataset para hacer GSEA pathway ##################
 buildKeggDataset <- function(specie="Mm"){
   require("dplyr")
@@ -1753,8 +1757,8 @@ VST <- function (object, blind = TRUE, nsub = 1000, fitType = "parametric")
 
 # Heatmap #############
 
-    heat <- function (vsd, n = 40, intgroup = "condition", sampleName = "condition",
-                      specie="Mm", customColor = NULL) 
+heat <- function (vsd, n = 40, intgroup = "AAV", sampleName = "condition",
+                      specie="Mm", customColor = c("red","blue")) 
     {
       require("EnsDb.Mmusculus.v79")
       require("org.Mm.eg.db")
@@ -1787,9 +1791,12 @@ VST <- function (object, blind = TRUE, nsub = 1000, fitType = "parametric")
     
     annot <- NULL
     annot$ENSEMBL <- rownames(mat)
-    annot$SYMBOL <-  mapIds(ensdb, keys=rownames(mat), column="SYMBOL",keytype="GENEID")
-    annot$SYMBOL1 <- mapIds(orgdb, keys = rownames(mat), column = 'SYMBOL', keytype = 'ENSEMBL', multiVals = 'first') 
-    annot$description <- mapIds(orgdb, keys = rownames(mat), column = 'GENENAME', keytype = 'ENSEMBL', multiVals = 'first')
+    annot$SYMBOL <-  mapIds(ensdb, keys=rownames(mat),
+                            column="SYMBOL",keytype="GENEID")
+    annot$SYMBOL1 <- mapIds(orgdb, keys = rownames(mat),
+                            column = 'SYMBOL', keytype = 'ENSEMBL', multiVals = 'first') 
+    annot$description <- mapIds(orgdb, keys = rownames(mat),
+                                column = 'GENENAME', keytype = 'ENSEMBL', multiVals = 'first')
     annot <- as.data.frame(annot)
     consensus <- data.frame('Symbol'= ifelse(!is.na(annot$SYMBOL), as.vector(annot$SYMBOL),
                                              ifelse(!is.na(annot$SYMBOL1),as.vector(annot$SYMBOL1),
@@ -1797,14 +1804,20 @@ VST <- function (object, blind = TRUE, nsub = 1000, fitType = "parametric")
     ann_colors<-list()
     ann_colors[[intgroup[1]]] <- customColor
     names(ann_colors[[intgroup[1]]]) <- c(levels(df[[intgroup[1]]]))
+    sizesDf <- data.frame( ch = c(rep(14,20), rep(12,20),rep(10,10), 
+                                  rep(8,10), rep(7,10), rep(6,10), rep(5,20), rep(4,20)), 
+                           fsr = c(rep(10,50), rep(8,10), rep(7,10), rep(6,10), rep(0.1, 40) ))
+    ch <- sizesDf$ch[ nrow(mat) ]
+    fsr <- sizesDf$fsr[ nrow(mat) ]
     pheatmap(mat, cluster_rows=TRUE, cluster_cols=TRUE,
              show_colnames=TRUE, show_rownames = TRUE, annotation_col = df,
              labels_col = as.character(vsd[[sampleName]]),
              labels_row = as.character(consensus$Symbol),
-             cellwidth = 18, cellheight = 14, annotation_colors = ann_colors,
+             cellwidth = 14, cellheight = ch,
+             fontsize_row = fsr,
+             annotation_colors = ann_colors,
              main = "Heatmap top variant genes on normalized data")
     }
-    
 
 # cluster #############
 
