@@ -227,7 +227,7 @@ server <- function(input, output, session) {
         res$sh$log2FoldChange <- round(res$sh$log2FoldChange,4)
         res$sh <- cbind(`Description`=conversion$description, res$sh)
           res$sh <- cbind(`GeneName_Symbol`=conversion$consensus, res$sh)
-        res$sh <-  res$sh %>% select(-c(pvalue))
+        res$sh <-  res$sh %>% dplyr::select(-c(pvalue))
         if(specie() == "Mm" ){spc = "Mus_musculus"}
         else {spc = "Homo_sapiens"}
         links = paste0("<a href='http://www.ensembl.org/",spc,"/Gene/Summary?db=core;g=",
@@ -358,7 +358,7 @@ server <- function(input, output, session) {
     validate(need(datos$dds, ""))
     nvars <- colData(datos$dds) %>% 
       as.data.frame() %>% 
-      select(-c(sizeFactor,replaceable)) %>% 
+      dplyr::select(-c(sizeFactor,replaceable)) %>% 
       names()
     selectInput("variables", label="Select condition[s] of interest to highlight",
                 choices = nvars,
@@ -370,7 +370,7 @@ server <- function(input, output, session) {
     validate(need(datos$dds, ""))
     nvars <- colData(datos$dds) %>% 
       as.data.frame() %>% 
-      select(-c(sizeFactor,replaceable)) %>% 
+      dplyr::select(-c(sizeFactor,replaceable)) %>% 
       names()
     selectInput("samplename", label="Select column to use for sample name",
                 choices = nvars,
@@ -541,7 +541,7 @@ server <- function(input, output, session) {
   # preview samples ###################
   output$samples <- DT::renderDataTable(server = TRUE,{
     validate(need(datos$dds, "Load file to render table"))
-    metadata <- as.data.frame(colData(datos$dds)) %>% select(-c(sizeFactor,replaceable))
+    metadata <- as.data.frame(colData(datos$dds)) %>% dplyr::select(-c(sizeFactor,replaceable))
     tituloTabla <- paste0("Table: ColData | ","log2FC: ",logfc()[1],"_",logfc()[2]," | ","padj: ",padj()," | ",
                           "Num genes Up/down: ",numgenesDE$up,"/",numgenesDE$down)
     customButtons <- list(
@@ -1461,7 +1461,7 @@ output$legendChorAll <- renderPlot({
   # GSEA table ##########################
   output$gseaTable <- renderDataTable({
     validate(need(res$sh, "Load file to render table"))
-    gsea$gsea <- gseaKegg(res$sh)
+    gsea$gsea <- gseaKegg(res$sh, specie() )
     mygsea <- gsea$gsea
     if( length(which(mygsea@result$p.adjust<=0.05)) == 0 ){
         createAlert(session, anchorId = "gsea", title = "Oops!!", 

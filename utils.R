@@ -230,7 +230,7 @@ customCnetGo <- function(gos, category=NULL, nTerm=NULL, byDE=FALSE, ont="BP"){
 
 # Función para hacer enrich GO ################
 customGO <- function(data, universe = NULL, species = "Hs", prior.prob = NULL,
-    covariate = NULL, plot = FALSE, coef = 1, FDR = 0.05, golevelFile="resources/GOlevel.Rds") {
+    covariate = NULL, plot = FALSE, coef = 1, FDR = 0.05, golevelFile) {
     if (!is.data.frame(data)) {
         stop("de should be a data.frame with firt column as symbol
         Id and second column as entrez Id.")
@@ -239,6 +239,7 @@ customGO <- function(data, universe = NULL, species = "Hs", prior.prob = NULL,
         stop("de should be a data.frame with firt column as symbol
         Id and second column as entrez Id.")
     }
+    golevelFile <- paste0("./resources/",species,"/GO/GOlevels.Rds")
     names(data) <- c("SYMBOL","ENTREZID")
     de <- data
     de <- as.character(de$ENTREZID)
@@ -257,7 +258,7 @@ customGO <- function(data, universe = NULL, species = "Hs", prior.prob = NULL,
     if (is.null(universe)) {
         #GeneID.PathID <- AnnotationDbi::toTable(egGO2ALLEGS)[, c("gene_id",
          #  "go_id", "Ontology")]
-        file1 <- paste0("resources/",species,"GOlinks.Rds")
+        file1 <- paste0("./resources/",species,"/GO/GOlinks.Rds")
         GeneID.PathID <- readRDS(file1)
         i <- !duplicated(GeneID.PathID[, c("gene_id", "go_id")])
         GeneID.PathID <- GeneID.PathID[i, ]
@@ -418,7 +419,7 @@ customKegg <- function(data, universe = NULL, restrict.universe = FALSE,
     }
     if (is.null(gene.pathway)) {
         #GeneID.PathID <- getGeneKEGGLinks(species.KEGG, convert = convert)
-         file1 <- paste0("resources/",species.KEGG,"KeggLinks.Rds")
+         file1 <- paste0("./resources/",species,"/KEGG/KeggLinks.Rds")
          GeneID.PathID <- readRDS(file1)
     } else {
         GeneID.PathID <- gene.pathway
@@ -441,7 +442,7 @@ customKegg <- function(data, universe = NULL, restrict.universe = FALSE,
     if (is.null(pathway.names)) {
         #PathID.PathName <- getKEGGPathwayNames(species.KEGG,
          #   remove.qualifier = TRUE)
-        file2 <- paste0("resources/",species.KEGG,"KeggPathwayNames.Rds")
+        file2 <- paste0("./resources/",species,"/KEGG/KeggPathwayNames.Rds")
         PathID.PathName <- readRDS(file2)
     } else {
         PathID.PathName <- pathway.names
@@ -701,7 +702,8 @@ go2DT <- function(enrichdf, data, orderby = NULL, nrows = NULL) {
 # Ejemplo de uso:
 # GOlevel = getGOlevel()
 # Guardar lo que genera en resources/GOlevel.Rds #############
-getGOlevel <- function(){
+getGOlevel <- function(specie){
+  require(GO.db)
     bp <- "GO:0008150"
     mf <- "GO:0003674"
     cc <- "GO:0005575"
@@ -763,7 +765,8 @@ getGOlevel <- function(){
             id = c("GO:0008150","GO:0003674","GO:0005575"),
             level= 0))
     GOlevel <- aggregate(level~id, GOlevel, function(x)x[which.min(abs(x))])
-    return(GOlevel)
+    filePath <- paste0("./resources/",specie,"/GO/GOlevel.Rds")
+    saveRDS(GOlevel, filePath <- paste0("./resources/",specie,"/GO/GOlevels.Rds"))
 }
 
 # funcion que preparar los datos de enrich kegg para pasárlos a datatable2 ###############
@@ -1238,19 +1241,22 @@ heatmapKegg <- function(kdt, nr){
 }
 
 # Función para crear dataset para hacer GSEA pathway ##################
-buildKeggDataset <- function(specie="mmu"){
-  GeneID.PathID <- getGeneKEGGLinks(specie, convert = FALSE)
-  PathName <- getKEGGPathwayNames(specie,remove.qualifier = TRUE)
+buildKeggDataset <- function(specie="Mm"){
+  require("dplyr")
+  #GeneID.PathID <- getGeneKEGGLinks(specie, convert = FALSE)
+  #PathName <- getKEGGPathwayNames(specie, remove.qualifier = TRUE)
+  GeneID.PathID <- readRDS(paste0("./resources/",specie,"/KEGG/KeggLinks.Rds"))
+  PathName <- readRDS(paste0("./resources/",specie,"/KEGG/KeggPathwayNames.Rds"))
   PathName$Id <- paste(PathName$PathwayID,PathName$Description,sep="_")
   dataSet <- left_join(GeneID.PathID, PathName, by = c("PathwayID"="PathwayID"))
   dataSet$Id <- gsub("path:","",dataSet$Id)
   dataSet <- dataSet[,c(4,1)]
-  saveRDS(dataSet,paste0("resources/",specie,"keggDataGSEA.Rds"))
+  saveRDS(dataSet,paste0("./resources/",specie,"/GSEA/keggDataGSEA.Rds"))
   }
 
 # Función para hacer GSEA pathway #################################
-gseaKegg <- function(res){
-  pathwayDataSet <- readRDS("resources/keggDataGSEA.Rds")
+gseaKegg <- function(res, specie){
+  pathwayDataSet <- readRDS(paste0("./resources/",specie,"/GSEA/keggDataGSEA.Rds"))
   res.sh <- res
   #res.sh <- as.data.frame(lfcShrink(dds, coef=2, type="apeglm", res = results(dds)))
   res.sh <- res.sh[order(res.sh$log2FoldChange, decreasing = TRUE), ]
@@ -1270,6 +1276,7 @@ gseaKegg <- function(res){
 # Función para actualizar las bases de datos de kegg y GO #############
 # esto mejora la velocidad de los enrich en unos 10 segs
 updateDatabases <- function(species){
+  require("limma")
     species.KEGG <- NULL
         if (is.null(species.KEGG)) {
         species <- match.arg(species, c("Ag", "At", "Bt", "Ce",
@@ -1283,12 +1290,12 @@ updateDatabases <- function(species){
         }
     # Kegg
     GeneID.PathID <- getGeneKEGGLinks(species.KEGG, convert = FALSE)
-    filename <- paste0(species.KEGG,"KeggLinks.Rds")
+    filename <- paste0("./resources/",species,"/KEGG/KeggLinks.Rds")
     saveRDS(GeneID.PathID, filename)
     
     PathID.PathName <- getKEGGPathwayNames(species.KEGG,
            remove.qualifier = TRUE)
-    filename <- paste0(species.KEGG,"KeggPathwayNames.Rds")
+    filename <- paste0("./resources/",species,"/KEGG/KeggPathwayNames.Rds")
     saveRDS(PathID.PathName, filename)
     # GO
     orgPkg <- paste0("org.", species, ".eg.db")
@@ -1296,7 +1303,7 @@ updateDatabases <- function(species){
     egGO2ALLEGS <- tryCatch(getFromNamespace(obj, orgPkg), error = function(e) FALSE)
     GeneID.PathID <- AnnotationDbi::toTable(egGO2ALLEGS)[, c("gene_id",
             "go_id", "Ontology")]
-    filename <- paste0(species,"GOlinks.Rds")
+    filename <- paste0("./resources/",species,"/GO/GOlinks.Rds")
     saveRDS(GeneID.PathID, filename)
 }
 
@@ -2132,10 +2139,10 @@ customkaryploter <- function(genome = "mm10", plot.type = 1, ideogram.plotter = 
   
   
 krtp <- function(res, specie="Mm", pval, fcdown, 
-                 fcup, bg="white", coldown="87BEEC", colup="DC143C"){
+                 fcup, bg="white", coldown="#87BEEC", colup="#DC143C"){
   require(karyoploteR)
-  fileAnnot <- paste0("./resources/",specie,"/cytoband/",specie,"_annot.Rds")
-  annot <- readRDS(fileAnnot)
+  fileAnnot <- paste0("./resources/",specie,"/cytoband/",specie,"_annot.txt")
+  annot <- read.table(fileAnnot, header = F, sep = "\t")
   res2 <- res[ res$padj <pval & (res$log2FoldChange<(fcdown) | res$log2FoldChange>fcup),]
   res3 <- as.data.frame(res2)
   res3$genes <- rownames(res3)
