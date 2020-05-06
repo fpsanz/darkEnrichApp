@@ -222,12 +222,12 @@ fluidPage(
                                               )
                                             ),
                                             column(width = 9,
-                                                   plotOutput("heat", height = "800px"))
+                                                   plotlyOutput("heat", height = "800px"))
                                           )#)
                                           ),
                                  tabPanel(
                                       title = "Cluster",
-                                      plotOutput("cluster", width = "100%", height = "800px")
+                                      plotlyOutput("cluster", width = "100%", height = "800px")
                                  ),
                                  tabPanel(title = "Top 6 genes",
                                           circleButton(
@@ -383,7 +383,7 @@ fluidPage(
          title = "",
          tabPanel(
                 title = "Volcano plot",
-                plotOutput("volcano", width = "100%", height = "800px")
+                plotlyOutput("volcano", width = "100%", height = "800px")
             ),
          tabPanel(
                 title = "MA plot",

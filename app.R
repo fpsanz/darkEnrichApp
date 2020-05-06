@@ -23,6 +23,7 @@ library(shinyBS)
 library(shinyWidgets)
 library(shinydashboardPlus)
 library(pheatmap)
+library(heatmaply)
 library(shinyjs)
 library(shinythemes)
 library(rgl)
@@ -656,20 +657,12 @@ output$pca3d <- renderRglwidget({
   })
   
   # view Volcano plot data ###################
-   output$volcano <- renderPlot( {
+   output$volcano <- renderPlotly( {
     #validate(need(datos$dds, "Load file and condition to render Volcano"))
     validate(need(res$sh, "Load file to render plot"))
     res$sh$GeneName_Symbol <- as.character(res$sh$GeneName_Symbol)
-    CustomVolcano(res$sh, lab = res$sh$GeneName_Symbol, 
-                  x = 'log2FoldChange',
-                  y = 'padj',
-                  pCutoff = padj(),
-                  FCcutoffUP = logfc()[2],
-                  FCcutoffDOWN = logfc()[1],
-                  xlim = c(-8, 8),
-                  col = c("gray", "#7cccc3", "#d99c01", input$upColor, input$downColor)
-                  #input$nsColor, input$logfcColor, input$padjColor, input$bothColor)
-                  )
+    volcany(res$sh, padj=padj(), fcdown=logfc()[1], fcup=logfc()[2],
+            col=c(input$upColor, input$downColor), genes=NULL)
   })
   # view MA plot data ###################
   output$MA <- renderPlot( {
@@ -689,16 +682,16 @@ output$pca3d <- renderRglwidget({
     )
   })
   # view HEATMAP data ###################
-  output$heat <- renderPlot( {
+  output$heat <- renderPlotly( {
     validate(need(datos$dds, ""))
     validate(need(vsd$data, "Load file to render plot"))
     validate(need(variables(),"Load condition to render plot" ) )
     validate(need(samplename(),"Load condition to render plot" ) )
-    heat(vsd$data, n=numheatmap(), intgroup = variables(), sampleName = samplename(),
+    heat2(vsd$data, n=numheatmap(), intgroup = variables(), sampleName = samplename(),
          specie=specie(), customColor = coloresPCA$colores() )
   })
   # view CLUSTER data ###################
-  output$cluster <- renderPlot( {
+  output$cluster <- renderPlotly( {
     validate(need(datos$dds, ""))
     validate(need(vsd$data, "Load file to render plot"))
     validate(need(variables(),"Load condition to render plot" ) )

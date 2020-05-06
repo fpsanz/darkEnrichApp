@@ -1310,7 +1310,81 @@ updateDatabases <- function(species){
     filename <- paste0("./resources/",species,"/GO/GOlinks.Rds")
     saveRDS(GeneID.PathID, filename)
 }
+## VOLCANY volcanoplot interactivo ###########################
+volcany <- function(res, padj = NULL, fcup = NULL,
+                    fcdown = NULL,
+                    col = NULL, genes= NULL ){
 
+geneNames <- data.frame(ens=as.character(rownames(res)), symbol=as.character(res$GeneName_Symbol), stringsAsFactors = F)
+res2 <- res %>% dplyr::select(GeneName_Symbol, log2FoldChange, padj) %>% as.data.frame()
+rownames(res2) <- rownames(res)
+res2$group <- "NS"
+res2[which( res2$padj<=padj & ( res2$log2FoldChange>fcdown & res2$log2FoldChange<fcup) ), "group"] <- "Only Padj"
+res2[which( res2$padj<=padj & res2$log2FoldChange>fcup), "group"] <- "FC Up & Padj"
+res2[which( res2$padj<=padj & res2$log2FoldChange<fcdown), "group"] <- "FC Down & Padj"
+res2[which( res2$padj>padj & ( res2$log2FoldChange<fcdown | res2$log2FoldChange>fcup ) ), "group"] <- "Only FC"
+#ns <- sample(which(res2$group=="NS"), 100)
+#pj <- sample(which(res2$group=="Only Padj"), 100)
+#fc <- sample(which(res2$group=="Only FC"), 100)
+
+if(!is.null(genes)){
+  topTotal <- res2[which(res2$GeneName_Symbol %in% genes), ]
+  topTotal$GeneName_Symbol <- as.character(topTotal$GeneName_Symbol)
+  a <- list()
+  for (i in seq_len(nrow(topTotal))) {
+    m <- topTotal[i,]
+    a[[i]] <- list(
+      x = m[["log2FoldChange"]],
+      y = -log10(m[["padj"]]),
+      text = m[["GeneName_Symbol"]],
+      xref = "x",
+      yref = "y",
+      xanchor = "left",
+      yanchor = "bottom",
+      showarrow = FALSE,
+      arrowhead = 4,
+      arrowsize = 0.5,
+      ax = 20,
+      ay = -40
+    )
+  }
+}
+line <- list(
+  type = "line",
+  line = list(color = "black", dash = "dash", width=0.7),
+  xref = "paper"
+)
+lines <- list()
+for (i in c(0.05)) {
+  line[["x0"]] <- 0
+  line[["x1"]] <- 1
+  line[c("y0", "y1")] <- -log10(i)
+  lines <- c(lines, list(line))
+}
+linev <- list(
+  type = "line",
+  line = list(color = "black", dash = "dash",width=0.7),
+  yref = "paper"
+)
+linesv <- list()
+for(j in c(-0.5,0.5)){
+  linev[["y0"]] <- 0
+  linev[["y1"]] <- 1
+  linev[c("x0","x1")] <- j
+  linesv <- c(linesv, list(linev))
+}
+linesT <- c(lines, linesv)
+
+
+pal <- c(NS="gray", "Only Padj"="#7cccc3", "Only FC"="#d99c01", "FC Up & Padj"=col[1],
+         "FC Down & Padj"=col[2] )
+p <- res2 %>% plot_ly(x = ~log2FoldChange, y = ~(-log10(padj)), text = ~GeneName_Symbol,
+                      mode = "markers", color = ~group, type = "scatter", size=I(5), colors=pal )%>% 
+  layout(shapes = linesT ) %>% 
+  layout(xaxis = list(zeroline=FALSE, title = "Log2 fold change"), yaxis=list(zeroline=FALSE, title = "-Log10 Padj"))
+if(!is.null(genes)){ p <- p %>% layout(annotations = a) }
+return(p)
+}
 # Customized Volcano Plot ###############
 CustomVolcano <- function (toptable, lab, x, y, selectLab = NULL, xlim = c(min(toptable[[x]], 
                            na.rm = TRUE), max(toptable[[x]], na.rm = TRUE)), 
@@ -1756,7 +1830,6 @@ VST <- function (object, blind = TRUE, nsub = 1000, fitType = "parametric")
 }
 
 # Heatmap #############
-
 heat <- function (vsd, n = 40, intgroup = "AAV", sampleName = "condition",
                       specie="Mm", customColor = c("red","blue")) 
     {
@@ -1817,7 +1890,74 @@ heat <- function (vsd, n = 40, intgroup = "AAV", sampleName = "condition",
              fontsize_row = fsr,
              annotation_colors = ann_colors,
              main = "Heatmap top variant genes on normalized data")
+}
+## New heatmap plotly
+heat2 <- function (vsd, n = 40, intgroup = NULL, sampleName = NULL,
+                      specie="Mm", customColor = NULL ) 
+    {
+      require("EnsDb.Mmusculus.v79")
+      require("org.Mm.eg.db")
+      require("EnsDb.Hsapiens.v86")
+      require("org.Hs.eg.db")
+      require("EnsDb.Rnorvegicus.v79")
+      require("org.Rn.eg.db") 
+      
+      if(specie=="Mm"){
+        ensdb <- EnsDb.Mmusculus.v79
+        orgdb <- org.Mm.eg.db
+      } else{
+        ensdb <- EnsDb.Hsapiens.v86
+        orgdb <- org.Hs.eg.db
+      }
+    #vsd <- vst(data)
+    topVarGenes <- head(order(rowVars(assay(vsd)), decreasing = TRUE), n)
+    mat  <- assay(vsd)[ topVarGenes, ]
+    mat  <- mat - rowMeans(mat)
+    if (!all(intgroup %in% names(colData(vsd)))) {
+      stop("the argument 'intgroup' should specify columns of colData(dds)")
     }
+
+    if(length(intgroup)>1){
+      df <- as.data.frame(colData(vsd)[, intgroup[1:2], drop = FALSE])
+    } else{
+      df <- as.data.frame(colData(vsd)[, intgroup, drop = FALSE])
+    }
+    
+    annot <- NULL
+    annot$ENSEMBL <- rownames(mat)
+    annot$SYMBOL <-  mapIds(ensdb, keys=rownames(mat),
+                            column="SYMBOL",keytype="GENEID")
+    annot$SYMBOL1 <- mapIds(orgdb, keys = rownames(mat),
+                            column = 'SYMBOL', keytype = 'ENSEMBL', multiVals = 'first') 
+    annot$description <- mapIds(orgdb, keys = rownames(mat),
+                                column = 'GENENAME', keytype = 'ENSEMBL', multiVals = 'first')
+    annot <- as.data.frame(annot)
+    consensus <- data.frame('Symbol'= ifelse(!is.na(annot$SYMBOL), as.vector(annot$SYMBOL),
+                                             ifelse(!is.na(annot$SYMBOL1),as.vector(annot$SYMBOL1),
+                                                    as.vector(annot$ENSEMBL))), stringsAsFactors = F)
+    #colores definidos por el usuario para primera variable
+    ann_colors<-list()
+    ann_colors[[intgroup[1]]] <- customColor
+    names(ann_colors[[intgroup[1]]]) <- c(levels(df[[intgroup[1]]]))
+    
+    # colores calculados para segunda variable
+    if(length(intgroup)>1){
+    numCol <- length( unique( df[,intgroup[[2]]]))
+    ann_colors[[intgroup[2]]] <- colorRampPalette( brewer.pal(11, "Spectral") )(numCol)
+    names(ann_colors[[intgroup[2]]]) <- c(levels(as.factor(df[[intgroup[2]]]) ))}
+
+    ann <- c(ann_colors$AAV, ann_colors$name)
+    
+    sizesDf <- data.frame( ch = c(rep(14,20), rep(12,20),rep(10,10), 
+                                  rep(8,10), rep(7,10), rep(6,10), rep(5,20), rep(4,20)), 
+                           fsr = c(rep(10,50), rep(8,10), rep(7,10), rep(6,10), rep(1, 40) ))
+    ch <- sizesDf$ch[ nrow(mat) ]
+    fsr <- sizesDf$fsr[ nrow(mat) ]
+    if(nrow(mat)>80){labrow = rep(NA, nrow(mat))}else{labrow = as.character(consensus$Symbol)}
+    heatmaply(mat, labRow = labrow, col_side_colors = df,
+              col_side_palette = ann, labCol = as.character(vsd[[sampleName]] ), fontsize_row = fsr,
+              margins = c(50,50,20,0)  )
+}
 
 # cluster #############
 
@@ -1829,10 +1969,11 @@ cluster <- function(vsd, intgroup = "condition")
   rownames(sampleDistMatrix_vsd) <- vsd[[intgroup]]
   colnames(sampleDistMatrix_vsd) <- vsd[[intgroup]]
   colors <- colorRampPalette( rev(brewer.pal(9, "Blues")) )(255)
-  pheatmap(sampleDistMatrix_vsd,
-           clustering_distance_rows = sampleDists_vsd,
-           clustering_distance_cols = sampleDists_vsd,
-           col = colors, main = 'Heatmap clustering of samples on normalized data')
+  heatmaply(sampleDistMatrix_vsd, colors = colors, margins = c(50,50,50,0)  )
+  # pheatmap(sampleDistMatrix_vsd,
+  #          clustering_distance_rows = sampleDists_vsd,
+  #          clustering_distance_cols = sampleDists_vsd,
+  #          col = colors, main = 'Heatmap clustering of samples on normalized data')
 }
 
 
