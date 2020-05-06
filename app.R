@@ -294,6 +294,7 @@ server <- function(input, output, session) {
   ccrowsdown <- reactive({input$tableCCdown_rows_selected})
   
   variables <- reactive({input$variables})
+  genesVolcano <- reactive({input$genesVolcano})
   samplename <- reactive({input$samplename})
   gsearow <- reactive({input$gseaTable_rows_selected})
   specie <- reactive({input$specie})
@@ -365,7 +366,17 @@ server <- function(input, output, session) {
                 choices = nvars,
                 multiple = TRUE)
   })
-  
+  # ui selector de genes para volcano plot #######################
+  output$geneSelector <- renderUI({
+    validate(need(res$sh, ""))
+    validate(need(padj(),""))
+    genes <- as.character(res$sh$GeneName_Symbol[ which( (res$sh$padj<padj() |
+                  (res$sh$log2FoldChange<logfc()[1] |
+                  res$sh$log2FoldChange>logfc()[2])) )])
+    selectInput("genesVolcano", label="Select gene[s] to label",
+                choices = genes,
+                multiple = TRUE)
+  })
   # ui selector sample name ###################
   output$samplesName <- renderUI({
     validate(need(datos$dds, ""))
@@ -662,7 +673,7 @@ output$pca3d <- renderRglwidget({
     validate(need(res$sh, "Load file to render plot"))
     res$sh$GeneName_Symbol <- as.character(res$sh$GeneName_Symbol)
     volcany(res$sh, padj=padj(), fcdown=logfc()[1], fcup=logfc()[2],
-            col=c(input$upColor, input$downColor), genes=NULL)
+            col=c(input$upColor, input$downColor), genes=genesVolcano() )
   })
   # view MA plot data ###################
   output$MA <- renderPlot( {

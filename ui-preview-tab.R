@@ -372,7 +372,8 @@ fluidPage(
                      list('#252525', '#636363', '#969696', '#bdbdbd', '#d9d9d9', '#f7f7f7')
                  ),
                  options = list(`toggle-palette-more-text` = "Show more")
-             )
+             ),
+             uiOutput("geneSelector")
              )
              )
   ),

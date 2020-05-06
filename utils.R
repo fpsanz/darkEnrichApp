@@ -1323,9 +1323,19 @@ res2[which( res2$padj<=padj & ( res2$log2FoldChange>fcdown & res2$log2FoldChange
 res2[which( res2$padj<=padj & res2$log2FoldChange>fcup), "group"] <- "FC Up & Padj"
 res2[which( res2$padj<=padj & res2$log2FoldChange<fcdown), "group"] <- "FC Down & Padj"
 res2[which( res2$padj>padj & ( res2$log2FoldChange<fcdown | res2$log2FoldChange>fcup ) ), "group"] <- "Only FC"
-#ns <- sample(which(res2$group=="NS"), 100)
-#pj <- sample(which(res2$group=="Only Padj"), 100)
-#fc <- sample(which(res2$group=="Only FC"), 100)
+
+if(length(which(res2$group=="NS"))>1000 ){
+  ns <- sample(which(res2$group=="NS"), length(which(res2$group=="NS"))-1000  )
+  res2 <- res2[-c(ns), ]
+  }
+if(length(which(res2$group=="Only Padj"))>1000){
+  pj <- sample(which(res2$group=="Only Padj"), length(which(res2$group=="Only Padj"))-1000)
+  res2 <- res2[-c(ns), ]
+}
+if(length(which(res2$group=="Only FC"))>1000){
+  fc <- sample(which(res2$group=="Only FC"), length(which(res2$group=="Only FC"))-1000)
+  res2 <- res2[-c(fc), ]
+}
 
 if(!is.null(genes)){
   topTotal <- res2[which(res2$GeneName_Symbol %in% genes), ]
