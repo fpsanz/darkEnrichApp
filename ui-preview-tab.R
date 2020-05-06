@@ -384,11 +384,13 @@ fluidPage(
          title = "",
          tabPanel(
                 title = "Volcano plot",
-                plotlyOutput("volcano", width = "100%", height = "800px")
+                plotOutput("volcano", click = "plot_click1" , width = "100%", height = "600px"),
+                tableOutput("texto1")
             ),
          tabPanel(
                 title = "MA plot",
-                  plotOutput("MA", width = "100%", height = "800px")
+                  plotOutput("MA", click = "plot_click2" , width = "100%", height = "600px"),
+                tableOutput("texto2")
             )
  ))),
  fluidRow(column(width = 4, offset = 4,
@@ -397,3 +399,6 @@ fluidPage(
             actionButton("runEnrich", "Apply values", width = "100%")
              ))
 ) # fin page
+
+
+

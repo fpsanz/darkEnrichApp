@@ -1395,6 +1395,19 @@ p <- res2 %>% plot_ly(x = ~log2FoldChange, y = ~(-log10(padj)), text = ~GeneName
 if(!is.null(genes)){ p <- p %>% layout(annotations = a) }
 return(p)
 }
+
+# Volcano plot Miriam
+
+VolcanoMiri <- function(res, padj, fcdown, fcup){
+  res$log10FDR <- -log10(res$padj)
+  res$sig <- as.factor((res$log2FoldChange > fcup & res$padj < padj) | (res$log2FoldChange < fcdown & res$padj < padj))
+  ggplot(res,aes(x=log2FoldChange, y=log10FDR, color=sig)) +
+  geom_point() +
+  coord_cartesian() +
+  ylab("-log10 FDR") +
+  xlab("log2 fold change")
+}
+
 # Customized Volcano Plot ###############
 CustomVolcano <- function (toptable, lab, x, y, selectLab = NULL, xlim = c(min(toptable[[x]], 
                            na.rm = TRUE), max(toptable[[x]], na.rm = TRUE)), 

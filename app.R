@@ -668,13 +668,31 @@ output$pca3d <- renderRglwidget({
   })
   
   # view Volcano plot data ###################
-   output$volcano <- renderPlotly( {
+   output$volcano <- renderPlot( {
     #validate(need(datos$dds, "Load file and condition to render Volcano"))
-    validate(need(res$sh, "Load file to render plot"))
-    res$sh$GeneName_Symbol <- as.character(res$sh$GeneName_Symbol)
-    volcany(res$sh, padj=padj(), fcdown=logfc()[1], fcup=logfc()[2],
-            col=c(input$upColor, input$downColor), genes=genesVolcano() )
-  })
+    validate(need(res$sh, "Load file to render plot"))  
+    CustomVolcano(res$sh, lab = rownames(res$sh),
+                    x = 'log2FoldChange',
+                    y = 'padj',
+                    pCutoff = padj(),
+                    FCcutoffUP = logfc()[1],
+                    FCcutoffDOWN = logfc()[2],
+                    xlim = c(-8, 8),
+                    col = c("gray", "#7cccc3", "#d99c01", "red", "blue")
+      )
+    })
+    #volcany(res$sh, padj=padj(), fcdown=logfc()[1], fcup=logfc()[2],
+    #        col=c(input$upColor, input$downColor), genes=genesVolcano() )
+  
+xy <- reactive({
+  nearPoints(res$sh, input$plot_click1, xvar = "log2FoldChange", yvar = "padj")
+})
+
+output$texto1 <- renderTable({
+  xy <- xy()
+  xy
+})
+
   # view MA plot data ###################
   output$MA <- renderPlot( {
     #validate(need(datos$dds, ""))
@@ -692,6 +710,16 @@ output$pca3d <- renderRglwidget({
        ggtheme = theme_classic()
     )
   })
+
+clicked <- reactive({
+  nearPoints(res$sh, input$plot_click2, xvar = "baseMean", yvar = "log2FoldChange")
+})
+
+output$texto2 <- renderTable({
+  clicked <- clicked()
+  clicked
+}, rownames = T)
+
   # view HEATMAP data ###################
   output$heat <- renderPlotly( {
     validate(need(datos$dds, ""))
