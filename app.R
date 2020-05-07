@@ -370,9 +370,9 @@ server <- function(input, output, session) {
   output$geneSelector <- renderUI({
     validate(need(res$sh, ""))
     validate(need(padj(),""))
-    genes <- as.character(res$sh$GeneName_Symbol[ which( (res$sh$padj<padj() |
-                  (res$sh$log2FoldChange<logfc()[1] |
-                  res$sh$log2FoldChange>logfc()[2])) )])
+    genes <- as.character(res$sh$GeneName_Symbol[ which(!( res$sh$padj>padj() &
+                                                             res$sh$log2FoldChange>logfc()[1] &
+                                                             res$sh$log2FoldChange<logfc()[2] )) ])
     selectInput("genesVolcano", label="Select gene[s] to label",
                 choices = genes,
                 multiple = TRUE)
@@ -670,30 +670,33 @@ output$pca3d <- renderRglwidget({
   # view Volcano plot data ###################
    output$volcano <- renderPlot( {
     #validate(need(datos$dds, "Load file and condition to render Volcano"))
-    validate(need(res$sh, "Load file to render plot"))  
-    CustomVolcano(res$sh, lab = rownames(res$sh),
+    validate(need(res$sh, "Load file to render plot"))
+    res <-  res$sh
+    #res$`-log10padj` <- (-log10(res$padj)) 
+    CustomVolcano(res, lab = as.character(res$GeneName_Symbol),
+                  selectLab = genesVolcano(),
                     x = 'log2FoldChange',
                     y = 'padj',
                     pCutoff = padj(),
-                    FCcutoffUP = logfc()[1],
-                    FCcutoffDOWN = logfc()[2],
+                    FCcutoffUP = logfc()[2],
+                    FCcutoffDOWN = logfc()[1],
                     xlim = c(-8, 8),
-                    col = c("gray", "#7cccc3", "#d99c01", "red", "blue")
-      )
+                    col = c("gray", "#7cccc3", "#d99c01", input$upColor, input$downColor))
     })
     #volcany(res$sh, padj=padj(), fcdown=logfc()[1], fcup=logfc()[2],
     #        col=c(input$upColor, input$downColor), genes=genesVolcano() )
   
 xy <- reactive({
-  nearPoints(res$sh, input$plot_click1, xvar = "log2FoldChange", yvar = "padj")
+  res <- res$sh
+  res$`-log10padj` <- (-log10(res$padj)) 
+  nearPoints(res, input$plot_click1, xvar = "log2FoldChange", yvar = "-log10padj")
 })
-
 output$texto1 <- renderTable({
-  xy <- xy()
-  xy
-})
+        xy <- xy()
+        xy[,c(2,5,7,8)]
+    })
 
-  # view MA plot data ###################
+# view MA plot data ###################
   output$MA <- renderPlot( {
     #validate(need(datos$dds, ""))
     validate(need(res$sh, "Load file to render plot"))

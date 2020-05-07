@@ -390,7 +390,7 @@ fluidPage(
          tabPanel(
                 title = "MA plot",
                   plotOutput("MA", click = "plot_click2" , width = "100%", height = "600px"),
-                tableOutput("texto2")
+                #tableOutput("texto2")
             )
  ))),
  fluidRow(column(width = 4, offset = 4,
