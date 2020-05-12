@@ -33,7 +33,7 @@ library(stringr)
 library(shinybusy)
 source("utils.R")
 options(shiny.maxRequestSize = 3000*1024^2)
-
+  
 ### HEADER ############ 
 header <- dashboardHeader(title = "RNAseq viewer and report App", 
                           titleWidth = 300, 
@@ -218,8 +218,8 @@ server <- function(input, output, session) {
         closeAlert(session, "alert")
           colData(datos$dds)@listData <-
               colData(datos$dds)@listData %>%
-              as.data.frame() %>% mutate_at(vars(-sizeFactor,-replaceable), as.character) %>%
-              mutate_at(vars(-sizeFactor,-replaceable), as.factor) %>% as.list()
+              as.data.frame() %>% mutate_at(vars(-sizeFactor, contains('replaceable')), as.character) %>% ##aqui##
+              mutate_at(vars(-sizeFactor, contains('replaceable')), as.factor) %>% as.list()
         res$sh <- as.data.frame(lfcShrink(datos$dds, coef=(as.numeric(design())+1), type="apeglm"))
         res$sh <- res$sh[!is.na(res$sh$padj),]
         conversion <- geneIdConverter(rownames(res$sh), specie() )
@@ -360,7 +360,7 @@ server <- function(input, output, session) {
     validate(need(datos$dds, ""))
     nvars <- colData(datos$dds) %>% 
       as.data.frame() %>% 
-      dplyr::select(-c(sizeFactor,replaceable)) %>% 
+      dplyr::select(-one_of(c("sizeFactor", "replaceable"))) %>% 
       names()
     selectInput("variables", label="Select condition[s] of interest to highlight",
                 choices = nvars,
@@ -382,9 +382,9 @@ server <- function(input, output, session) {
     validate(need(datos$dds, ""))
     nvars <- colData(datos$dds) %>% 
       as.data.frame() %>% 
-      dplyr::select(-c(sizeFactor,replaceable)) %>% 
+      dplyr::select(-one_of(c("sizeFactor", "replaceable"))) %>% 
       names()
-    selectInput("samplename", label="Select column to use for sample name",
+    selectInput("samplename", label="Select column to use for sample name or gathering",
                 choices = nvars,
                 multiple = FALSE)
   })
@@ -553,7 +553,7 @@ server <- function(input, output, session) {
   # preview samples ###################
   output$samples <- DT::renderDataTable(server = TRUE,{
     validate(need(datos$dds, "Load file to render table"))
-    metadata <- as.data.frame(colData(datos$dds)) %>% dplyr::select(-c(sizeFactor,replaceable))
+    metadata <- as.data.frame(colData(datos$dds)) %>% dplyr::select(-one_of(c("sizeFactor", "replaceable")))
     tituloTabla <- paste0("Table: ColData | ","log2FC: ",logfc()[1],"_",logfc()[2]," | ","padj: ",padj()," | ",
                           "Num genes Up/down: ",numgenesDE$up,"/",numgenesDE$down)
     customButtons <- list(
@@ -691,7 +691,7 @@ xy <- reactive({
   res$`-log10padj` <- (-log10(res$padj)) 
   nearPoints(res, input$plot_click1, xvar = "log2FoldChange", yvar = "-log10padj")
 })
-output$texto1 <- renderTable({
+output$texto1 <- renderTable( digits = -2, {
         xy <- xy()
         xy[,c(2,5,7,8)]
     })
@@ -715,13 +715,15 @@ output$texto1 <- renderTable({
   })
 
 clicked <- reactive({
-  nearPoints(res$sh, input$plot_click2, xvar = "baseMean", yvar = "log2FoldChange")
+  res <- res$sh
+  res$`log2(mean - 1)` <- log2(res$baseMean + 1)
+  nearPoints(res, input$plot_click2, xvar = "log2(mean - 1)", yvar = "log2FoldChange")
 })
 
-output$texto2 <- renderTable({
+output$texto2 <- renderTable( digits = -2, {
   clicked <- clicked()
-  clicked
-}, rownames = T)
+  clicked[,c(2,5,7,8)]
+} )
 
   # view HEATMAP data ###################
   output$heat <- renderPlotly( {
@@ -815,6 +817,7 @@ output$karyoPlot <- renderPlot({
  # Boxviolin plot #################################
   output$boxviolin <- renderPlotly({
           validate(need(datos$dds, "Load file and condition to render Volcano"))
+          validate(need(variables(),"Load condition to render plot" ) )
           validate(need(vsd$data, ""))
           validate(need(variables(), ""))
           validate(need(samplename(),"" ) )
