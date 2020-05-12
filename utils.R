@@ -1969,7 +1969,7 @@ heat2 <- function (vsd, n = 40, intgroup = NULL, sampleName = NULL,
     ann_colors[[intgroup[2]]] <- colorRampPalette( brewer.pal(11, "Spectral") )(numCol)
     names(ann_colors[[intgroup[2]]]) <- c(levels(as.factor(df[[intgroup[2]]]) ))}
 
-    ann <- c(ann_colors$AAV, ann_colors$name)
+    ann <- c(ann_colors[[intgroup[1]]], ann_colors[[intgroup[2]]])
     
     sizesDf <- data.frame( ch = c(rep(14,20), rep(12,20),rep(10,10), 
                                   rep(8,10), rep(7,10), rep(6,10), rep(5,20), rep(4,20)), 
