@@ -60,11 +60,8 @@ sidebar <- dashboardSidebar(useShinyalert(),
                             sidebarMenu(id="menupreview",
                               menuItem("App Information",
                                        tabName = "info",
-                                       icon = icon("info")),
-                              menuItem("Preview dataset",
-                                       tabName = "preview",
-                                       icon = icon("eye"))
-                              ),
+                                       icon = icon("info"))),
+                            sidebarMenu("", sidebarMenuOutput("prevw")),
                             sidebarMenu("", sidebarMenuOutput("menu")),
                              sidebarMenu(
                                 menuItem(
@@ -355,6 +352,14 @@ server <- function(input, output, session) {
                    icon = icon("chart-line"))
       )
       })
+  output$prevw <- renderMenu({
+    validate(need(res$sh, ""))
+    sidebarMenu(
+      menuItem("Preview dataset",
+               tabName = "preview",
+               icon = icon("eye"))
+    )
+  })
   # ui selector sample groups ###################
   output$sampleGroup <- renderUI({
     validate(need(datos$dds, ""))
