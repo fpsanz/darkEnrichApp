@@ -296,7 +296,14 @@ server <- function(input, output, session) {
   gsearow <- reactive({input$gseaTable_rows_selected})
   specie <- reactive({input$specie})
   padj <- reactive({input$padj})
-  logfc <- reactive({input$logfc})
+  logfc <- reactive({
+    logfcTmp <- input$logfc
+    if(logfcTmp[1]==logfcTmp[2]){
+      return(c(0,0))
+    }else{
+      return(logfcTmp)
+    }
+    })
   specie <- reactive({input$specie})
   biologicalText <- reactive({input$biologicalText})
   explainPreview <- reactive({input$explainPreview})
@@ -312,6 +319,7 @@ server <- function(input, output, session) {
   pca3d <- reactive({input$pca3d})
   boxplotswitch <- reactive({input$boxplotswitch})
   design <- reactive({input$designPicker})
+  
   # InputFile #################
   output$deseqFile <- renderUI({
       validate(need(specie(), ""))
