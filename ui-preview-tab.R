@@ -38,6 +38,8 @@ fluidPage(
             solidHeader = FALSE,
             status = "primary",
             width = NULL,
+            uiOutput("fc"),
+            tags$br(),
             uiOutput("logfc"),
             tags$br(),
             uiOutput("padj")

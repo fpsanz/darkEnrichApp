@@ -184,6 +184,7 @@ server <- function(input, output, session) {
   datos <- reactiveValues(dds=NULL) #objetos dds post DESeq()
   gsea <- reactiveValues() # objeto GSEA
   logfcRange <- reactiveValues() # min y max logfc
+  fcRange <- reactiveValues() # min y max fc
   res <- reactiveValues()
   vsd <- reactiveValues()
   rlog <- reactiveValues()
@@ -225,6 +226,7 @@ server <- function(input, output, session) {
         res$sh$log2FoldChange <- round(res$sh$log2FoldChange,4)
         res$sh <- cbind(`Description`=conversion$description, res$sh)
           res$sh <- cbind(`GeneName_Symbol`=conversion$consensus, res$sh)
+        #res$sh$padj <- res$sh$pvalue  #########   #########   ##############
         res$sh <-  res$sh %>% dplyr::select(-c(pvalue))
         if(specie() == "Mm" ){spc = "Mus_musculus"}
         else {spc = "Homo_sapiens"}
@@ -235,8 +237,10 @@ server <- function(input, output, session) {
         rlog$datos <- rlog(datos$dds)
         logfcRange$min <- min(res$sh$log2FoldChange)
         logfcRange$max <- max(res$sh$log2FoldChange)
+        fcRange$min <- ifelse(logfcRange$min<0, -(2^abs(logfcRange$min)), 2^abs(logfcRange$min))
+        fcRange$max <- ifelse(logfcRange$max<0, -(2^abs(logfcRange$max)), 2^abs(logfcRange$max))
         closeAlert(session, "fileAlert")
-      
+        
   })
   # Acciones al pulsar el boton enrich #####################
   observeEvent(input$runEnrich, {
@@ -296,6 +300,8 @@ server <- function(input, output, session) {
   gsearow <- reactive({input$gseaTable_rows_selected})
   specie <- reactive({input$specie})
   padj <- reactive({input$padj})
+  fc <- reactive({input$fc})
+  
   logfc <- reactive({
     logfcTmp <- input$logfc
     if(logfcTmp[1]==logfcTmp[2]){
@@ -373,7 +379,7 @@ server <- function(input, output, session) {
     validate(need(datos$dds, ""))
     nvars <- colData(datos$dds) %>% 
       as.data.frame() %>% 
-      dplyr::select(-one_of(c("sizeFactor", "replaceable"))) %>% 
+      dplyr::select(-any_of(c("sizeFactor", "replaceable"))) %>% 
       names()
     selectInput("variables", label="Select condition[s] of interest to highlight",
                 choices = nvars,
@@ -395,26 +401,38 @@ server <- function(input, output, session) {
     validate(need(datos$dds, ""))
     nvars <- colData(datos$dds) %>% 
       as.data.frame() %>% 
-      dplyr::select(-one_of(c("sizeFactor", "replaceable"))) %>% 
+      dplyr::select(-any_of(c("sizeFactor", "replaceable"))) %>% 
       names()
     selectInput("samplename", label="Select column to use for sample name or gathering",
                 choices = nvars,
                 multiple = FALSE)
   })
+  # ui selector fc #######################
+  output$fc <- renderUI({
+    validate(need(datos$dds, ""))
+    sliderInput("fc", label = "Select FC range to remove (keeps the tails)",
+                min=round(fcRange$min,3), max=round(fcRange$max, 3),
+                #value = c(round(logfcRange$min,3)+1,round(logfcRange$max,3)-1 ), step = 0.1 )
+                value = c(-1.5,1.5), step = 0.1 )
+  })
   
   # ui selector logfc #######################
   output$logfc <- renderUI({
     validate(need(datos$dds, ""))
+    validate(need(fc(), ""))
+    valmin <- ifelse(fc()[1]<0, -log2(abs(fc()[1])), log2(abs(fc()[1])) )
+    valmax <- ifelse(fc()[2]<0, -log2(abs(fc()[2])), log2(abs(fc()[2])) )
     sliderInput("logfc", label = "Select logFC range to remove (keeps the tails)",
                 min=round(logfcRange$min,3), max=round(logfcRange$max, 3),
                 #value = c(round(logfcRange$min,3)+1,round(logfcRange$max,3)-1 ), step = 0.1 )
-                value = c(-0.5,0.5), step = 0.1 )
+                value = c(valmin, valmax), #value = c(-0.5,0.5), 
+                step = 0.1 )
   })
   
   # ui selector padj #################################
   output$padj <- renderUI({
     validate(need(datos$dds,""))
-    sliderInput("padj", label = "Select p-adjusted threshold (corrected p-value)", min = 0, max=0.2, value=0.05, step = 0.005 )
+    sliderInput("padj", label = "Select p-adjusted threshold", min = 0, max=0.2, value=0.05, step = 0.005 )
   })
   # ui selector Colores para PCA y demás #######################
   output$colorPalettes <- renderUI({
@@ -566,7 +584,7 @@ server <- function(input, output, session) {
   # preview samples ###################
   output$samples <- DT::renderDataTable(server = TRUE,{
     validate(need(datos$dds, "Load file to render table"))
-    metadata <- as.data.frame(colData(datos$dds)) %>% dplyr::select(-one_of(c("sizeFactor", "replaceable")))
+    metadata <- as.data.frame(colData(datos$dds)) %>% dplyr::select(-any_of(c("sizeFactor", "replaceable")))
     tituloTabla <- paste0("Table: ColData | ","log2FC: ",logfc()[1],"_",logfc()[2]," | ","padj: ",padj()," | ",
                           "Num genes Up/down: ",numgenesDE$up,"/",numgenesDE$down)
     customButtons <- list(
