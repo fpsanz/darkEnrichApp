@@ -303,6 +303,7 @@ server <- function(input, output, session) {
   fc <- reactive({input$fc})
   
   logfc <- reactive({
+    validate(need(input$logfc,""))
     logfcTmp <- input$logfc
     if(logfcTmp[1]==logfcTmp[2]){
       return(c(0,0))
