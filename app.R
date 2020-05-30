@@ -62,7 +62,7 @@ sidebar <- dashboardSidebar(useShinyalert(),
                               menuItem("App Information",
                                        tabName = "info",
                                        icon = icon("info"))),
-                            sidebarMenu(id = "preview", sidebarMenuOutput("prevw")),
+                            sidebarMenu(id = "previewMenu", sidebarMenuOutput("prevw")),
                             sidebarMenu("", sidebarMenuOutput("menu")),
                              sidebarMenu(
                                 menuItem(
@@ -241,7 +241,7 @@ server <- function(input, output, session) {
         fcRange$min <- ifelse(logfcRange$min<0, -(2^abs(logfcRange$min)), 2^abs(logfcRange$min))
         fcRange$max <- ifelse(logfcRange$max<0, -(2^abs(logfcRange$max)), 2^abs(logfcRange$max))
         closeAlert(session, "fileAlert")
-        updateTabItems(session, "preview", "preview")
+        updateTabItems(session, "previewMenu", "preview")
   })
   # Acciones al pulsar el boton enrich #####################
   observeEvent(input$runEnrich, {
@@ -266,7 +266,7 @@ server <- function(input, output, session) {
     
     go$down <- customGO(data$genesDown, species = "Mm")
     goDT$down <- go2DT(enrichdf = go$down, data = data$genesDown )
-    updateTabItems(session, "preview", "preview")
+    updateTabItems(session, "previewMenu", "preview")
   })
   # Acciones al seleccionar variables ################
   observeEvent(input$variables, {
@@ -948,7 +948,7 @@ output$legendChorAll <- renderPlot({
     validate(need(rowsAll(), "Select the paths of interest to render NetPlot"))
     validate(need(kggDT$all, ""))
     kgg$all$genes <- kggDT$all$genes
-    visData <- customVisNet(kgg$all, nTerm=rowsAll(), 
+    visData <- customVisNet(kgg$all, nTerm=rowsAll(),
                             up = data$genesUp$SYMBOL, down = data$genesDown$SYMBOL )
     visNetwork(visData$nodes, visData$edges, background = "#ffffff") %>%
     visOptions(highlightNearest = list(enabled=TRUE, hover=TRUE),
