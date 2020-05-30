@@ -2371,3 +2371,60 @@ cytoBandCreate <- function(specie = "Mm"){
   # curl -L ftp://ftp.ensembl.org/pub/release-100/gff3/homo_sapiens/Homo_sapiens.GRCh38.100.chr.gff3.gz >mm10.gtf.gz
   # zcat mm10.gtf.gz | awk '$3=="gene"{print $1,$4,$5,$9}' | awk 'BEGIN{OFS="\t"}{split($4,a,";");print a[1],$1,$2,$3}' | sed 's/ID=gene://g' >Mm_annot.txt
 }
+# customVisNet #######################################
+customVisNet <- function( enrich, nTerm = NULL, up = NULL, down = NULL ){
+    require(visNetwork)
+    require(scales)
+    enrich <- enrich %>% arrange(P.DE)
+    enrich <- enrich[nTerm, ]
+    enrich$genes <- gsub(",", ";", enrich$genes)
+    enrich$genes <- gsub(" ", "", enrich$genes)
+    if( dim(enrich)[2]==8 ){
+        names(enrich) <- c("Term","Ont","N","DE","P.DE","id","genes","level")
+    } else if(dim(enrich)[2]==6){
+        names(enrich) <- c("Term","N","DE","P.DE","id","genes")
+    }
+    edges <- separate_rows(enrich, Term, genes, sep=";")
+    if( dim(enrich)[2]==8 ){
+        edgesf <- edges[, c(1, 7)]
+        edges <- edges %>% dplyr::select(-Ont)    
+    } else if(dim(enrich)[2]==6){
+        edgesf <- edges[, c(1, 6)]
+    }
+    names(edgesf) <- c("from", "to")
+    edgesf$to <- gsub(" ", "", edgesf$to)
+    nd1 <- edges[, 1:5]
+    nd1$P.DE <- nd1$P.DE
+    nd2 <- as.data.frame( 
+    cbind( Term = edges$genes, N = NA, DE = NA, P.DE = NA, id = NA))
+    nd2$Term <- gsub(" ", "", nd2$Term)
+    nd2$P.DE <- NA
+    nd2$id <- nd2$Term
+    nd3 <- rbind(nd1, nd2)
+    nd3 <- dplyr::distinct(nd3)
+        
+    nd3$title <- paste0( nd3$id, "<br>", "pval: ",
+                         formatC(nd3$P.DE, format = "e", digits = 3),"<br>",
+                         "DE: ", nd3$DE )
+    nd3$DE <- ifelse( is.na(nd3$DE), 
+                      min( as.numeric( nd3$DE[ !is.na( nd3$DE ) ] ) ),
+                      nd3$DE )
+    nd3$title <- gsub("<br>pval:   NA<br>DE: NA", "", nd3$title)
+        
+    pvalCol <- rescale(nd3$P.DE, to = c(0, 1))
+    colores <- scales::seq_gradient_pal("red", "blue")(pvalCol)
+    colores <- ifelse(is.na(colores), "#bbceed", colores)
+        
+    nodesf <- data.frame( id = nd3$Term, label = nd3$Term, group = 1,
+            value = nd3$DE, color = colores, shadow = F, title = nd3$title,
+            stringsAsFactors = F )
+    if(!is.null(up) ){
+      genesUp <- which(nodesf$id %in% up)
+      nodesf$color[genesUp] <- "#ffa200"
+      }
+    if(!is.null(down)){
+      genesDown <- which(nodesf$id %in% down)
+      nodesf$color[genesDown] <- "#91ebff"
+      }
+    return(list(nodes = nodesf, edges = edgesf))
+} 

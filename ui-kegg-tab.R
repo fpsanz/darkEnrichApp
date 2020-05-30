@@ -97,7 +97,10 @@ fluidPage(
                                  ), # heatmap
                         tabPanel(title = "Netplot",
                                  plotOutput("cnetKeggAll")
-                                 ) # cnetplot
+                                 ), # cnetplot
+                        tabPanel(title = "VisNetPlot",
+                                 visNetworkOutput("visnetKeggAll", height = "600px")
+                                 ) #visnetall
                         )
                     )
             )

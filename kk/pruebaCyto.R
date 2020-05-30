@@ -52,20 +52,10 @@ customCnetGo <- function(gos, category=NULL, nTerm=NULL, byDE=FALSE, ont="BP"){
 library(readxl)
 library(dplyr)
 library(plotly)
-df <-  read_xlsx("Proteostasis_Chaperone_arreglado.xlsx")
+df <-  read_xlsx("/datos/miriamCollection/Proteostasis_Chaperone_arreglado.xlsx")
 kk <- df %>% data.frame()
-kkita <- customCnetGo(kk)
-kkita %>% ggplotly()
-
-str(kkita)
 
 library(visNetwork)
-nodes <- data.frame(id = 1:6, title = paste("node", 1:6), 
-                    shape = c("dot", "square"),
-                    size = 10:15, color = c("blue", "red"))
-edges <- data.frame(from = 1:5, to = c(5, 4, 6, 3, 3))
-
-
 
 edges <- separate_rows(kk, Term, genes, sep = ",")
 edgesf <- edges[,c(1,7)]
@@ -73,18 +63,88 @@ names(edgesf) <- c("from","to")
 edgesf$to <- gsub(" ", "", edgesf$to)
 
 nd1 <- edges[,1:6]
-nd1$P.DE <- nd1$P.DE + 2
+nd1$P.DE <- nd1$P.DE
 nd2 <- as.data.frame(cbind( Term=edges$genes, Ont=NA, N=NA, DE=NA, P.DE=NA, go_id=NA))
-names(nd2)
+#names(nd2)
 nd2$Term <- gsub(" ", "", nd2$Term)
-nd2$P.DE <- 1
+nd2$P.DE <- NA
 nd2$go_id <- nd2$Term
 nd3 <- rbind(nd1,nd2)
 nd3 <- dplyr::distinct(nd3)
-nodesf <- data.frame(id=nd3$Term, label=nd3$Term, group=1, value=nd3$P.DE, stringsAsFactors = F)
+
+nd3$title <- paste0(nd3$go_id,"<br>","pval: ",formatC(nd3$P.DE, format="e",digits = 3),
+                    "<br>","DE: ",nd3$DE)
+nd3$DE <- ifelse( is.na(nd3$DE), min(as.numeric(nd3$DE[!is.na(nd3$DE)])), nd3$DE)
+nd3$title <- gsub("<br>pval:   NA<br>DE: NA", "", nd3$title)
+library(scales)
+pvalCol <- rescale(nd3$P.DE, to=c(0,1) )
+colores <- scales::seq_gradient_pal("red","blue")(pvalCol)
+colores <- ifelse( is.na(colores), "#bbceed", colores)
+
+nodesf <- data.frame(id=nd3$Term, label=nd3$Term, group=1, value=nd3$DE, 
+                     color = colores, shadow=F, 
+                     title = nd3$title,
+                     stringsAsFactors = F)
+
 
 visNetwork(nodesf, edgesf) %>%
-    visOptions(highlightNearest = TRUE, nodesIdSelection = TRUE)
+    visOptions(highlightNearest = list(enabled=TRUE, hover=TRUE), nodesIdSelection = TRUE)
 
+res <- readRDS("./res.Rds")
+data <- getSigUpregulated(res, 0.05, 0.1, "Mm" )
+kgg <- customKegg(data, species = "Mm" )
+go <- customGO(data, species = "Mm")
 
+enrich=kgg
+customVisNet <- function( enrich, nTerm = 10 ){
+    require(visNetwork)
+    require(scales)
+    enrich <- enrich %>% arrange(P.DE)
+    enrich <- enrich[seq_len(nTerm), ]
+    enrich$genes <- gsub(",", ";", enrich$genes)
+    enrich$genes <- gsub(" ", "", enrich$genes)
+    if( dim(enrich)[2]==8 ){
+        names(enrich) <- c("Term","Ont","N","DE","P.DE","id","genes","level")
+    } else if(dim(enrich)[2]==6){
+        names(enrich) <- c("Term","N","DE","P.DE","id","genes")
+    }
+    edges <- separate_rows(enrich, Term, genes, sep=";")
+    if( dim(enrich)[2]==8 ){
+        edgesf <- edges[, c(1, 7)]
+        edges <- edges %>% dplyr::select(-Ont)    
+    } else if(dim(enrich)[2]==6){
+        edgesf <- edges[, c(1, 6)]
+    }
+    names(edgesf) <- c("from", "to")
+    edgesf$to <- gsub(" ", "", edgesf$to)
+    nd1 <- edges[, 1:5]
+    nd1$P.DE <- nd1$P.DE
+    nd2 <- as.data.frame( 
+        cbind( Term = edges$genes, N = NA, DE = NA, P.DE = NA, id = NA))
+    nd2$Term <- gsub(" ", "", nd2$Term)
+    nd2$P.DE <- NA
+    nd2$id <- nd2$Term
+    nd3 <- rbind(nd1, nd2)
+    nd3 <- dplyr::distinct(nd3)
+        
+    nd3$title <- paste0( nd3$id, "<br>", "pval: ",
+                         formatC(nd3$P.DE, format = "e", digits = 3),"<br>",
+                         "DE: ", nd3$DE )
+    nd3$DE <- ifelse( is.na(nd3$DE), 
+                      min( as.numeric( nd3$DE[ !is.na( nd3$DE ) ] ) ),
+                      nd3$DE )
+    nd3$title <- gsub("<br>pval:   NA<br>DE: NA", "", nd3$title)
+        
+    pvalCol <- rescale(nd3$P.DE, to = c(0, 1))
+    colores <- scales::seq_gradient_pal("red", "blue")(pvalCol)
+    colores <- ifelse(is.na(colores), "#bbceed", colores)
+        
+    nodesf <- data.frame( id = nd3$Term, label = nd3$Term, group = 1,
+            value = nd3$DE, color = colores, shadow = F, title = nd3$title,
+            stringsAsFactors = F )
+    return(list(nodes = nodesf, edges = edgesf))
+} 
 
+visData <- customVisNet(go, nTerm=5)
+visNetwork(visData$nodes, visData$edges) %>%
+    visOptions(highlightNearest = list(enabled=TRUE, hover=TRUE), nodesIdSelection = TRUE)

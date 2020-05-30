@@ -31,6 +31,7 @@ library(rglwidget)
 library(scales)
 library(stringr)
 library(shinybusy)
+library(visNetwork)
 source("utils.R")
 options(shiny.maxRequestSize = 3000*1024^2)
   
@@ -61,7 +62,7 @@ sidebar <- dashboardSidebar(useShinyalert(),
                               menuItem("App Information",
                                        tabName = "info",
                                        icon = icon("info"))),
-                            sidebarMenu("", sidebarMenuOutput("prevw")),
+                            sidebarMenu(id = "preview", sidebarMenuOutput("prevw")),
                             sidebarMenu("", sidebarMenuOutput("menu")),
                              sidebarMenu(
                                 menuItem(
@@ -240,7 +241,7 @@ server <- function(input, output, session) {
         fcRange$min <- ifelse(logfcRange$min<0, -(2^abs(logfcRange$min)), 2^abs(logfcRange$min))
         fcRange$max <- ifelse(logfcRange$max<0, -(2^abs(logfcRange$max)), 2^abs(logfcRange$max))
         closeAlert(session, "fileAlert")
-        
+        updateTabItems(session, "preview", "preview")
   })
   # Acciones al pulsar el boton enrich #####################
   observeEvent(input$runEnrich, {
@@ -265,7 +266,7 @@ server <- function(input, output, session) {
     
     go$down <- customGO(data$genesDown, species = "Mm")
     goDT$down <- go2DT(enrichdf = go$down, data = data$genesDown )
-    updateTabItems(session, "menupreview", "preview")
+    updateTabItems(session, "preview", "preview")
   })
   # Acciones al seleccionar variables ################
   observeEvent(input$variables, {
@@ -940,6 +941,18 @@ output$legendChorAll <- renderPlot({
     validate(need(kgg$all, "Load file and select to render Net Plot"))
     validate(need(rowsAll(), "Select the paths of interest to render NetPlot"))
     customCnetKegg(kgg$all, rowsAll())
+  })
+  # KEGG VisNetwork ALL #################
+  output$visnetKeggAll <- renderVisNetwork({
+    validate(need(kgg$all, "Load file and select to render Net Plot"))
+    validate(need(rowsAll(), "Select the paths of interest to render NetPlot"))
+    validate(need(kggDT$all, ""))
+    kgg$all$genes <- kggDT$all$genes
+    visData <- customVisNet(kgg$all, nTerm=rowsAll(), 
+                            up = data$genesUp$SYMBOL, down = data$genesDown$SYMBOL )
+    visNetwork(visData$nodes, visData$edges, background = "#ffffff") %>%
+    visOptions(highlightNearest = list(enabled=TRUE, hover=TRUE),
+               nodesIdSelection = TRUE)
   })
   # KEGG table up#####################################
   output$table <- DT::renderDT(server=TRUE,{
