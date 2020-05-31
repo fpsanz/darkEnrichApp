@@ -934,7 +934,7 @@ output$legendChorAll <- renderPlot({
     validate(need(kgg$all, "Load file and select to render Heatmap"))
     validate(need(rowsAll(), "Select the paths of interest to render HeatMap"))
     validate(need(kggDT$all, ""))
-    heatmapKegg(kggDT$all, rowsAll() ) 
+    heatmapKeggLogFC(kggDT$all, res$sh, rowsAll() ) 
   })
   # KEGG cnet All #################
   output$cnetKeggAll <- renderPlot({
