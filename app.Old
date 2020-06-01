@@ -270,24 +270,6 @@ server <- function(input, output, session) {
     updateTabItems(session, "previewMenu", "preview")
   })
   
-  # Acciones al pulsar applyButton ################
-  padjVal <- reactiveValues(val=0.05)
-  fcVal <- reactiveValues( val=c(-1.5, 1.5) )
-  logfcVal <- reactiveValues(val=c(-0.5,0.5))
-  padj <- reactive({padjVal$val})
-  logfc <- reactive({logfcVal$val})
-  fc <- reactive({fcVal$val})
-  observeEvent(input$applyParam,{
-      padjVal$val <- input$padj #<- reactive({input$padj})
-      fcVal$val <-input$fc  #<- reactive({input$fc})
-      logfcTmp <- input$logfc
-      if(logfcTmp[1]==logfcTmp[2]){
-          logfcVal$val <- c(0,0)
-          }else{
-            logfcVal$val <- logfcTmp
-          }
-  })
-  
   # Acciones al seleccionar variables ################
   observeEvent(input$variables, {
         if(!is.factor(colData(datos$dds)[[ variables()[1] ]] ) ){
@@ -320,7 +302,20 @@ server <- function(input, output, session) {
   samplename <- reactive({input$samplename})
   gsearow <- reactive({input$gseaTable_rows_selected})
   specie <- reactive({input$specie})
+  padj <- reactive({input$padj})
+  fc <- reactive({input$fc})
   
+  logfc <- reactive({
+    validate(need(input$logfc,""))
+    logfcTmp <- input$logfc
+    if(logfcTmp[1]==logfcTmp[2]){
+      return(c(0,0))
+    }else{
+      return(logfcTmp)
+    }
+    })
+  
+  specie <- reactive({input$specie})
   biologicalText <- reactive({input$biologicalText})
   explainPreview <- reactive({input$explainPreview})
   keggAllText <- reactive({input$keggAllText})
