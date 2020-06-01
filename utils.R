@@ -1267,7 +1267,7 @@ heatmapKeggLogFC <- function(kdt, res, nr){
     theme_minimal() +
     theme(panel.grid.major = element_line(colour = "gray88", size = 0.8),
           axis.text.x=element_text(angle = 90, hjust = 1, vjust = 0.5, size=xSize))+
-    scale_fill_continuous(low="blue", high="red", name = "Log2FC")+
+    scale_fill_gradient2(low="blue", mid = "white", high="red", name = "Log2FC")+
     # scale_fill_brewer(palette = "YlOrRd")
     # scale_fill_manual(values = getPalette(colourCount))+
     theme(text = element_text(size=ySize, angle=0), plot.margin = unit(c(15,25,15,15), "pt"))
