@@ -243,6 +243,7 @@ server <- function(input, output, session) {
         closeAlert(session, "fileAlert")
         updateTabItems(session, "previewMenu", "preview")
   })
+  
   # Acciones al pulsar el boton enrich #####################
   observeEvent(input$runEnrich, {
     data$genesUp <- getSigUpregulated(res$sh, padj(), logfc()[2], specie() ) 
@@ -252,10 +253,10 @@ server <- function(input, output, session) {
     kgg$all <- customKegg(data$genesall, species = specie() ) #"Mm"), species.KEGG = "mmu")
     kggDT$all <- kegg2DT(kgg$all, data$genesall)
     
-    kgg$up <- customKegg(data$genesUp, species = specie() )#"Mm")#, species.KEGG = "mmu")
+    kgg$up <- customKegg(data$genesUp, species = specie() ) #"Mm")#, species.KEGG = "mmu")
     kggDT$up <- kegg2DT(kgg$up, data$genesUp)
     
-    kgg$down <- customKegg(data$genesDown, species = specie() )# "Mm")#, species.KEGG = "mmu")
+    kgg$down <- customKegg(data$genesDown, species = specie() ) # "Mm")#, species.KEGG = "mmu")
     kggDT$down <- kegg2DT(kgg$down, data$genesDown)
     
     go$all <- customGO(data$genesall, species = "Mm")
@@ -268,6 +269,7 @@ server <- function(input, output, session) {
     goDT$down <- go2DT(enrichdf = go$down, data = data$genesDown )
     updateTabItems(session, "previewMenu", "preview")
   })
+  
   # Acciones al seleccionar variables ################
   observeEvent(input$variables, {
         if(!is.factor(colData(datos$dds)[[ variables()[1] ]] ) ){
@@ -312,6 +314,7 @@ server <- function(input, output, session) {
       return(logfcTmp)
     }
     })
+  
   specie <- reactive({input$specie})
   biologicalText <- reactive({input$biologicalText})
   explainPreview <- reactive({input$explainPreview})
@@ -336,6 +339,7 @@ server <- function(input, output, session) {
           placeholder = "RDS DESeq",
           accept = ".Rds")
   })
+  
   # InputDesign ###########################
   output$design <- renderUI({
         validate(need(datos$dds,""))
@@ -349,6 +353,7 @@ server <- function(input, output, session) {
           selected = NULL
         ) 
           })
+  
   # side bar menu ####################
   output$menu <- renderMenu({
       validate(need(kgg$all, ""))
@@ -368,6 +373,7 @@ server <- function(input, output, session) {
                    icon = icon("chart-line"))
       )
       })
+  
   output$prevw <- renderMenu({
     validate(need(res$sh, ""))
     sidebarMenu(
@@ -376,6 +382,7 @@ server <- function(input, output, session) {
                icon = icon("eye"))
     )
   })
+  
   # ui selector sample groups ###################
   output$sampleGroup <- renderUI({
     validate(need(datos$dds, ""))
@@ -387,6 +394,7 @@ server <- function(input, output, session) {
                 choices = nvars,
                 multiple = TRUE)
   })
+  
   # ui selector de genes para volcano plot #######################
   output$geneSelector <- renderUI({
     validate(need(res$sh, ""))
@@ -947,12 +955,11 @@ output$legendChorAll <- renderPlot({
     validate(need(kgg$all, "Load file and select to render Net Plot"))
     validate(need(rowsAll(), "Select the paths of interest to render NetPlot"))
     validate(need(kggDT$all, ""))
-    kgg$all$genes <- kggDT$all$genes
-    visData <- customVisNet(kgg$all, nTerm=rowsAll(),
-                            up = data$genesUp$SYMBOL, down = data$genesDown$SYMBOL )
+    visData <- customVisNet(kgg$all, nTerm=rowsAll(), kggDT$all,
+                             up = data$genesUp$SYMBOL, down = data$genesDown$SYMBOL )
     visNetwork(visData$nodes, visData$edges, background = "#ffffff") %>%
     visOptions(highlightNearest = list(enabled=TRUE, hover=TRUE),
-               nodesIdSelection = TRUE)
+                nodesIdSelection = TRUE)
   })
   # KEGG table up#####################################
   output$table <- DT::renderDT(server=TRUE,{

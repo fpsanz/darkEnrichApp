@@ -2401,9 +2401,10 @@ cytoBandCreate <- function(specie = "Mm"){
   # zcat mm10.gtf.gz | awk '$3=="gene"{print $1,$4,$5,$9}' | awk 'BEGIN{OFS="\t"}{split($4,a,";");print a[1],$1,$2,$3}' | sed 's/ID=gene://g' >Mm_annot.txt
 }
 # customVisNet #######################################
-customVisNet <- function( enrich, nTerm = NULL, up = NULL, down = NULL ){
+customVisNet <- function( enrich, kggDT, nTerm = NULL, up = NULL, down = NULL ){
     require(visNetwork)
     require(scales)
+    enrich$genes <- kggDT$genes
     enrich <- enrich %>% arrange(P.DE)
     enrich <- enrich[nTerm, ]
     enrich$genes <- gsub(",", ";", enrich$genes)
