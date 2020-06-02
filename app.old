@@ -23,16 +23,18 @@ library(shinyBS)
 library(shinyWidgets)
 library(shinydashboardPlus)
 library(pheatmap)
+library(heatmaply)
 library(shinyjs)
 library(shinythemes)
 library(rgl)
 library(rglwidget)
 library(scales)
 library(stringr)
-library(chromoMap)
+library(shinybusy)
+library(visNetwork)
 source("utils.R")
 options(shiny.maxRequestSize = 3000*1024^2)
-
+  
 ### HEADER ############ 
 header <- dashboardHeader(title = "RNAseq viewer and report App", 
                           titleWidth = 300, 
@@ -54,18 +56,13 @@ sidebar <- dashboardSidebar(useShinyalert(),
                                     ) 
                                 )
                             ),
-                            sidebarMenu(
-                              menuItem(
-                                  uiOutput("deseqFile")
-                                )),
+                            sidebarMenu(menuItem(uiOutput("deseqFile"))),
+                            sidebarMenu(menuItem(uiOutput("design"))),
                             sidebarMenu(id="menupreview",
                               menuItem("App Information",
                                        tabName = "info",
-                                       icon = icon("info")),
-                              menuItem("Preview dataset",
-                                       tabName = "preview",
-                                       icon = icon("eye"))
-                              ),
+                                       icon = icon("info"))),
+                            sidebarMenu(id = "previewMenu", sidebarMenuOutput("prevw")),
                             sidebarMenu("", sidebarMenuOutput("menu")),
                              sidebarMenu(
                                 menuItem(
@@ -81,22 +78,21 @@ sidebar <- dashboardSidebar(useShinyalert(),
 
 ### BODY ###############
 body <- dashboardBody(
+      add_busy_gif(src="dna-mini.gif", position = "full-page", width = 10, height = 10 ),
      tags$head(
        tags$link(rel = "stylesheet", type = "text/css", href = "customDark.css")
      ),
     setShadow(class = "shiny-plot-output"),
     setShadow( class = "box"),
     setShadow( class = "svg-container"),
-    shiny::tagList(shiny::tags$head(
-        shiny::tags$link(rel = "stylesheet", type = "text/css", href = "busystyle.css"),
-        shiny::tags$script(type = "text/javascript", src = "busy.js")
-    )),
-    div(
-        class = "busy",
-        #h4("Loading data, please be patient..."),
-        img(src = "dna-svg-small-13.gif", style = "width: 150px"),
-        style = "z-index: 99"
-    ), 
+    # shiny::tagList(shiny::tags$head(
+    #     shiny::tags$link(rel = "stylesheet", type = "text/css", href = "busystyle.css"),
+    #     shiny::tags$script(type = "text/javascript", src = "busy.js"))),
+    # div( class = "busy",
+    #     #h4("Loading data, please be patient..."),
+    #     img(src = "dna-svg-small-13.gif", style = "width: 150px"),
+    #     style = "z-index: 99"
+    # ), 
   bsAlert("alert"),
   tabItems(
     # Initial INFO
@@ -189,6 +185,7 @@ server <- function(input, output, session) {
   datos <- reactiveValues(dds=NULL) #objetos dds post DESeq()
   gsea <- reactiveValues() # objeto GSEA
   logfcRange <- reactiveValues() # min y max logfc
+  fcRange <- reactiveValues() # min y max fc
   res <- reactiveValues()
   vsd <- reactiveValues()
   rlog <- reactiveValues()
@@ -199,6 +196,13 @@ server <- function(input, output, session) {
       datos$dds <- readRDS(input$deseqFile$datapath)
   })
   
+  observeEvent(datos$dds,{
+        validate(need(datos$dds, ""))
+          if(!is(datos$dds, "DESeqDataSet") | !("results" %in% mcols(mcols(datos$dds))$type) ){
+          createAlert(session, "alert", "fileAlert",title = "Oops!!", 
+          content = "File must be a DESeqDataSet class object
+           and you should have run DESeq()", append=FALSE, style = "error")}
+  })
   coloresPCA$colores <- reactive({
         tmp = NULL
       for(i in seq_len(coloresPCA$numNiveles)){
@@ -208,27 +212,23 @@ server <- function(input, output, session) {
   })
 
   # Acciones al cargar fichero deseq ##########################
-  observeEvent(datos$dds, {
-    validate(need(datos$dds, ""))
-      if(!is(datos$dds, "DESeqDataSet") | !("results" %in% mcols(mcols(datos$dds))$type) ){
-          createAlert(session, "alert", "fileAlert",title = "Oops!!", 
-          content = "File must be a DESeqDataSet class object
-           and you should have run DESeq()", append=FALSE, style = "error")
-      }
-      else {
+  observeEvent(design(), {
+    validate(need(design(), ""))
         closeAlert(session, "alert")
           colData(datos$dds)@listData <-
               colData(datos$dds)@listData %>%
-              as.data.frame() %>% mutate_at(vars(-sizeFactor,-replaceable), as.character) %>%
-              mutate_at(vars(-sizeFactor,-replaceable), as.factor) %>% as.list()
-        res$sh <- as.data.frame(lfcShrink(datos$dds, coef=2, type="apeglm", res = results(datos$dds)))
+              as.data.frame() %>% mutate_at(vars(-sizeFactor, contains('replaceable')), as.character) %>% ##aqui##
+              mutate_at(vars(-sizeFactor, contains('replaceable')), as.factor) %>% as.list()
+        res$sh <- as.data.frame(lfcShrink(datos$dds, coef=(as.numeric(design())+1), type="apeglm"))
+        res$sh <- res$sh[!is.na(res$sh$padj),]
         conversion <- geneIdConverter(rownames(res$sh), specie() )
         res$sh$baseMean <- round(res$sh$baseMean,4)
         res$sh$lfcSE <- round(res$sh$lfcSE,4)
         res$sh$log2FoldChange <- round(res$sh$log2FoldChange,4)
         res$sh <- cbind(`Description`=conversion$description, res$sh)
-        res$sh <- cbind(`GeneName_Symbol`=conversion$consensus, res$sh)
-        res$sh <-  res$sh %>% select(-c(pvalue))
+          res$sh <- cbind(`GeneName_Symbol`=conversion$consensus, res$sh)
+        #res$sh$padj <- res$sh$pvalue  #########   #########   ##############
+        res$sh <-  res$sh %>% dplyr::select(-c(pvalue))
         if(specie() == "Mm" ){spc = "Mus_musculus"}
         else {spc = "Homo_sapiens"}
         links = paste0("<a href='http://www.ensembl.org/",spc,"/Gene/Summary?db=core;g=",
@@ -238,9 +238,12 @@ server <- function(input, output, session) {
         rlog$datos <- rlog(datos$dds)
         logfcRange$min <- min(res$sh$log2FoldChange)
         logfcRange$max <- max(res$sh$log2FoldChange)
+        fcRange$min <- ifelse(logfcRange$min<0, -(2^abs(logfcRange$min)), 2^abs(logfcRange$min))
+        fcRange$max <- ifelse(logfcRange$max<0, -(2^abs(logfcRange$max)), 2^abs(logfcRange$max))
         closeAlert(session, "fileAlert")
-      }
+        updateTabItems(session, "previewMenu", "preview")
   })
+  
   # Acciones al pulsar el boton enrich #####################
   observeEvent(input$runEnrich, {
     data$genesUp <- getSigUpregulated(res$sh, padj(), logfc()[2], specie() ) 
@@ -250,10 +253,10 @@ server <- function(input, output, session) {
     kgg$all <- customKegg(data$genesall, species = specie() ) #"Mm"), species.KEGG = "mmu")
     kggDT$all <- kegg2DT(kgg$all, data$genesall)
     
-    kgg$up <- customKegg(data$genesUp, species = specie() )#"Mm")#, species.KEGG = "mmu")
+    kgg$up <- customKegg(data$genesUp, species = specie() ) #"Mm")#, species.KEGG = "mmu")
     kggDT$up <- kegg2DT(kgg$up, data$genesUp)
     
-    kgg$down <- customKegg(data$genesDown, species = specie() )# "Mm")#, species.KEGG = "mmu")
+    kgg$down <- customKegg(data$genesDown, species = specie() ) # "Mm")#, species.KEGG = "mmu")
     kggDT$down <- kegg2DT(kgg$down, data$genesDown)
     
     go$all <- customGO(data$genesall, species = "Mm")
@@ -264,8 +267,9 @@ server <- function(input, output, session) {
     
     go$down <- customGO(data$genesDown, species = "Mm")
     goDT$down <- go2DT(enrichdf = go$down, data = data$genesDown )
-    updateTabItems(session, "menupreview", "preview")
+    updateTabItems(session, "previewMenu", "preview")
   })
+  
   # Acciones al seleccionar variables ################
   observeEvent(input$variables, {
         if(!is.factor(colData(datos$dds)[[ variables()[1] ]] ) ){
@@ -294,11 +298,23 @@ server <- function(input, output, session) {
   ccrowsdown <- reactive({input$tableCCdown_rows_selected})
   
   variables <- reactive({input$variables})
+  genesVolcano <- reactive({input$genesVolcano})
   samplename <- reactive({input$samplename})
   gsearow <- reactive({input$gseaTable_rows_selected})
   specie <- reactive({input$specie})
   padj <- reactive({input$padj})
-  logfc <- reactive({input$logfc})
+  fc <- reactive({input$fc})
+  
+  logfc <- reactive({
+    validate(need(input$logfc,""))
+    logfcTmp <- input$logfc
+    if(logfcTmp[1]==logfcTmp[2]){
+      return(c(0,0))
+    }else{
+      return(logfcTmp)
+    }
+    })
+  
   specie <- reactive({input$specie})
   biologicalText <- reactive({input$biologicalText})
   explainPreview <- reactive({input$explainPreview})
@@ -313,7 +329,8 @@ server <- function(input, output, session) {
   typeBarCcAll <- reactive({input$selectccall})
   pca3d <- reactive({input$pca3d})
   boxplotswitch <- reactive({input$boxplotswitch})
-
+  design <- reactive({input$designPicker})
+  
   # InputFile #################
   output$deseqFile <- renderUI({
       validate(need(specie(), ""))
@@ -322,6 +339,21 @@ server <- function(input, output, session) {
           placeholder = "RDS DESeq",
           accept = ".Rds")
   })
+  
+  # InputDesign ###########################
+  output$design <- renderUI({
+        validate(need(datos$dds,""))
+          opciones <- as.list(seq_len(length(resultsNames(datos$dds)[-1] )))
+          names(opciones) <- resultsNames(datos$dds)[-1]
+          pickerInput(
+          inputId = "designPicker",
+          label = "Select design",
+          choices = opciones,
+          options = list(title = "Design"),
+          selected = NULL
+        ) 
+          })
+  
   # side bar menu ####################
   output$menu <- renderMenu({
       validate(need(kgg$all, ""))
@@ -341,43 +373,76 @@ server <- function(input, output, session) {
                    icon = icon("chart-line"))
       )
       })
+  
+  output$prevw <- renderMenu({
+    validate(need(res$sh, ""))
+    sidebarMenu(
+      menuItem("Preview dataset",
+               tabName = "preview",
+               icon = icon("eye"))
+    )
+  })
+  
   # ui selector sample groups ###################
   output$sampleGroup <- renderUI({
     validate(need(datos$dds, ""))
     nvars <- colData(datos$dds) %>% 
       as.data.frame() %>% 
-      select(-c(sizeFactor,replaceable)) %>% 
+      dplyr::select(-any_of(c("sizeFactor", "replaceable"))) %>% 
       names()
     selectInput("variables", label="Select condition[s] of interest to highlight",
                 choices = nvars,
                 multiple = TRUE)
   })
   
+  # ui selector de genes para volcano plot #######################
+  output$geneSelector <- renderUI({
+    validate(need(res$sh, ""))
+    validate(need(padj(),""))
+    genes <- as.character(res$sh$GeneName_Symbol[ which(!( res$sh$padj>padj() &
+                                                             res$sh$log2FoldChange>logfc()[1] &
+                                                             res$sh$log2FoldChange<logfc()[2] )) ])
+    selectInput("genesVolcano", label="Select gene[s] to label",
+                choices = genes,
+                multiple = TRUE)
+  })
   # ui selector sample name ###################
   output$samplesName <- renderUI({
     validate(need(datos$dds, ""))
     nvars <- colData(datos$dds) %>% 
       as.data.frame() %>% 
-      select(-c(sizeFactor,replaceable)) %>% 
+      dplyr::select(-any_of(c("sizeFactor", "replaceable"))) %>% 
       names()
-    selectInput("samplename", label="Select column to use for sample name",
+    selectInput("samplename", label="Select column to use for sample name or gathering",
                 choices = nvars,
                 multiple = FALSE)
+  })
+  # ui selector fc #######################
+  output$fc <- renderUI({
+    validate(need(datos$dds, ""))
+    sliderInput("fc", label = "Select FC range to remove (keeps the tails)",
+                min=round(fcRange$min,3), max=round(fcRange$max, 3),
+                #value = c(round(logfcRange$min,3)+1,round(logfcRange$max,3)-1 ), step = 0.1 )
+                value = c(-1.5,1.5), step = 0.1 )
   })
   
   # ui selector logfc #######################
   output$logfc <- renderUI({
     validate(need(datos$dds, ""))
+    validate(need(fc(), ""))
+    valmin <- ifelse(fc()[1]<0, -log2(abs(fc()[1])), log2(abs(fc()[1])) )
+    valmax <- ifelse(fc()[2]<0, -log2(abs(fc()[2])), log2(abs(fc()[2])) )
     sliderInput("logfc", label = "Select logFC range to remove (keeps the tails)",
                 min=round(logfcRange$min,3), max=round(logfcRange$max, 3),
                 #value = c(round(logfcRange$min,3)+1,round(logfcRange$max,3)-1 ), step = 0.1 )
-                value = c(-0.5,0.5), step = 0.1 )
+                value = c(valmin, valmax), #value = c(-0.5,0.5), 
+                step = 0.1 )
   })
   
   # ui selector padj #################################
   output$padj <- renderUI({
     validate(need(datos$dds,""))
-    sliderInput("padj", label = "Select p-adjusted threshold (corrected p-value)", min = 0, max=0.2, value=0.05, step = 0.005 )
+    sliderInput("padj", label = "Select p-adjusted threshold", min = 0, max=0.2, value=0.05, step = 0.005 )
   })
   # ui selector Colores para PCA y demás #######################
   output$colorPalettes <- renderUI({
@@ -529,7 +594,7 @@ server <- function(input, output, session) {
   # preview samples ###################
   output$samples <- DT::renderDataTable(server = TRUE,{
     validate(need(datos$dds, "Load file to render table"))
-    metadata <- as.data.frame(colData(datos$dds)) %>% select(-c(sizeFactor,replaceable))
+    metadata <- as.data.frame(colData(datos$dds)) %>% dplyr::select(-any_of(c("sizeFactor", "replaceable")))
     tituloTabla <- paste0("Table: ColData | ","log2FC: ",logfc()[1],"_",logfc()[2]," | ","padj: ",padj()," | ",
                           "Num genes Up/down: ",numgenesDE$up,"/",numgenesDE$down)
     customButtons <- list(
@@ -647,19 +712,32 @@ output$pca3d <- renderRglwidget({
    output$volcano <- renderPlot( {
     #validate(need(datos$dds, "Load file and condition to render Volcano"))
     validate(need(res$sh, "Load file to render plot"))
-    res$sh$GeneName_Symbol <- as.character(res$sh$GeneName_Symbol)
-    CustomVolcano(res$sh, lab = res$sh$GeneName_Symbol, 
-                  x = 'log2FoldChange',
-                  y = 'padj',
-                  pCutoff = padj(),
-                  FCcutoffUP = logfc()[2],
-                  FCcutoffDOWN = logfc()[1],
-                  xlim = c(-8, 8),
-                  col = c("gray", "#7cccc3", "#d99c01", input$upColor, input$downColor)
-                  #input$nsColor, input$logfcColor, input$padjColor, input$bothColor)
-                  )
-  })
-  # view MA plot data ###################
+    res <-  res$sh
+    #res$`-log10padj` <- (-log10(res$padj)) 
+    CustomVolcano(res, lab = as.character(res$GeneName_Symbol),
+                  selectLab = genesVolcano(),
+                    x = 'log2FoldChange',
+                    y = 'padj',
+                    pCutoff = padj(),
+                    FCcutoffUP = logfc()[2],
+                    FCcutoffDOWN = logfc()[1],
+                    xlim = c(-8, 8),
+                    col = c("gray", "#7cccc3", "#d99c01", input$upColor, input$downColor))
+    })
+    #volcany(res$sh, padj=padj(), fcdown=logfc()[1], fcup=logfc()[2],
+    #        col=c(input$upColor, input$downColor), genes=genesVolcano() )
+  
+xy <- reactive({
+  res <- res$sh
+  res$`-log10padj` <- (-log10(res$padj)) 
+  nearPoints(res, input$plot_click1, xvar = "log2FoldChange", yvar = "-log10padj")
+})
+output$texto1 <- renderTable( digits = -2, {
+        xy <- xy()
+        xy[,c(2,5,7,8)]
+    })
+
+# view MA plot data ###################
   output$MA <- renderPlot( {
     #validate(need(datos$dds, ""))
     validate(need(res$sh, "Load file to render plot"))
@@ -676,17 +754,29 @@ output$pca3d <- renderRglwidget({
        ggtheme = theme_classic()
     )
   })
+
+clicked <- reactive({
+  res <- res$sh
+  res$`log2(mean - 1)` <- log2(res$baseMean + 1)
+  nearPoints(res, input$plot_click2, xvar = "log2(mean - 1)", yvar = "log2FoldChange")
+})
+
+output$texto2 <- renderTable( digits = -2, {
+  clicked <- clicked()
+  clicked[,c(2,5,7,8)]
+} )
+
   # view HEATMAP data ###################
-  output$heat <- renderPlot( {
+  output$heat <- renderPlotly( {
     validate(need(datos$dds, ""))
     validate(need(vsd$data, "Load file to render plot"))
     validate(need(variables(),"Load condition to render plot" ) )
     validate(need(samplename(),"Load condition to render plot" ) )
-    heat(vsd$data, n=numheatmap(), intgroup = variables(), sampleName = samplename(),
+    heat2(vsd$data, n=numheatmap(), intgroup = variables(), sampleName = samplename(),
          specie=specie(), customColor = coloresPCA$colores() )
   })
   # view CLUSTER data ###################
-  output$cluster <- renderPlot( {
+  output$cluster <- renderPlotly( {
     validate(need(datos$dds, ""))
     validate(need(vsd$data, "Load file to render plot"))
     validate(need(variables(),"Load condition to render plot" ) )
@@ -738,7 +828,7 @@ output$pca3d <- renderRglwidget({
             gene = toupper(gene)
         }
         z <- plotCountsSymbol(dds = datos$dds, gene = gene, returnData = TRUE,
-                              intgroup = variables()[1])
+                              intgroup = variables()[1], specie=specie())
         symbol <- gene
     }
     z <- z %>% group_by(!!as.name(variables()[1])) %>%
@@ -758,10 +848,17 @@ output$pca3d <- renderRglwidget({
     })
     p %>% ggplotly(tooltip = c("x","y","text"))
   })
+## karyoplot ######################################
+output$karyoPlot <- renderPlot({
+    validate(need(res$sh, "Load file to render plot"))
+    krtp(res$sh, specie = specie(), pval = padj(), fcdown = logfc()[1],
+         fcup = logfc()[2], bg="#46505a", coldown="#4ADBFF" , colup="#f7665c")
+})
 
  # Boxviolin plot #################################
   output$boxviolin <- renderPlotly({
           validate(need(datos$dds, "Load file and condition to render Volcano"))
+          validate(need(variables(),"Load condition to render plot" ) )
           validate(need(vsd$data, ""))
           validate(need(variables(), ""))
           validate(need(samplename(),"" ) )
@@ -841,17 +938,28 @@ output$legendChorAll <- renderPlot({
     dotPlotkegg(kgg$all[rowsAll,], n = length(rowsAll))
   })
   # KEGG heatmap All #################
-  output$heatmapKeggAll <- renderPlot({
+  output$heatmapKeggAll <- renderPlotly({
     validate(need(kgg$all, "Load file and select to render Heatmap"))
     validate(need(rowsAll(), "Select the paths of interest to render HeatMap"))
     validate(need(kggDT$all, ""))
-    heatmapKegg(kggDT$all, rowsAll() ) 
+    heatmapKeggLogFC(kggDT$all, res$sh, rowsAll() ) 
   })
   # KEGG cnet All #################
   output$cnetKeggAll <- renderPlot({
     validate(need(kgg$all, "Load file and select to render Net Plot"))
     validate(need(rowsAll(), "Select the paths of interest to render NetPlot"))
     customCnetKegg(kgg$all, rowsAll())
+  })
+  # KEGG VisNetwork ALL #################
+  output$visnetKeggAll <- renderVisNetwork({
+    validate(need(kgg$all, "Load file and select to render Net Plot"))
+    validate(need(rowsAll(), "Select the paths of interest to render NetPlot"))
+    validate(need(kggDT$all, ""))
+    visData <- customVisNet(kgg$all, nTerm=rowsAll(), kggDT$all,
+                             up = data$genesUp$SYMBOL, down = data$genesDown$SYMBOL )
+    visNetwork(visData$nodes, visData$edges, background = "#ffffff") %>%
+    visOptions(highlightNearest = list(enabled=TRUE, hover=TRUE),
+                nodesIdSelection = TRUE)
   })
   # KEGG table up#####################################
   output$table <- DT::renderDT(server=TRUE,{
@@ -1442,12 +1550,17 @@ output$legendChorAll <- renderPlot({
   })
   # GSEA table ##########################
   output$gseaTable <- renderDataTable({
-    validate(need(datos$dds, "Load file to render table"))
-    gsea$gsea <- gseaKegg(res$sh)
+    validate(need(res$sh, "Load file to render table"))
+    gsea$gsea <- gseaKegg(res$sh, specie() )
     mygsea <- gsea$gsea
-    #saveRDS(mygsea, "tmpResources/gsea.Rds")
+    if( length(which(mygsea@result$p.adjust<=0.05)) == 0 ){
+        createAlert(session, anchorId = "gsea", title = "Oops!!", 
+          content = "Sorry, I didn't get any significant results for this analysis",
+          append=FALSE, style = "info")
+    } else{
     table <- mygsea@result[mygsea@result$p.adjust<=0.05 ,2:9] %>% 
       mutate_at(vars(3:7), ~round(., 4))
+
     tituloTabla <- paste0("Table: GSEA pathway | ","log2FC: ",logfc()[1],"_",logfc()[2]," | ","padj: ",padj()," | ",
                           "Num genes Up/down: ",numgenesDE$up,"/",numgenesDE$down)
     customButtons <- list(
@@ -1474,13 +1587,21 @@ output$legendChorAll <- renderPlot({
                      list(pageLength = 10, white_space = "normal")
                    )
     )
+    }
   })
   # GSEA plot ##########################
   output$gseaPlot <- renderPlot({
     validate(need(gsea$gsea, "Load file to render table"))
     gseanr <- gsearow()
     if(is.null(gseanr)){gseanr <- c(1)}
-    enrichplot::gseaplot2(gsea$gsea, geneSetID = gseanr, pvalue_table = TRUE, ES_geom = "line")
+    mygsea <- gsea$gsea
+    if( length(which(mygsea@result$p.adjust<=0.05)) == 0 ){
+        createAlert(session, anchorId = "gseaPlot", title = "Oops!!", 
+          content = "Sorry, I didn't get any significant results for this analysis",
+          append=FALSE, style = "info")
+    } else{
+        enrichplot::gseaplot2(gsea$gsea, geneSetID = gseanr, pvalue_table = TRUE, ES_geom = "line")
+        }
   })
   # author name ######################
   author <- reactive({input$author})
