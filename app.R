@@ -278,15 +278,21 @@ server <- function(input, output, session) {
   logfc <- reactive({logfcVal$val})
   fc <- reactive({fcVal$val})
   observeEvent(input$applyParam,{
-      padjVal$val <- input$padj #<- reactive({input$padj})
-      fcVal$val <-input$fc  #<- reactive({input$fc})
-      logfcTmp <- input$logfc
+      padjVal$val <- input$padj
+      if( isTRUE( fc_switch()) ){
+        logfcTmp <- vector()
+        fcVal$val <-input$fc
+        logfcTmp[1] <- ifelse(fc()[1]<0, -log2(abs(fc()[1])), log2(abs(fc()[1])) )
+        logfcTmp[2] <- ifelse(fc()[2]<0, -log2(abs(fc()[2])), log2(abs(fc()[2])) )
+      } else {
+        logfcTmp <- input$logfc
+      }
       if(logfcTmp[1]==logfcTmp[2]){
           logfcVal$val <- c(0,0)
           }else{
             logfcVal$val <- logfcTmp
           }
-  })
+    })
   
   # Acciones al seleccionar variables ################
   observeEvent(input$variables, {
@@ -335,6 +341,7 @@ server <- function(input, output, session) {
   pca3d <- reactive({input$pca3d})
   boxplotswitch <- reactive({input$boxplotswitch})
   design <- reactive({input$designPicker})
+  fc_switch <- reactive({input$fc_switch})
   
   # InputFile #################
   output$deseqFile <- renderUI({
@@ -422,27 +429,47 @@ server <- function(input, output, session) {
                 choices = nvars,
                 multiple = FALSE)
   })
-  # ui selector fc #######################
-  output$fc <- renderUI({
-    validate(need(datos$dds, ""))
-    sliderInput("fc", label = "Select FC range to remove (keeps the tails)",
-                min=round(fcRange$min,3), max=round(fcRange$max, 3),
-                #value = c(round(logfcRange$min,3)+1,round(logfcRange$max,3)-1 ), step = 0.1 )
-                value = c(-1.5,1.5), step = 0.1 )
+  
+  # Deslizador fc/logfc según switch #################
+  output$fc_control <- renderUI({
+    if(isTRUE(fc_switch())){
+      validate(need(datos$dds, ""))
+      sliderInput("fc", label = "Select FC range to remove (keeps the tails)",
+                  min=round(fcRange$min,3), max=round(fcRange$max, 3),
+                  value = c(-1.5, 1.5), step = 0.1 )
+      #valmin <- ifelse(fc()[1]<0, -log2(abs(fc()[1])), log2(abs(fc()[1])) )
+      #valmax <- ifelse(fc()[2]<0, -log2(abs(fc()[2])), log2(abs(fc()[2])) )
+    } else {
+      validate(need(datos$dds, ""))
+      validate(need(fc(), ""))
+      sliderInput("logfc", label = "Select logFC range to remove (keeps the tails)",
+                min=round(logfcRange$min,3), max=round(logfcRange$max, 3),
+                value = c(-0.5,0.5), 
+                step = 0.1 )
+    }
   })
   
-  # ui selector logfc #######################
-  output$logfc <- renderUI({
-    validate(need(datos$dds, ""))
-    validate(need(fc(), ""))
-    valmin <- ifelse(fc()[1]<0, -log2(abs(fc()[1])), log2(abs(fc()[1])) )
-    valmax <- ifelse(fc()[2]<0, -log2(abs(fc()[2])), log2(abs(fc()[2])) )
-    sliderInput("logfc", label = "Select logFC range to remove (keeps the tails)",
-                min=round(logfcRange$min,3), max=round(logfcRange$max, 3),
-                #value = c(round(logfcRange$min,3)+1,round(logfcRange$max,3)-1 ), step = 0.1 )
-                value = c(valmin, valmax), #value = c(-0.5,0.5), 
-                step = 0.1 )
-  })
+  # # ui selector fc #######################
+  # output$fc <- renderUI({
+  #   validate(need(datos$dds, ""))
+  #   sliderInput("fc", label = "Select FC range to remove (keeps the tails)",
+  #               min=round(fcRange$min,3), max=round(fcRange$max, 3),
+  #               #value = c(round(logfcRange$min,3)+1,round(logfcRange$max,3)-1 ), step = 0.1 )
+  #               value = c(-1.5,1.5), step = 0.1 )
+  # })
+  # 
+  # # ui selector logfc #######################
+  # output$logfc <- renderUI({
+  #   validate(need(datos$dds, ""))
+  #   validate(need(fc(), ""))
+  #   valmin <- ifelse(fc()[1]<0, -log2(abs(fc()[1])), log2(abs(fc()[1])) )
+  #   valmax <- ifelse(fc()[2]<0, -log2(abs(fc()[2])), log2(abs(fc()[2])) )
+  #   sliderInput("logfc", label = "Select logFC range to remove (keeps the tails)",
+  #               min=round(logfcRange$min,3), max=round(logfcRange$max, 3),
+  #               #value = c(round(logfcRange$min,3)+1,round(logfcRange$max,3)-1 ), step = 0.1 )
+  #               value = c(valmin, valmax), #value = c(-0.5,0.5), 
+  #               step = 0.1 )
+  # })
   
   # ui selector padj #################################
   output$padj <- renderUI({
@@ -950,12 +977,20 @@ output$legendChorAll <- renderPlot({
     heatmapKeggLogFC(kggDT$all, res$sh, rowsAll() ) 
   })
   # KEGG cnet All #################
+  output$keggAllNet <- renderUI({
+    if(!isTRUE( input$keggAllNet_switch ) ){
+      plotOutput("cnetKeggAll", height = "600px")
+    } else{
+      visNetworkOutput("visnetKeggAll", height = "600px")
+    }
+  })
+
   output$cnetKeggAll <- renderPlot({
     validate(need(kgg$all, "Load file and select to render Net Plot"))
     validate(need(rowsAll(), "Select the paths of interest to render NetPlot"))
     customCnetKegg(kgg$all, rowsAll())
   })
-  # KEGG VisNetwork ALL #################
+
   output$visnetKeggAll <- renderVisNetwork({
     validate(need(kgg$all, "Load file and select to render Net Plot"))
     validate(need(rowsAll(), "Select the paths of interest to render NetPlot"))

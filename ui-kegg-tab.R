@@ -96,11 +96,21 @@ fluidPage(
                                  plotlyOutput("heatmapKeggAll", height = "600px")
                                  ), # heatmap
                         tabPanel(title = "Netplot",
-                                 plotOutput("cnetKeggAll")
-                                 ), # cnetplot
-                        tabPanel(title = "VisNetPlot",
-                                 visNetworkOutput("visnetKeggAll", height = "600px")
-                                 ) #visnetall
+                                 column(width = 1,
+                                        switchInput(
+                                            size = "mini",
+                                            inputId = "keggAllNet_switch",
+                                            offLabel = "Static",
+                                            onLabel = "Interactive")
+                                        ),
+                                 column(width = 11,
+                                        uiOutput("keggAllNet")
+                                        )
+                                 #plotOutput("cnetKeggAll")
+                        #          ), # cnetplot
+                        # tabPanel(title = "VisNetPlot",
+                        #          visNetworkOutput("visnetKeggAll", height = "600px")
+                                  ) #visnetall
                         )
                     )
             )
