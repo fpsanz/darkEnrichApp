@@ -277,6 +277,7 @@ server <- function(input, output, session) {
   padj <- reactive({padjVal$val})
   logfc <- reactive({logfcVal$val})
   fc <- reactive({fcVal$val})
+  
   observeEvent(input$applyParam,{
       padjVal$val <- input$padj
       if( isTRUE( fc_switch()) ){
@@ -434,17 +435,24 @@ server <- function(input, output, session) {
   output$fc_control <- renderUI({
     if(isTRUE(fc_switch())){
       validate(need(datos$dds, ""))
+      valmin <- ifelse(input$logfc[1]<0, -2^(abs(input$logfc[1] )), 2^(abs(input$logfc[1])) )
+      valmax <- ifelse(input$logfc[2]<0, -2^(abs(input$logfc[2] )), 2^(abs(input$logfc[2])) )
       sliderInput("fc", label = "Select FC range to remove (keeps the tails)",
                   min=round(fcRange$min,3), max=round(fcRange$max, 3),
-                  value = c(-1.5, 1.5), step = 0.1 )
-      #valmin <- ifelse(fc()[1]<0, -log2(abs(fc()[1])), log2(abs(fc()[1])) )
-      #valmax <- ifelse(fc()[2]<0, -log2(abs(fc()[2])), log2(abs(fc()[2])) )
+                  value = c(valmin, valmax), step = 0.1 )
     } else {
       validate(need(datos$dds, ""))
       validate(need(fc(), ""))
+        if(is.null(input$fc[1]) ){
+          valmin = -0.5
+          valmax = 0.5
+        } else{
+          valmin <- ifelse(input$fc[1]<0, -log2(abs(input$fc[1] )), log2(abs(input$fc[1])) )
+          valmax <- ifelse(input$fc[2]<0, -log2(abs(input$fc[2] )), log2(abs(input$fc[2])) )
+      }
       sliderInput("logfc", label = "Select logFC range to remove (keeps the tails)",
                 min=round(logfcRange$min,3), max=round(logfcRange$max, 3),
-                value = c(-0.5,0.5), 
+                value = c(valmin, valmax), 
                 step = 0.1 )
     }
   })
@@ -474,7 +482,8 @@ server <- function(input, output, session) {
   # ui selector padj #################################
   output$padj <- renderUI({
     validate(need(datos$dds,""))
-    sliderInput("padj", label = "Select p-adjusted threshold", min = 0, max=0.2, value=0.05, step = 0.005 )
+    sliderInput("padj", label = "Select p-adjusted threshold", min = 0, max=0.2,
+                value=0.05, step = 0.005 )
   })
   # ui selector Colores para PCA y demás #######################
   output$colorPalettes <- renderUI({
