@@ -123,7 +123,7 @@ customCnet2Cytoscape <- function(kgg, category=NULL, nPath=NULL, byDE=FALSE){
 }
 
 # Plot para plotear cnet para kegg ###############
-customCnetKegg <- function(kgg, category=NULL, nPath=NULL, byDE=FALSE, nr){
+customCnetKegg <- function(kgg, category=NULL, nPath=NULL, byDE=FALSE, nr, genesUp, genesDown){
     if(! "ggraph" %in% .packages()) require("ggraph")
     if(! "igraph" %in% .packages()) require("igraph")
     if(! "dplyr" %in% .packages()) require("dplyr")
@@ -147,6 +147,9 @@ customCnetKegg <- function(kgg, category=NULL, nPath=NULL, byDE=FALSE, nr){
             tmp <- tmp[1:nPath, ]
         } else{ stop("nPath must be numeric or NULL")}
     }
+    genesUp$dir <- "#ffa200"
+    genesDown$dir <- "#91ebff"
+    genesAll <- rbind(genesUp,genesDown)
     pval <- tmp[,c(1,4)]
     tmp <- tmp[,c(1,6)]
     tmp2 <- tmp %>%  separate_rows( genes, convert=TRUE)
@@ -170,11 +173,15 @@ customCnetKegg <- function(kgg, category=NULL, nPath=NULL, byDE=FALSE, nr){
         geom_node_point( aes_(color=~pval, size=~size) ) +
         scale_size(range=c(3, 10), breaks=unique(round(seq(min(size), max(size), length.out=4)))) +
         theme_void()
+    ##
+    ptmp <- p$data
+    ptmp2 <- left_join(ptmp, genesAll, by = c("name"="ENTREZID"))
+    genesColor <- ptmp2$dir[!is.na(ptmp2$dir)]
+    ##
     p <- p + geom_node_text(aes_(label=~name), data = p$data[1:n,]) +
-        scale_color_gradientn(name = "pval", colors=palette, na.value = "#E5C494")
+        scale_color_gradientn(name = "pval", colors=palette, na.value = genesColor )
     return(p)
-}
-
+ }
 # Plot para plotear cnet para GO ###############
 customCnetGo <- function(gos, category=NULL, nTerm=NULL, byDE=FALSE, ont="BP"){
     if(! "ggraph" %in% .packages()) require("ggraph")
@@ -2458,3 +2465,23 @@ customVisNet <- function( enrich, kggDT, nTerm = NULL, up = NULL, down = NULL ){
       }
     return(list(nodes = nodesf, edges = edgesf))
 } 
+# GoBarplot ########################
+goBarplot <- function(enrichGO=NULL, resGO=NULL, genes=NULL, category=NULL ){
+    require(GOplot)
+    go <- enrichGO
+    res <- resGO
+    go2 <- go %>% group_by(Ont) %>% sample_n(size = 30)
+    goDT <- go2DT(go2, genes)
+    # preparar tabla GO
+    go2$genes <- goDT$genes
+    go2 <- go2 %>% dplyr::select(Ont,go_id,Term,genes, P.DE)
+    names(go2) <- c("Category","ID", "Term", "Genes", "adj_pval")
+    #preparar tabla genelist
+    names(res)
+    res2 <- res %>% dplyr::select(GeneName_Symbol, log2FoldChange, padj)
+    names(res2) <- c("ID","logFC","adj.P.Val")
+    # crear objeto circ
+    library(GOplot)
+    circ <- circle_dat(go2, res2)
+    GOBar(subset(circ, category=category))
+}

@@ -192,11 +192,20 @@ fluidPage(
                                  plotOutput("keggDotUp")
                                  ), # dotplot
                         tabPanel(title = "Heatmap",
-                                 plotOutput("heatmapKeggUp", height = "600px")
+                                 plotlyOutput("heatmapKeggUp", height = "600px")
                                  ), # heatmap
-                        tabPanel(title = "Netplot",
-                                 plotOutput("cnetKeggUp")
-                                 ) # cnetplot
+                        tabPanel(title = "NetplotUp",
+                                 column(width = 1,
+                                        switchInput(
+                                            size = "mini",
+                                            inputId = "keggUpNet_switch",
+                                            offLabel = "Static",
+                                            onLabel = "Interactive")
+                                        ),
+                                 column(width = 11,
+                                        uiOutput("keggUpNet")
+                                        )
+                                  ) #visnetup
                         )
                     )
             )
@@ -278,11 +287,20 @@ fluidPage(
                                  plotOutput("keggDotDown")
                                  ), # dotplot
                         tabPanel(title = "Heatmap",
-                                 plotOutput("heatmapKeggDown", height = "600px")
+                                 plotlyOutput("heatmapKeggDown", height = "600px")
                                  ), # heatmap
-                        tabPanel(title = "Netplot",
-                                 plotOutput("cnetKeggDown")
-                                 ) # cnetplot
+                        tabPanel(title = "NetplotDown",
+                                 column(width = 1,
+                                        switchInput(
+                                            size = "mini",
+                                            inputId = "keggDownNet_switch",
+                                            offLabel = "Static",
+                                            onLabel = "Interactive")
+                                        ),
+                                 column(width = 11,
+                                        uiOutput("keggDownNet")
+                                        )
+                                  ) #cnetplot
                         )
                     )
             )

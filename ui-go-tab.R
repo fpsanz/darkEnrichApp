@@ -116,7 +116,10 @@ fluidPage(
                                               ))),  #barplot
                             tabPanel(title = "Dotplot",
                                      plotOutput("MFDotall")
-                                     ) # dotplot
+                                     ), # dotplot
+                            tabPanel(title = "GoBarplot",
+                                     plotOutput("gobarplotAllMF")
+                                     )
                         )
                     )
             )),

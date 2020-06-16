@@ -1,3 +1,26 @@
+goBarplot <- function(enrichGO=NULL, resGO=NULL, genes=NULL, category=NULL ){
+    require(GOplot)
+    go <- enrichGO
+    res <- resGO
+    go2 <- go %>% group_by(Ont) %>% sample_n(size = 30)
+    goDT <- go2DT(go2, genes)
+    # preparar tabla GO
+    go2$genes <- goDT$genes
+    go2 <- go2 %>% dplyr::select(Ont,go_id,Term,genes, P.DE)
+    names(go2) <- c("Category","ID", "Term", "Genes", "adj_pval")
+    #preparar tabla genelist
+    names(res)
+    res2 <- res %>% dplyr::select(GeneName_Symbol, log2FoldChange, padj)
+    names(res2) <- c("ID","logFC","adj.P.Val")
+    # crear objeto circ
+    library(GOplot)
+    circ <- circle_dat(go2, res2)
+    GOBar(subset(circ, category=category))
+}
+goBarplot(enrichGO = go, resGO = res, genes= data, category = "MF")
+
+
+
 library(tidyverse)
 res <- readRDS("./res.Rds")
 up <- getSigUpregulated(res, 0.05, 0.5, "Mm" )

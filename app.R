@@ -997,7 +997,7 @@ output$legendChorAll <- renderPlot({
   output$cnetKeggAll <- renderPlot({
     validate(need(kgg$all, "Load file and select to render Net Plot"))
     validate(need(rowsAll(), "Select the paths of interest to render NetPlot"))
-    customCnetKegg(kgg$all, rowsAll())
+    customCnetKegg(kgg$all, rowsAll(), genesUp = data$genesUp, genesDown = data$genesDown)
   })
 
   output$visnetKeggAll <- renderVisNetwork({
@@ -1075,19 +1075,38 @@ output$legendChorAll <- renderPlot({
     dotPlotkegg(kgg$up[rowsUp,], n = length(rowsUp))
   })
   # KEGG heatmap Up #################
-  output$heatmapKeggUp <- renderPlot({
+  output$heatmapKeggUp <- renderPlotly({
     validate(need(kgg$up, "Load file and select to render Heatmap"))
     validate(need(rowsUp(), "Select the paths of interest to render HeatMap"))
     validate(need(kggDT$up, ""))
-    heatmapKegg(kggDT$up, rowsUp())
+    #heatmapKegg(kggDT$up, rowsUp())
+    heatmapKeggLogFC(kggDT$up, res$sh, rowsUp() ) 
   })
   # KEGG cnet Up #################
+   output$keggUpNet <- renderUI({
+    if(!isTRUE( input$keggUpNet_switch ) ){
+      plotOutput("cnetKeggUp", height = "600px")
+    } else{
+      visNetworkOutput("visnetKeggUp", height = "600px")
+    }
+  })
   output$cnetKeggUp <- renderPlot({
     validate(need(kgg$up, "Load file and select to render Net Plot"))
     validate(need(rowsUp(), "Select the paths of interest to render NetPlot"))
-    customCnetKegg(kgg$up, rowsUp())
+    customCnetKegg(kgg$up, rowsUp(), genesUp = data$genesUp, genesDown = data$genesDown)
+  })
+  output$visnetKeggUp <- renderVisNetwork({
+    validate(need(kgg$up, "Load file and select to render Net Plot"))
+    validate(need(rowsUp(), "Select the paths of interest to render NetPlot"))
+    validate(need(kggDT$up, ""))
+    visData <- customVisNet(kgg$up, nTerm=rowsUp(), kggDT$up,
+                             up = data$genesUp$SYMBOL, down = data$genesDown$SYMBOL )
+    visNetwork(visData$nodes, visData$edges, background = "#ffffff") %>%
+    visOptions(highlightNearest = list(enabled=TRUE, hover=TRUE),
+                nodesIdSelection = TRUE)
   })
   
+
   # KEGG table down #####################################
   output$tableDown <- DT::renderDT(server=TRUE,{
     validate(need(kgg$down, "Load file to render table"))
@@ -1153,19 +1172,35 @@ output$legendChorAll <- renderPlot({
     dotPlotkegg(kgg$down[rowsdown,], n = length(rowsdown))
   })
   # KEGG heatmap Down #################
-  output$heatmapKeggDown <- renderPlot({
+  output$heatmapKeggDown <- renderPlotly({
     validate(need(kgg$down, "Load file to render Heatmap"))
     validate(need(rowsdown(), "Select the paths of interest to render Heatmap"))
-    heatmapKegg(kggDT$down, rowsdown())
+    #heatmapKegg(kggDT$down, rowsdown())
+    heatmapKeggLogFC(kggDT$down, res$sh, rowsdown() ) 
   })
   # KEGG cnet Down #################
-  output$cnetKeggDown <- renderPlot({
-    validate(need(kgg$down, "Load file to render NetPlot"))
-    validate(need(rowsdown(), "Select the paths of interest to render NetPlot"))
-    rowsdown <- rowsdown()
-    customCnetKegg(kgg$down, rowsdown())
+   output$keggDownNet <- renderUI({
+    if(!isTRUE( input$keggDownNet_switch ) ){
+      plotOutput("cnetKeggDown", height = "600px")
+    } else{
+      visNetworkOutput("visnetKeggDown", height = "600px")
+    }
   })
-
+  output$cnetKeggDown <- renderPlot({
+    validate(need(kgg$down, "Load file and select to render Net Plot"))
+    validate(need(rowsdown(), "Select the paths of interest to render NetPlot"))
+    customCnetKegg(kgg$down, rowsdown(), genesUp = data$genesUp, genesDown = data$genesDown)
+  })
+  output$visnetKeggDown <- renderVisNetwork({
+    validate(need(kgg$down, "Load file and select to render Net Plot"))
+    validate(need(rowsdown(), "Select the paths of interest to render NetPlot"))
+    validate(need(kggDT$down, ""))
+    visData <- customVisNet(kgg$down, nTerm=rowsdown(), kggDT$down,
+                             up = data$genesUp$SYMBOL, down = data$genesDown$SYMBOL )
+    visNetwork(visData$nodes, visData$edges, background = "#ffffff") %>%
+    visOptions(highlightNearest = list(enabled=TRUE, hover=TRUE),
+                nodesIdSelection = TRUE)
+  })
   # GO table BP ALL #####################
   output$tableBPall <- DT::renderDataTable(server=TRUE,{
     validate(need(goDT$all, "Load file to render table"))
@@ -1266,6 +1301,12 @@ output$legendChorAll <- renderPlot({
     gosMF <- go$all[go$all$Ont=="MF",]
     dotPlotGO(gosMF[mfrowsall,], n = length(mfrowsall))
   })
+  # GO MF gobarplot all ####################
+  output$gobarplotAllMF <- renderPlot({
+    validate(need(go$all, "Load file to render dotPlot"))
+    #goBarplot(enrichGO = go, resGO = res, genes= data, category = "MF")
+  })
+    
   # GO table CC all #####################
   output$tableCCall <- DT::renderDataTable(server=TRUE,{
     validate(need(goDT$all, "Load file to render table"))
