@@ -58,7 +58,13 @@ fluidPage(
                                               ))),  #barplot
                             tabPanel(title = "Dotplot",
                                      plotOutput("BPDotall")
-                                     ) # dotplot
+                                     ), # dotplot
+                            tabPanel(title = "GoBarplot",
+                                     plotOutput("gobarplotAllBP")
+                                     ),
+                            tabPanel(title = "GoCirclePlot",
+                                     plotOutput("goCircleAllBP")
+                                     )
                         )
                     )
             )),
@@ -176,7 +182,10 @@ fluidPage(
                                               ))),  #barplot
                             tabPanel(title = "Dotplot",
                                      plotOutput("CCDotall")
-                                     ) # dotplot
+                                     ), # dotplot
+                            tabPanel(title = "GoBarplot",
+                                     plotOutput("gobarplotAllCC")
+                                     )
                         ) #tabbox
                     ) #column 
             ) #fluidrow
@@ -218,7 +227,10 @@ fluidPage(
                                               ),  #barplot
                         tabPanel(title = "Dotplot",
                                  plotOutput("BPDotUp")
-                                 ) # dotplot
+                                 ), # dotplot
+                        tabPanel(title = "GoBarplot",
+                                     plotOutput("gobarplotUpBP")
+                                     )
                         )
                     )
             )),
@@ -254,7 +266,10 @@ fluidRow(  # primera fila
                                               ),  #barplot
                         tabPanel(title = "Dotplot",
                                  plotOutput("MFDotUp")
-                                 ) # dotplot
+                                 ), # dotplot
+                        tabPanel(title = "GoBarplot",
+                                     plotOutput("gobarplotUpMF")
+                                     )
                         )
                     )
             )),
@@ -290,7 +305,10 @@ fluidRow(  # primera fila
                                               ),  #barplot
                         tabPanel(title = "Dotplot",
                                  plotOutput("CCDotUp")
-                                 ) # dotplot
+                                 ), # dotplot
+                        tabPanel(title = "GoBarplot",
+                                     plotOutput("gobarplotUpCC")
+                                     )
                             )
                         )
                     )
@@ -330,7 +348,10 @@ fluidRow(  # primera fila
                                               ),  #barplot
                         tabPanel(title = "Dotplot",
                                  plotOutput("BPDotDown")
-                                 ) # dotplot
+                                 ), # dotplot
+                        tabPanel(title = "GoBarplot",
+                                     plotOutput("gobarplotDownBP")
+                                     )
                         )
                     )
             )),
@@ -366,7 +387,10 @@ fluidRow(  # primera fila
                                               ),  #barplot
                         tabPanel(title = "Dotplot",
                                  plotOutput("MFDotDown")
-                                 ) # dotplot
+                                 ), # dotplot
+                        tabPanel(title = "GoBarplot",
+                                     plotOutput("gobarplotDownMF")
+                                     )
                         )
                     )
             )),
@@ -402,7 +426,10 @@ fluidRow(  # primera fila
                                               ),  #barplot
                         tabPanel(title = "Dotplot",
                                  plotOutput("CCDotDown")
-                                 ) # dotplot
+                                 ), # dotplot
+                        tabPanel(title = "GoBarplot",
+                                     plotOutput("gobarplotDownCC")
+                                     )
                         )
                     )
             ))

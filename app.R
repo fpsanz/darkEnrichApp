@@ -986,6 +986,24 @@ output$legendChorAll <- renderPlot({
     heatmapKeggLogFC(kggDT$all, res$sh, rowsAll() ) 
   })
   # KEGG cnet All #################
+  output$legend <- renderPlot({
+    validate(need(kgg$all, "Load file and select to render Net Plot"))
+    validate(need(rowsAll(), "Select the paths of interest to render NetPlot"))
+    validate(need(kggDT$all, ""))
+    mydf <- data.frame(id = rep(1, 100), sales = 1:100)
+    minVal <- format( min( kggDT$all$`p-value`[rowsAll()] ), scientific = T, digits = 2)
+    maxVal <- format( max( kggDT$all$`p-value`[rowsAll()] ), scientific = T, digits = 2)
+    ggplot(mydf) +
+      geom_tile(aes(x = 1, y=sales, fill = sales), show.legend=FALSE) +
+      scale_x_continuous(limits=c(0.5,1.5),breaks=1)+
+      scale_y_continuous(breaks = c(1,100), 
+                         labels = c(minVal,maxVal), position = "right")+
+      scale_fill_gradient(high = "blue", low = "red") +
+      theme_void() +
+      theme(axis.text.y.right = element_text(hjust = 0, size = 12, colour = "#cdcdcd"),
+            plot.background = element_rect(fill= "#2d3741", color = NA ) )
+  })
+
   output$keggAllNet <- renderUI({
     if(!isTRUE( input$keggAllNet_switch ) ){
       plotOutput("cnetKeggAll", height = "600px")
@@ -1250,6 +1268,23 @@ output$legendChorAll <- renderPlot({
     gosBP <- go$all[go$all$Ont=="BP",]
     dotPlotGO(gosBP[bprowsall,], n = length(bprowsall))
   })
+  # GO gobarplot BP all #######################
+  output$gobarplotAllBP <- renderPlot({
+    validate(need(go$all, "Load file to render dotPlot"))
+    goBarplot(enrichGO = go$all, resGO = res$sh, genes= data$genesall, category = "BP")
+  })
+  # GO circle BP all #####################
+  output$goCircleAllBP <- renderPlot({
+    validate(need(go$all, "Load file to render dotPlot"))
+    validate(need(res$sh,""))
+    validate(need( bprowsall() , ""))
+    bprowsall <- bprowsall()
+    if(length(bprowsall)>=4){
+      circ <- data2circle(go=go$all[bprowsall, ], res=res$sh, genes=data$genesall)
+      circle(circ, label.size = 3, nsub = 5, table.legend = FALSE)
+    }
+  })
+  
   # GO table MF all #####################
   output$tableMFall <- DT::renderDataTable({
     validate(need(goDT$all, "Load file to render table"))
@@ -1301,10 +1336,10 @@ output$legendChorAll <- renderPlot({
     gosMF <- go$all[go$all$Ont=="MF",]
     dotPlotGO(gosMF[mfrowsall,], n = length(mfrowsall))
   })
-  # GO MF gobarplot all ####################
+  # GO gobarplot MF all ####################
   output$gobarplotAllMF <- renderPlot({
     validate(need(go$all, "Load file to render dotPlot"))
-    #goBarplot(enrichGO = go, resGO = res, genes= data, category = "MF")
+    goBarplot(enrichGO = go$all, resGO = res$sh, genes= data$genesall, category = "MF")
   })
     
   # GO table CC all #####################
@@ -1358,6 +1393,11 @@ output$legendChorAll <- renderPlot({
     gosCC <- go$all[go$all$Ont=="CC",]
     dotPlotGO(gosCC[ccrowsall,], n = length(ccrowsall))
   })
+  # GO gobarplot CC all #######################
+  output$gobarplotAllCC <- renderPlot({
+    validate(need(go$all, "Load file to render dotPlot"))
+    goBarplot(enrichGO = go$all, resGO = res$sh, genes= data$genesall, category = "CC")
+  })
   
   # GO table BP UP#####################
   output$tableBP <- DT::renderDataTable(server=TRUE,{
@@ -1403,6 +1443,11 @@ output$legendChorAll <- renderPlot({
     if(is.null(bprowsup)){bprowsup <- c(1:20)}
     gosBP <- go$up[go$up$Ont=="BP",]
     dotPlotGO(gosBP[bprowsup,], n = length(bprowsup))
+  })
+  # GO gobarplot BP Up #######################
+  output$gobarplotUpBP <- renderPlot({
+    validate(need(go$up, "Load file to render dotPlot"))
+    goBarplot(enrichGO = go$up, resGO = res$sh, genes= data$genesUp, category = "BP")
   })
   # GO table MF UP #####################
   output$tableMF <- DT::renderDataTable({
@@ -1451,6 +1496,11 @@ output$legendChorAll <- renderPlot({
     gosMF <- go$up[go$up$Ont=="MF",]
     dotPlotGO(gosMF[mfrowsup,], n = length(mfrowsup))
   })
+  # GO gobarplot MF Up #######################
+  output$gobarplotUpMF <- renderPlot({
+    validate(need(go$up, "Load file to render dotPlot"))
+    goBarplot(enrichGO = go$up, resGO = res$sh, genes= data$genesUp, category = "MF")
+  })
   # GO table CC UP #####################
   output$tableCC <- DT::renderDataTable(server=TRUE,{
     validate(need(goDT$up, "Load file to render table"))
@@ -1498,6 +1548,12 @@ output$legendChorAll <- renderPlot({
     gosCC <- go$up[go$up$Ont=="CC",]
     dotPlotGO(gosCC[ccrowsup,], n = length(ccrowsup))
   })
+  # GO gobarplot CC Up #######################
+  output$gobarplotUpCC <- renderPlot({
+    validate(need(go$up, "Load file to render dotPlot"))
+    goBarplot(enrichGO = go$up, resGO = res$sh, genes= data$genesUp, category = "CC")
+  })
+  
   # GO table BP DOWN #####################
   output$tableBPdown <- DT::renderDataTable(server=TRUE,{
     validate(need(goDT$down, "Load file to render table"))
@@ -1543,6 +1599,11 @@ output$legendChorAll <- renderPlot({
     if(is.null(bprowsdown)){bprowsdown <- c(1:20)}
     gosBP <- go$down[go$down$Ont=="BP",]
     dotPlotGO(gosBP[bprowsdown,], n = length(bprowsdown))
+  })
+  # GO gobarplot BP down #######################
+  output$gobarplotDownBP <- renderPlot({
+    validate(need(go$down, "Load file to render dotPlot"))
+    goBarplot(enrichGO = go$down, resGO = res$sh, genes= data$genesDown, category = "BP")
   })
   # GO table MF DOWN #####################
   output$tableMFdown <- DT::renderDataTable({
@@ -1591,6 +1652,11 @@ output$legendChorAll <- renderPlot({
     gosMF <- go$down[go$down$Ont=="MF",]
     dotPlotGO(gosMF[mfrowsdown,], n = length(mfrowsdown))
   })
+  # GO gobarplot MF down #######################
+  output$gobarplotDownMF <- renderPlot({
+    validate(need(go$down, "Load file to render dotPlot"))
+    goBarplot(enrichGO = go$down, resGO = res$sh, genes= data$genesDown, category = "MF")
+  })
   # GO table CC DOWN #####################
   output$tableCCdown <- DT::renderDataTable(server=TRUE,{
     validate(need(goDT$down, "Load file to render table"))
@@ -1638,6 +1704,12 @@ output$legendChorAll <- renderPlot({
     gosCC <- go$down[go$down$Ont=="CC",]
     dotPlotGO(gosCC[ccrowsdown,], n = length(ccrowsdown))
   })
+  # GO gobarplot CC down #######################
+  output$gobarplotDownCC <- renderPlot({
+    validate(need(go$down, "Load file to render dotPlot"))
+    goBarplot(enrichGO = go$down, resGO = res$sh, genes= data$genesDown, category = "CC")
+  })
+  
   # GSEA table ##########################
   output$gseaTable <- renderDataTable({
     validate(need(res$sh, "Load file to render table"))

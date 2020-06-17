@@ -101,7 +101,8 @@ fluidPage(
                                             size = "mini",
                                             inputId = "keggAllNet_switch",
                                             offLabel = "Static",
-                                            onLabel = "Interactive")
+                                            onLabel = "Interactive"),
+                                        plotOutput("legend")
                                         ),
                                  column(width = 11,
                                         uiOutput("keggAllNet")

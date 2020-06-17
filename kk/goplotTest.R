@@ -17,7 +17,7 @@ goBarplot <- function(enrichGO=NULL, resGO=NULL, genes=NULL, category=NULL ){
     circ <- circle_dat(go2, res2)
     GOBar(subset(circ, category=category))
 }
-goBarplot(enrichGO = go, resGO = res, genes= data, category = "MF")
+goBarplot(enrichGO = go, resGO = res, genes = data, category = "BP")
 
 
 
@@ -28,7 +28,7 @@ down <- getSigDownregulated(res, 0.05, -0.5, "Mm" )
 data <- rbind(up, down)
 
 go <- customGO(data, species = "Mm")
-go2 <- go %>% group_by(Ont) %>% sample_n(size = 30)
+go2 <- go %>% group_by(Ont) %>% sample_n(size = 30) %>% as.data.frame()
 goDT <- go2DT(go2, data)
 
 # preparar tabla GO
@@ -181,12 +181,9 @@ circle <- function (data, title, nsub, rad1, rad2, table.legend = T, zsc.col,
                               ymax = y2 + 0.75
                           ),
                           colour = "white"
-                      ) + geom_text( data = df,
-                                     aes( x = x + (xmax /2), y = y2 + 1.5, label = ID, 
-                                          angle = 360/(2*pi)*rev( pi/2 + seq( pi/14, 2*pi-pi/14, len=20)) ),
-                          size = label.size,
-                          fontface = label.fontface
-                      ) +
+                      ) + geom_text(data = df, aes(x = x + 
+        (xmax/2), y = y2 + 1.3, label = ID, angle = 360 - (x = x + 
+        (xmax/2))/(10/360)), size = label.size, fontface = label.fontface) +
             coord_polar() + labs(title = title) +
             ylim(1, rad2 + 1.6) + xlim(0, 10) + 
             GOplot:::theme_blank + scale_fill_gradient2("z-score",
@@ -210,11 +207,10 @@ circle <- function (data, title, nsub, rad1, rad2, table.legend = T, zsc.col,
                 pch = 21,
                 fill = "transparent",
                 colour = "black",
-                size = 3
-            ) + geom_point(data = dfp,
-                           aes(x = logx,
-                               y = logy2 + logy, colour = logFC),
-                           size = 2.5) + scale_colour_manual(values = lfc.col,
+                size = 2
+            ) + geom_point(data = dfp, aes(x = logx, 
+        y = logy2 + logy, colour = logFC), size = 2.0) +
+            scale_colour_manual(values = lfc.col,
                                                              guide = guide_legend(title.position = "top", title.hjust = 0.5))
         if (table.legend) {
             table <- GOplot:::draw_table(suby)
@@ -229,6 +225,13 @@ circle <- function (data, title, nsub, rad1, rad2, table.legend = T, zsc.col,
         }
 }
 
-
-circle(circ, label.size = 3, nsub = 20, table.legend = TRUE)
+GOplot::GOCircle(circ, label.size = 2, table.legend = FALSE, nsub=10)
+circle(circ, label.size = 3, nsub = 5, table.legend = FALSE)
 library(ggplot2)
+
+# geom_text( data = df,
+#                                      aes( x = x + (xmax /2), y = y2 + 1.5, label = ID, 
+#                                           angle = 360/(2*pi)*rev( pi/2 + seq( pi/14, 2*pi-pi/14, len=20)) ),
+#                           size = label.size,
+#                           fontface = label.fontface
+#                       )
