@@ -2485,6 +2485,8 @@ goBarplot <- function(enrichGO=NULL, resGO=NULL, genes=NULL, category=NULL ){
     circ <- circle_dat(go2, res2)
     GOBar(subset(circ, category=category))
 }
+
+# data2circle ##############################
 data2circle <- function(go=NULL, res=NULL, genes=NULL){
   go2 <- go %>% group_by(Ont) %>% as.data.frame()
   goDT <- go2DT(go2, genes)

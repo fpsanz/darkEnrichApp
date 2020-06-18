@@ -125,7 +125,10 @@ fluidPage(
                                      ), # dotplot
                             tabPanel(title = "GoBarplot",
                                      plotOutput("gobarplotAllMF")
-                                     )
+                                     ),
+                            tabPanel(title = "GoCirclePlot",
+                                     plotOutput("goCircleAllMF")
+                            )
                         )
                     )
             )),
@@ -185,7 +188,10 @@ fluidPage(
                                      ), # dotplot
                             tabPanel(title = "GoBarplot",
                                      plotOutput("gobarplotAllCC")
-                                     )
+                                     ),
+                            tabPanel(title = "GoCirclePlot",
+                                     plotOutput("goCircleAllCC")
+                            )
                         ) #tabbox
                     ) #column 
             ) #fluidrow

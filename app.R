@@ -908,6 +908,7 @@ output$karyoPlot <- renderPlot({
                     intgroup=variables(), customColor = coloresPCA$colores()) 
   })
 
+# ............ ###############################
 # KEGG table All #####################################
   output$tableAll <- DT::renderDT(server=TRUE,{
     validate(need(kgg$all, "Load file to render table"))
@@ -1028,6 +1029,7 @@ output$legendChorAll <- renderPlot({
     visOptions(highlightNearest = list(enabled=TRUE, hover=TRUE),
                 nodesIdSelection = TRUE)
   })
+  # ............ ###############################
   # KEGG table up#####################################
   output$table <- DT::renderDT(server=TRUE,{
     validate(need(kgg$up, "Load file to render table"))
@@ -1124,7 +1126,7 @@ output$legendChorAll <- renderPlot({
                 nodesIdSelection = TRUE)
   })
   
-
+  # ............ ###############################
   # KEGG table down #####################################
   output$tableDown <- DT::renderDT(server=TRUE,{
     validate(need(kgg$down, "Load file to render table"))
@@ -1219,6 +1221,7 @@ output$legendChorAll <- renderPlot({
     visOptions(highlightNearest = list(enabled=TRUE, hover=TRUE),
                 nodesIdSelection = TRUE)
   })
+  # ............ ###############################
   # GO table BP ALL #####################
   output$tableBPall <- DT::renderDataTable(server=TRUE,{
     validate(need(goDT$all, "Load file to render table"))
@@ -1277,14 +1280,14 @@ output$legendChorAll <- renderPlot({
   output$goCircleAllBP <- renderPlot({
     validate(need(go$all, "Load file to render dotPlot"))
     validate(need(res$sh,""))
-    validate(need( bprowsall() , ""))
+    validate(need( bprowsall() , "Select at least 4 rows"))
     bprowsall <- bprowsall()
     if(length(bprowsall)>=4){
       circ <- data2circle(go=go$all[bprowsall, ], res=res$sh, genes=data$genesall)
-      circle(circ, label.size = 3, nsub = 5, table.legend = FALSE)
+      circle(circ, label.size = 3, nsub = length(bprowsall), table.legend = FALSE)
     }
   })
-  
+  # ............ ###############################
   # GO table MF all #####################
   output$tableMFall <- DT::renderDataTable({
     validate(need(goDT$all, "Load file to render table"))
@@ -1341,7 +1344,18 @@ output$legendChorAll <- renderPlot({
     validate(need(go$all, "Load file to render dotPlot"))
     goBarplot(enrichGO = go$all, resGO = res$sh, genes= data$genesall, category = "MF")
   })
-    
+  # GO circle MF all #####################
+  output$goCircleAllMF <- renderPlot({
+    validate(need(go$all, "Load file to render dotPlot"))
+    validate(need(res$sh,""))
+    validate(need( mfrowsall() , "Select at least 4 rows"))
+    mfrowsall <- mfrowsall()
+    if(length(mfrowsall)>=4){
+      circ <- data2circle(go=go$all[mfrowsall, ], res=res$sh, genes=data$genesall)
+      circle(circ, label.size = 3, nsub = length(mfrowsall), table.legend = FALSE)
+    }
+  })
+  # ............ ###############################
   # GO table CC all #####################
   output$tableCCall <- DT::renderDataTable(server=TRUE,{
     validate(need(goDT$all, "Load file to render table"))
@@ -1398,7 +1412,18 @@ output$legendChorAll <- renderPlot({
     validate(need(go$all, "Load file to render dotPlot"))
     goBarplot(enrichGO = go$all, resGO = res$sh, genes= data$genesall, category = "CC")
   })
-  
+  # GO circle CC all #####################
+  output$goCircleAllCC <- renderPlot({
+    validate(need(go$all, "Load file to render dotPlot"))
+    validate(need(res$sh,""))
+    validate(need( ccrowsall() , "Select at least 4 rows"))
+    ccrowsall <- ccrowsall()
+    if(length(ccrowsall)>=4){
+      circ <- data2circle(go=go$all[ccrowsall, ], res=res$sh, genes=data$genesall)
+      circle(circ, label.size = 3, nsub = length(ccrowsall), table.legend = FALSE)
+    }
+  })
+  # ............ ###############################
   # GO table BP UP#####################
   output$tableBP <- DT::renderDataTable(server=TRUE,{
     validate(need(goDT$up, "Load file to render table"))
@@ -1449,6 +1474,7 @@ output$legendChorAll <- renderPlot({
     validate(need(go$up, "Load file to render dotPlot"))
     goBarplot(enrichGO = go$up, resGO = res$sh, genes= data$genesUp, category = "BP")
   })
+  # ............ ###############################
   # GO table MF UP #####################
   output$tableMF <- DT::renderDataTable({
     validate(need(goDT$up, "Load file to render table"))
@@ -1501,6 +1527,7 @@ output$legendChorAll <- renderPlot({
     validate(need(go$up, "Load file to render dotPlot"))
     goBarplot(enrichGO = go$up, resGO = res$sh, genes= data$genesUp, category = "MF")
   })
+  # ............ ###############################
   # GO table CC UP #####################
   output$tableCC <- DT::renderDataTable(server=TRUE,{
     validate(need(goDT$up, "Load file to render table"))
@@ -1553,7 +1580,7 @@ output$legendChorAll <- renderPlot({
     validate(need(go$up, "Load file to render dotPlot"))
     goBarplot(enrichGO = go$up, resGO = res$sh, genes= data$genesUp, category = "CC")
   })
-  
+  # ............ ###############################
   # GO table BP DOWN #####################
   output$tableBPdown <- DT::renderDataTable(server=TRUE,{
     validate(need(goDT$down, "Load file to render table"))
@@ -1605,6 +1632,7 @@ output$legendChorAll <- renderPlot({
     validate(need(go$down, "Load file to render dotPlot"))
     goBarplot(enrichGO = go$down, resGO = res$sh, genes= data$genesDown, category = "BP")
   })
+  # ............ ###############################
   # GO table MF DOWN #####################
   output$tableMFdown <- DT::renderDataTable({
     validate(need(goDT$down, "Load file to render table"))
@@ -1657,6 +1685,7 @@ output$legendChorAll <- renderPlot({
     validate(need(go$down, "Load file to render dotPlot"))
     goBarplot(enrichGO = go$down, resGO = res$sh, genes= data$genesDown, category = "MF")
   })
+  # ............ ###############################
   # GO table CC DOWN #####################
   output$tableCCdown <- DT::renderDataTable(server=TRUE,{
     validate(need(goDT$down, "Load file to render table"))
@@ -1709,7 +1738,7 @@ output$legendChorAll <- renderPlot({
     validate(need(go$down, "Load file to render dotPlot"))
     goBarplot(enrichGO = go$down, resGO = res$sh, genes= data$genesDown, category = "CC")
   })
-  
+  # ............ ###############################
   # GSEA table ##########################
   output$gseaTable <- renderDataTable({
     validate(need(res$sh, "Load file to render table"))
@@ -1765,6 +1794,7 @@ output$legendChorAll <- renderPlot({
         enrichplot::gseaplot2(gsea$gsea, geneSetID = gseanr, pvalue_table = TRUE, ES_geom = "line")
         }
   })
+  # ............ ###############################
   # author name ######################
   author <- reactive({input$author})
   # generate report #############################
