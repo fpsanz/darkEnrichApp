@@ -168,13 +168,18 @@ ui <- dashboardPage(title="Rnaseq viewer and report",
 server <- function(input, output, session) {
   
   observeEvent(input$aboutButton, {
-    shinyalert("Enrich app 2020", "Authors:
-            Miriam Riquelme Pérez (corresponding author)
-            Fernando Pérez Sanz
-            For any suggestion or bug, please contact us
-            miriam.riquelmep@gmail.com",
+    shinyalert("Enrich app 2020", HTML("Authors:<br>
+    Miriam Riquelme Pérez 
+    <a href='https://www.linkedin.com/in/miriam-riquelme-perez/' target='_blank'> 
+    <img src='linkedin_little.svg'> </a> <a href='mailto:miriam.riquelmep@gmail.com'>
+    <img src='email.svg'></a><br>
+    Fernando Pérez Sanz 
+    <a href='https://www.linkedin.com/in/fernandoperez72/' target='_blank'> 
+    <img src='linkedin_little.svg'> 
+    </a> <a href='mailto:fernando.perez@ffis.es'> <img src='email.svg'></a><br>
+    For any suggestion or bug, please contact us"),
                imageUrl = "dna-svg-small-13.gif", 
-               imageWidth = 200, imageHeight = 100)})
+               imageWidth = 200, imageHeight = 100, html=TRUE)})
 
 # Definir reactiveVariables globales ##############
   data <- reactiveValues() # genes
