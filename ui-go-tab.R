@@ -236,6 +236,9 @@ fluidPage(
                                  ), # dotplot
                         tabPanel(title = "GoBarplot",
                                      plotOutput("gobarplotUpBP")
+                                     ),
+                        tabPanel(title = "GoCirclePlot",
+                                     plotOutput("goCircleUpBP")
                                      )
                         )
                     )
@@ -275,6 +278,9 @@ fluidRow(  # primera fila
                                  ), # dotplot
                         tabPanel(title = "GoBarplot",
                                      plotOutput("gobarplotUpMF")
+                                     ),
+                        tabPanel(title = "GoCirclePlot",
+                                     plotOutput("goCircleUpMF")
                                      )
                         )
                     )
@@ -314,6 +320,9 @@ fluidRow(  # primera fila
                                  ), # dotplot
                         tabPanel(title = "GoBarplot",
                                      plotOutput("gobarplotUpCC")
+                                     ),
+                        tabPanel(title = "GoCirclePlot",
+                                     plotOutput("goCircleUpCC")
                                      )
                             )
                         )
@@ -357,6 +366,9 @@ fluidRow(  # primera fila
                                  ), # dotplot
                         tabPanel(title = "GoBarplot",
                                      plotOutput("gobarplotDownBP")
+                                     ),
+                        tabPanel(title = "GoCirclePlot",
+                                     plotOutput("goCircleDownBP")
                                      )
                         )
                     )
@@ -396,6 +408,9 @@ fluidRow(  # primera fila
                                  ), # dotplot
                         tabPanel(title = "GoBarplot",
                                      plotOutput("gobarplotDownMF")
+                                     ),
+                        tabPanel(title = "GoCirclePlot",
+                                     plotOutput("goCircleDownMF")
                                      )
                         )
                     )
@@ -435,6 +450,9 @@ fluidRow(  # primera fila
                                  ), # dotplot
                         tabPanel(title = "GoBarplot",
                                      plotOutput("gobarplotDownCC")
+                                     ),
+                        tabPanel(title = "GoCirclePlot",
+                                     plotOutput("goCircleDownCC")
                                      )
                         )
                     )

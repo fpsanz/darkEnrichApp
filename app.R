@@ -1279,7 +1279,9 @@ output$legendChorAll <- renderPlot({
   # GO gobarplot BP all #######################
   output$gobarplotAllBP <- renderPlot({
     validate(need(go$all, "Load file to render dotPlot"))
-    goBarplot(enrichGO = go$all, resGO = res$sh, genes= data$genesall, category = "BP")
+    bprowsall <- bprowsall()
+    goBarplot(enrichGO = go$all, resGO = res$sh, genes= data$genesall,
+              category = "BP", nrows = bprowsall)
   })
   # GO circle BP all #####################
   output$goCircleAllBP <- renderPlot({
@@ -1347,7 +1349,9 @@ output$legendChorAll <- renderPlot({
   # GO gobarplot MF all ####################
   output$gobarplotAllMF <- renderPlot({
     validate(need(go$all, "Load file to render dotPlot"))
-    goBarplot(enrichGO = go$all, resGO = res$sh, genes= data$genesall, category = "MF")
+    mfrowsall <- mfrowsall()
+    goBarplot(enrichGO = go$all, resGO = res$sh, genes= data$genesall,
+              category = "MF", nrows = mfrowsall)
   })
   # GO circle MF all #####################
   output$goCircleAllMF <- renderPlot({
@@ -1415,7 +1419,9 @@ output$legendChorAll <- renderPlot({
   # GO gobarplot CC all #######################
   output$gobarplotAllCC <- renderPlot({
     validate(need(go$all, "Load file to render dotPlot"))
-    goBarplot(enrichGO = go$all, resGO = res$sh, genes= data$genesall, category = "CC")
+    ccrowsall <- ccrowsall()
+    goBarplot(enrichGO = go$all, resGO = res$sh, genes= data$genesall,
+              category = "CC", nrows = ccrowsall)
   })
   # GO circle CC all #####################
   output$goCircleAllCC <- renderPlot({
@@ -1477,7 +1483,20 @@ output$legendChorAll <- renderPlot({
   # GO gobarplot BP Up #######################
   output$gobarplotUpBP <- renderPlot({
     validate(need(go$up, "Load file to render dotPlot"))
-    goBarplot(enrichGO = go$up, resGO = res$sh, genes= data$genesUp, category = "BP")
+    bprowsup <- bprowsup()
+    goBarplot(enrichGO = go$up, resGO = res$sh, genes= data$genesUp,
+              category = "BP", nrows = bprowsup)
+  })
+    # GO circle BP Up #####################
+  output$goCircleUpBP <- renderPlot({
+    validate(need(go$up, "Load file to render dotPlot"))
+    validate(need(res$sh,""))
+    validate(need( bprowsup() , "Select at least 4 rows"))
+    bprowsup <- bprowsup()
+    if(length(bprowsup)>=4){
+      circ <- data2circle(go=go$up[bprowsup, ], res=res$sh, genes=data$genesUp)
+      circle(circ, label.size = 3, nsub = length(bprowsup), table.legend = FALSE)
+    }
   })
   # ............ ###############################
   # GO table MF UP #####################
@@ -1530,7 +1549,20 @@ output$legendChorAll <- renderPlot({
   # GO gobarplot MF Up #######################
   output$gobarplotUpMF <- renderPlot({
     validate(need(go$up, "Load file to render dotPlot"))
-    goBarplot(enrichGO = go$up, resGO = res$sh, genes= data$genesUp, category = "MF")
+    mfrowsup <- mfrowsup()
+    goBarplot(enrichGO = go$up, resGO = res$sh, genes= data$genesUp,
+              category = "MF", nrows = mfrowsup)
+  })
+  # GO circle MF Up #####################
+  output$goCircleUpMF <- renderPlot({
+    validate(need(go$up, "Load file to render dotPlot"))
+    validate(need(res$sh,""))
+    validate(need( mfrowsup() , "Select at least 4 rows"))
+    mfrowsup <- mfrowsup()
+    if(length(mfrowsup)>=4){
+      circ <- data2circle(go=go$up[mfrowsup, ], res=res$sh, genes=data$genesUp)
+      circle(circ, label.size = 3, nsub = length(mfrowsup), table.legend = FALSE)
+    }
   })
   # ............ ###############################
   # GO table CC UP #####################
@@ -1583,7 +1615,20 @@ output$legendChorAll <- renderPlot({
   # GO gobarplot CC Up #######################
   output$gobarplotUpCC <- renderPlot({
     validate(need(go$up, "Load file to render dotPlot"))
-    goBarplot(enrichGO = go$up, resGO = res$sh, genes= data$genesUp, category = "CC")
+    ccrowsup <- ccrowsup()
+    goBarplot(enrichGO = go$up, resGO = res$sh, genes= data$genesUp,
+              category = "CC", nrows = ccrowsup)
+  })
+  # GO circle CC Up #####################
+  output$goCircleUpCC <- renderPlot({
+    validate(need(go$up, "Load file to render dotPlot"))
+    validate(need(res$sh,""))
+    validate(need( ccrowsup() , "Select at least 4 rows"))
+    ccrowsup <- ccrowsup()
+    if(length(ccrowsup)>=4){
+      circ <- data2circle(go=go$up[ccrowsup, ], res=res$sh, genes=data$genesUp)
+      circle(circ, label.size = 3, nsub = length(ccrowsup), table.legend = FALSE)
+    }
   })
   # ............ ###############################
   # GO table BP DOWN #####################
@@ -1635,7 +1680,20 @@ output$legendChorAll <- renderPlot({
   # GO gobarplot BP down #######################
   output$gobarplotDownBP <- renderPlot({
     validate(need(go$down, "Load file to render dotPlot"))
-    goBarplot(enrichGO = go$down, resGO = res$sh, genes= data$genesDown, category = "BP")
+    bprowsdown <- bprowsdown()
+    goBarplot(enrichGO = go$down, resGO = res$sh, genes= data$genesDown,
+              category = "BP", nrows = bprowsdown)
+  })
+  # GO circle BP Down #####################
+  output$goCircleDownBP <- renderPlot({
+    validate(need(go$down, "Load file to render dotPlot"))
+    validate(need(res$sh,""))
+    validate(need( bprowsdown() , "Select at least 4 rows"))
+    bprowsdown <- bprowsdown()
+    if(length(bprowsdown)>=4){
+      circ <- data2circle(go=go$down[bprowsdown, ], res=res$sh, genes=data$genesDown)
+      circle(circ, label.size = 3, nsub = length(bprowsdown), table.legend = FALSE)
+    }
   })
   # ............ ###############################
   # GO table MF DOWN #####################
@@ -1688,7 +1746,20 @@ output$legendChorAll <- renderPlot({
   # GO gobarplot MF down #######################
   output$gobarplotDownMF <- renderPlot({
     validate(need(go$down, "Load file to render dotPlot"))
-    goBarplot(enrichGO = go$down, resGO = res$sh, genes= data$genesDown, category = "MF")
+    mfrowsdown <- mfrowsdown()
+    goBarplot(enrichGO = go$down, resGO = res$sh, genes= data$genesDown,
+              category = "MF", nrows = mfrowsdown)
+  })
+  # GO circle MF Down #####################
+  output$goCircleDownMF <- renderPlot({
+    validate(need(go$down, "Load file to render dotPlot"))
+    validate(need(res$sh,""))
+    validate(need( mfrowsdown() , "Select at least 4 rows"))
+    mfrowsdown <- mfrowsdown()
+    if(length(mfrowsdown)>=4){
+      circ <- data2circle(go=go$down[mfrowsdown, ], res=res$sh, genes=data$genesDown)
+      circle(circ, label.size = 3, nsub = length(mfrowsdown), table.legend = FALSE)
+    }
   })
   # ............ ###############################
   # GO table CC DOWN #####################
@@ -1741,7 +1812,20 @@ output$legendChorAll <- renderPlot({
   # GO gobarplot CC down #######################
   output$gobarplotDownCC <- renderPlot({
     validate(need(go$down, "Load file to render dotPlot"))
-    goBarplot(enrichGO = go$down, resGO = res$sh, genes= data$genesDown, category = "CC")
+    ccrowsdown <- ccrowsdown()
+    goBarplot(enrichGO = go$down, resGO = res$sh, genes= data$genesDown,
+              category = "CC", nrows = ccrowsdown)
+  })
+  # GO circle CC Down #####################
+  output$goCircleDownCC <- renderPlot({
+    validate(need(go$down, "Load file to render dotPlot"))
+    validate(need(res$sh,""))
+    validate(need( ccrowsdown() , "Select at least 4 rows"))
+    ccrowsdown <- ccrowsdown()
+    if(length(ccrowsdown)>=4){
+      circ <- data2circle(go=go$down[ccrowsdown, ], res=res$sh, genes=data$genesDown)
+      circle(circ, label.size = 3, nsub = length(ccrowsdown), table.legend = FALSE)
+    }
   })
   # ............ ###############################
   # GSEA table ##########################

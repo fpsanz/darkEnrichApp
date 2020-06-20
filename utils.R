@@ -2466,11 +2466,19 @@ customVisNet <- function( enrich, kggDT, nTerm = NULL, up = NULL, down = NULL ){
     return(list(nodes = nodesf, edges = edgesf))
 } 
 # GoBarplot ########################
-goBarplot <- function(enrichGO=NULL, resGO=NULL, genes=NULL, category=NULL ){
+goBarplot <- function(enrichGO=NULL, resGO=NULL, genes=NULL,
+                      category=NULL, nrows=NULL ){
     require(GOplot)
     go <- enrichGO
+    go <- go[ go$Ont==category, ]
+    if(is.null(nrows) | length(nrows)<2 ){
+        totalRows <- min(90, dim(go)[1] )
+        go <- go[ seq_len(totalRows), ]
+    } else{
+        go <- go[nrows, ]
+        }
     res <- resGO
-    go2 <- go %>% group_by(Ont) %>% sample_n(size = 30) %>% as.data.frame()
+    go2 <- go %>% group_by(Ont) %>% as.data.frame()
     goDT <- go2DT(go2, genes)
     # preparar tabla GO
     go2$genes <- goDT$genes
@@ -2481,11 +2489,9 @@ goBarplot <- function(enrichGO=NULL, resGO=NULL, genes=NULL, category=NULL ){
     res2 <- res %>% dplyr::select(GeneName_Symbol, log2FoldChange, padj)
     names(res2) <- c("ID","logFC","adj.P.Val")
     # crear objeto circ
-    library(GOplot)
     circ <- circle_dat(go2, res2)
-    GOBar(subset(circ, category=category))
+    GOBar(circ)
 }
-
 # data2circle ##############################
 data2circle <- function(go=NULL, res=NULL, genes=NULL){
   go2 <- go %>% group_by(Ont) %>% as.data.frame()
