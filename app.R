@@ -707,6 +707,7 @@ server <- function(input, output, session) {
                )
     )
   })
+# ............ #############
   # view pca plot data ###################
 output$pca3 <- renderUI({
       if (!isTRUE(pca3d())) {
