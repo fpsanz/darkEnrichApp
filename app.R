@@ -997,18 +997,7 @@ output$legendChorAll <- renderPlot({
     validate(need(kgg$all, "Load file and select to render Net Plot"))
     validate(need(rowsAll(), "Select the paths of interest to render NetPlot"))
     validate(need(kggDT$all, ""))
-    mydf <- data.frame(id = rep(1, 100), sales = 1:100)
-    minVal <- format( min( kggDT$all$`p-value`[rowsAll()] ), scientific = T, digits = 2)
-    maxVal <- format( max( kggDT$all$`p-value`[rowsAll()] ), scientific = T, digits = 2)
-    ggplot(mydf) +
-      geom_tile(aes(x = 1, y=sales, fill = sales), show.legend=FALSE) +
-      scale_x_continuous(limits=c(0.5,1.5),breaks=1)+
-      scale_y_continuous(breaks = c(1,100), 
-                         labels = c(minVal,maxVal), position = "right")+
-      scale_fill_gradient(high = "blue", low = "red") +
-      theme_void() +
-      theme(axis.text.y.right = element_text(hjust = 0, size = 12, colour = "#cdcdcd"),
-            plot.background = element_rect(fill= "#2d3741", color = NA ) )
+    visnetLegend(kggDT = kggDT$all , rows = rowsAll() )
   })
 
   output$keggAllNet <- renderUI({
