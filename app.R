@@ -1193,7 +1193,7 @@ output$legendChorAll <- renderPlot({
     #heatmapKegg(kggDT$down, rowsdown())
     heatmapKeggLogFC(kggDT$down, res$sh, rowsdown() ) 
   })
-  # KEGG cnet Down #################
+    # KEGG cnet Down #################
    output$keggDownNet <- renderUI({
     if(!isTRUE( input$keggDownNet_switch ) ){
       plotOutput("cnetKeggDown", height = "600px")
