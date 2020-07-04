@@ -45,6 +45,10 @@ header <- dashboardHeader(title = "RNAseq viewer and report App",
 ### SIDEBAR ##########
 sidebar <- dashboardSidebar(useShinyalert(),
                             useShinyjs(),
+                            sidebarMenu(id="menupreview",
+                              menuItem("App Information",
+                                       tabName = "info",
+                                       icon = icon("info"))),
                             sidebarMenu(
                                 menuItem(
                                     pickerInput(
@@ -56,12 +60,12 @@ sidebar <- dashboardSidebar(useShinyalert(),
                                     ) 
                                 )
                             ),
+                            sidebarMenu(menuItem(uiOutput("matrixDeseq"))),
                             sidebarMenu(menuItem(uiOutput("deseqFile"))),
+                            sidebarMenu(menuItem(uiOutput("countFile"))),
+                            sidebarMenu(menuItem(uiOutput("sampleFile"))),
                             sidebarMenu(menuItem(uiOutput("design"))),
-                            sidebarMenu(id="menupreview",
-                              menuItem("App Information",
-                                       tabName = "info",
-                                       icon = icon("info"))),
+                            sidebarMenu(id="menuimport",sidebarMenuOutput("importvw")),
                             sidebarMenu(id = "previewMenu", sidebarMenuOutput("prevw")),
                             sidebarMenu("", sidebarMenuOutput("menu")),
                              sidebarMenu(
@@ -75,6 +79,7 @@ sidebar <- dashboardSidebar(useShinyalert(),
                                 menuItem(
                                   fluidRow(column(12, align = "center", offset=0, uiOutput("pdf")))))
                             )
+                      
 
 ### BODY ###############
 body <- dashboardBody(
@@ -129,25 +134,31 @@ body <- dashboardBody(
               a("GitHub.", 
                 href = "https://github.com/"))),
     ) )),
-    # preview tab
+    # import tab ######
+    tabItem(tabName = "tabimport",
+            source(file = "ui-import-tab.R",
+            local=TRUE,
+            encoding = "UTF-8"
+            )$value),
+    # preview tab ######
     tabItem(tabName = "preview",
             source(file = "ui-preview-tab.R",
             local=TRUE,
             encoding = "UTF-8"
             )$value),
-    # kegg tab content
+    # kegg tab content #####
     tabItem(tabName = "kegg",
             source(file = "ui-kegg-tab.R",
                    local = TRUE,
                    encoding = "UTF-8"
                    )$value),
-    # GO tab GO tab
+    # GO tab GO tab ######
     tabItem( tabName = "go",
              source(file = "ui-go-tab.R",
                     local = TRUE,
                     encoding = "UTF-8",
                     )$value),
-    # GSEA tab
+    # GSEA tab ######
     tabItem( tabName = "gsea",
              source(file = "ui-gsea-tab.R",
                     local = TRUE,
@@ -196,6 +207,10 @@ server <- function(input, output, session) {
   rlog <- reactiveValues()
   coloresPCA <- reactiveValues(niveles=NULL, numNiveles=NULL)
   numgenesDE <- reactiveValues(up=NULL, down=NULL)
+  countfile <- reactiveValues() # para leer count matrix y sample data
+  countdata <- reactiveValues() # para convertir count matrix y sample data
+  validateCountData <- reactiveValues(ok=FALSE) #para validar count y sample ok
+  
   
   observeEvent(input$deseqFile, {
       datos$dds <- readRDS(input$deseqFile$datapath)
@@ -216,6 +231,20 @@ server <- function(input, output, session) {
       return(tmp)
   })
 
+  # Acciones al pulsar boton generar DESeq ###################
+  observeEvent(input$applyTest, {
+    countdata$sample <- countdata$sample %>% mutate_at(.vars = vars(-1), ~as.factor(.) )
+    deseqObj <- DESeqDataSetFromMatrix(countData = countdata$count, 
+                                        colData = DataFrame(countdata$sample),
+                                        design = ~1)
+    design(deseqObj) <- as.formula(paste("~", input$testVariablePicker ))
+    if(input$testAlgorithmPicker == "wald"){
+      datos$dds <- DESeq(deseqObj, test = "Wald")
+    }
+    if(input$testAlgorithmPicker == "ltr"){
+      datos$dds <- DESeq(deseqObj, test = "LTR", reduced = ~1)
+      }
+  })
   # Acciones al cargar fichero deseq ##########################
   observeEvent(design(), {
     validate(need(design(), ""))
@@ -232,7 +261,7 @@ server <- function(input, output, session) {
         res$sh$log2FoldChange <- round(res$sh$log2FoldChange,4)
         res$sh <- cbind(`Description`=conversion$description, res$sh)
           res$sh <- cbind(`GeneName_Symbol`=conversion$consensus, res$sh)
-        #res$sh$padj <- res$sh$pvalue  #########   #########   ##############
+        #res$sh$padj <- res$sh$pvalue  ##
         res$sh <-  res$sh %>% dplyr::select(-c(pvalue))
         if(specie() == "Mm" ){spc = "Mus_musculus"}
         else {spc = "Homo_sapiens"}
@@ -349,9 +378,76 @@ server <- function(input, output, session) {
   design <- reactive({input$designPicker})
   fc_switch <- reactive({input$fc_switch})
   
+  # Matrix or DESeq ##############
+  output$matrixDeseq <- renderUI({
+      validate(need(specie(), ""))
+      pickerInput("matrixDeseq",
+          label = "Select input mode",
+          choices = list("Count matrix"="cm", "DESeq object"="do"),
+          selected = NULL,
+          options = list(title = "mode")
+          )
+  })
+  # ...... Count/sample File .......############
+   # Render fileInput ########
+      output$countFile <- renderUI({
+      validate(need(input$matrixDeseq =="cm", ""))
+      fileInput("countFile",
+          "Choose file with counts",
+          placeholder = "counts",
+          accept = c(".txt", ".tsv", ".xlsx") )
+  })
+     # Leer fichero count data #######
+        observeEvent(input$countFile, {
+        if(grepl("spreadsheet",input$countFile$type)){
+            countfile$count <- readxl::read_xlsx(input$countFile$datapath)
+            countdata$count <- countfile$count %>% data.frame(., row.names = 1)
+        }else{
+            countfile$count <- data.table::fread(input$countFile$datapath, nThread = 4,
+                              header = TRUE,
+                              )
+            countdata$count <- countfile$count %>% data.frame(., row.names = 1)
+        }
+  })
+    # Render sampleInput ########
+      output$sampleFile <- renderUI({
+      validate(need(input$matrixDeseq =="cm", ""))  
+      fileInput("sampleFile",
+          "Choose file with sample data",
+          placeholder = "sample",
+          accept = c(".txt", ".tsv", ".xlsx") )
+  })
+     # Leer fichero sample data ########
+        observeEvent(input$sampleFile, {
+        if(grepl("spreadsheet",input$sampleFile$type)){
+            countfile$sample <- readxl::read_xlsx(input$sampleFile$datapath)
+            countdata$sample <- countfile$sample %>% data.frame()
+            rownames(data$sample) <- data$sample[,1]
+        }else{
+            file$sample <- data.table::fread(input$sampleFile$datapath, nThread = 4,
+                              header = TRUE,
+                              )
+            countdata$sample <- countfile$sample %>% data.frame()
+            rownames(countdata$sample) <- countdata$sample[,1]
+        }
+  })
+    observe({
+      validate(need(input$sampleFile, ""))
+      validate(need(input$countFile, ""))
+      samplesCount <- sort(colnames(countdata$count))
+      samplesSample <- sort(countdata$sample[,1])
+      if( is_empty(which(samplesSample != samplesCount ) )){
+        countdata$count <- countdata$count %>% select(countdata$sample[,1])
+        validateCountData$ok = TRUE
+      } else {
+      shinyalert("Sorry!!", "At least one sample name is inconsistent between the two tables", type = "error")
+        validateCountData$ok =FALSE
+      }
+    })
+  ######........###############################
   # InputFile #################
   output$deseqFile <- renderUI({
-      validate(need(specie(), ""))
+      validate(need(input$matrixDeseq =="do", ""))
       fileInput("deseqFile",
           "Choose RDS with DESeq object",
           placeholder = "RDS DESeq",
@@ -401,6 +497,13 @@ server <- function(input, output, session) {
     )
   })
   
+  output$importvw <- renderMenu({
+    validate(need(countdata$sample,""))
+    validate(need(countdata$count,""))
+    menuItem("Import view",
+             tabName = "tabimport",
+             icon = icon("file-import"))
+  })
   # ui selector sample groups ###################
   output$sampleGroup <- renderUI({
     validate(need(datos$dds, ""))
@@ -412,7 +515,65 @@ server <- function(input, output, session) {
                 choices = nvars,
                 multiple = TRUE)
   })
+  # ........................####
+  # Variable Selector ###########
+    output$testVariable <- renderUI({
+        validate(need(countdata$sample,""))
+        opciones <- as.list(names(countdata$sample))
+          #names(opciones) <- resultsNames(datos$dds)[-1]
+        pickerInput(
+          inputId = "testVariablePicker",
+          label = "Select variable to test",
+          choices = opciones,
+          options = list(title = "Variable"),
+          selected = NULL
+        ) 
+          })
+  # TextTestAlgorithm ###############
+  output$textTestAlgorithm <- renderUI({
+    validate(
+      need(
+        ( !is.null(input$testVariablePicker) & input$testVariablePicker != ""),"")
+      )
+    HTML(paste0(tags$p("Select Wald's test or Likelihood Ratio Test."),
+    tags$p("Wald's test performs pairwise test using first category as reference."),
+    tags$p("LTR performs comparison between full and reduced model"),tags$br()
+    ))
+  })
+  # testAlgorithm #################
+  output$testAlgorithm <- renderUI({
+    validate(
+      need(
+        ( !is.null(input$testVariablePicker) & input$testVariablePicker != ""),"")
+      )
+    pickerInput(
+          inputId = "testAlgorithmPicker",
+          label = "Select test",
+          choices = list("Wald" = "wald", "LTR" = "ltr"),
+          options = list(title = "Test"),
+          selected = NULL
+        )
+  })
+  # Test Button ##########
+  output$testButton <- renderUI({
+    validate(
+      need(( !is.null(input$testAlgorithmPicker) & input$testAlgorithmPicker != ""),"")
+      )
+    actionButton("applyTest", label = "Click to generate DESeq object")
+  })
   
+  # Tabla colData ################
+  output$coldataTable <- renderDT({
+    validate(need(countdata$sample,""))
+    countdata$sample %>% datatable()
+  })
+    # Tabla countData ################
+  output$expressionTable <- DT::renderDataTable({
+    validate(need(countdata$sample,""))
+    countdata$count %>% head(10) %>% DT::datatable()
+  })
+  
+  # ........................####
   # ui selector de genes para volcano plot #######################
   output$geneSelector <- renderUI({
     validate(need(res$sh, ""))
