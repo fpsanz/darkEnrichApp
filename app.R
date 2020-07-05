@@ -61,33 +61,17 @@ sidebar <- dashboardSidebar(useShinyalert(),
                                 )
                             ),
                             sidebarMenu(menuItem(uiOutput("matrixDeseq"))),
-                            circleButton(
-                              inputId = "infoDO",
-                              icon = icon("info"),
-                              size = "xs",
-                              status = "primary"
-                            ),
-                            bsTooltip(
-                              "infoDO",
-                              paste0("The file must be compressed as .RDS"),
-                              trigger = "hover",
-                              placement = "right"
-                            ),
-                            sidebarMenu(menuItem(uiOutput("deseqFile"))),
-                              circleButton(
-                                inputId = "infoCM",
-                                icon = icon("info"),
-                                size = "xs",
-                                status = "primary"
-                              ),
-                              bsTooltip(
-                                "infoCM",
-                                paste0("The accepted formats are .txt, .tsv, .xlsx"),
-                                trigger = "hover",
-                                placement = "right"
-                              ),
-                            sidebarMenu(menuItem(uiOutput("countFile"))),
-                            sidebarMenu(menuItem(uiOutput("sampleFile"))),
+                            sidebarMenu(fluidRow(
+                                        column(width=1,menuItem(uiOutput("circleinfoDO"))),
+                                        column(width=11,menuItem(uiOutput("tooltipDO")),
+                                        menuItem(uiOutput("deseqFile"))))),
+                            sidebarMenu(fluidRow(
+                                        column(width=1,menuItem(uiOutput("circleinfoCM"))),
+                                        column(width=11,menuItem(uiOutput("tooltipCM")),
+                                        menuItem(uiOutput("countFile"))))),
+                            sidebarMenu(fluidRow(
+                                        column(width = 11,
+                                          menuItem(uiOutput("sampleFile"))))),
                             sidebarMenu(menuItem(uiOutput("design"))),
                             sidebarMenu(id="menuimport",sidebarMenuOutput("importvw")),
                             sidebarMenu(id = "previewMenu", sidebarMenuOutput("prevw")),
@@ -422,6 +406,26 @@ server <- function(input, output, session) {
     validate(need(input$countFile,"")) 
   })
   
+  
+  # Tooltip de CountMAtrix ##################
+  output$circleinfoCM <- renderUI({
+    validate(need(input$matrixDeseq =="cm", ""))
+    circleButton(
+      inputId = "infoCM",
+      icon = icon("info"),
+      size = "xs",
+      status = "primary"
+    ) 
+  })
+  output$tooltipCM <- renderUI({
+    validate(need(input$matrixDeseq =="cm", ""))
+    bsTooltip(
+      "infoCM",
+      paste0("The accepted formats are .txt, .tsv, .xlsx"),
+      trigger = "hover",
+      placement = "right"
+    )
+  })
    # Render fileInput ########
       output$countFile <- renderUI({
       validate(need(input$matrixDeseq =="cm", ""))
@@ -478,6 +482,24 @@ server <- function(input, output, session) {
       }
     })
   ######........###############################
+  # tooltip DEseqFile ############
+    output$circleinfoDO <- renderUI({
+      validate(need(input$matrixDeseq =="do", ""))
+       circleButton(inputId = "infoDO",
+                    icon = icon("info"),
+                    size = "xs",
+                    status = "primary"
+                    )
+    })
+    output$tooltipDO <- renderUI({
+      validate(need(input$matrixDeseq =="do", ""))
+      bsTooltip(
+      "infoDO",
+      paste0("The file must be compressed as .RDS"),
+      trigger = "hover",
+      placement = "right"
+      )
+    })
   # InputFile #################
   output$deseqFile <- renderUI({
       validate(need(input$matrixDeseq =="do", ""))
