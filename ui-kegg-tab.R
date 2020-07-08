@@ -1,6 +1,6 @@
 fluidPage(
     tabsetPanel(
-        tabPanel( "All DE genes",          # pestaña All
+        tabPanel( "All DE genes",          # pestaña All #################
             tags$br(),
             fluidRow(  # primera fila
                 column( width = 3,
@@ -115,8 +115,8 @@ fluidPage(
                         )
                     )
             )
-        ), #fin tab all genes
-        tabPanel( "Upregulated genes",          # pestaña upregulates
+        ), #fin tab all genes ..................##############
+        tabPanel( "Upregulated genes",          # pestaña Up ##############
             tags$br(),
             fluidRow(  # primera fila
                 column( width = 3,
@@ -210,8 +210,8 @@ fluidPage(
                         )
                     )
             )
-        ), #fin tab uprergulated genes
-        tabPanel( "Downregulated genes",          # pestaña downregulates
+        ), #fin tab Up genes ................... #####
+        tabPanel( "Downregulated genes",   # pestaña Down ##########
             tags$br(),
             fluidRow(  # primera fila
                 column( width = 3,
@@ -305,7 +305,7 @@ fluidPage(
                         )
                     )
             )
-        ) #fin tab downRegulated genes
+        ) #fin tab Down genes ............. ####
     ) # fin tabsetpanel
 ) #fin fluidpage    
 

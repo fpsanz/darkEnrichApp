@@ -834,13 +834,22 @@ plotGO <- function(enrichdf, nrows = 30, orderby="p-val", ont, colors=NULL){
             enrichdf <- enrichdf %>% arrange(get(orderby))
         } else{ enrichdf <- enrichdf %>% arrange(desc(get(orderby)))}
     }
-    p <- enrichdf[1:nrows,] %>%
-        plot_ly(x=~DEG, y=~go_id, text=~Term, type = "bar",
-                marker = list(color=dataTitle[[ont]][2]),
-                orientation = "v",
-                hovertext = paste0(enrichdf$Pathway,"\np-val: ",format(enrichdf$`p-val`, scientific = T, digits = 4))) %>%
-        layout(margin = list(l=100), yaxis = list(title=""),
-               title=dataTitle[[ont]][1], xaxis = list(tickvals = c(1:max(enrichdf$DEG) ) ))
+    # p <- enrichdf[1:nrows,] %>%
+    #     plot_ly(x=~DEG, y=~go_id, text=~Term, type = "bar",
+    #             marker = list(color=dataTitle[[ont]][2]),
+    #             orientation = "v",
+    #             hovertext = paste0(enrichdf$Pathway,"\np-val: ",format(enrichdf$`p-val`, scientific = T, digits = 4))) %>%
+    #     layout(margin = list(l=100), yaxis = list(title=""),
+    #            title=dataTitle[[ont]][1], xaxis = list(tickvals = c(1:max(enrichdf$DEG) ) ))
+    p <- enrichdf[1:nrows,] %>% 
+      ggplot( aes( y = DEG, x = go_id, 
+                   text = paste0("p-val: ",format(`p-val`, scientific = T, digits = 4)) )) +
+              geom_bar(position = "stack", stat = "identity", fill = colors) + coord_flip() +
+        theme(axis.text.y = element_text(angle = 0, hjust = 1)) + theme_bw() +
+        scale_fill_manual(values = "red") +
+        theme(panel.grid.major.y  = element_blank(),
+              axis.title.y = element_blank())
+    p <- p %>% ggplotly(tooltip = "all")
     return(p)
 }
 # Plot barras de GOAll ####################
