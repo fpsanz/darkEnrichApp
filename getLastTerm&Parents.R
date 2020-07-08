@@ -30,6 +30,7 @@ getAllMFChildren <- function(goids){
     return(ans)
 }
 
+
 ##Para BP terms
 goIds <- readRDS("resources/Hs/GO/GOlinks.Rds")
 goIdsBP <- goIds[ goIds$Ontology == "BP", ]
@@ -83,6 +84,10 @@ annot <- read_delim("~/Escritorio/A-GEOD-11017.adf.txt", delim = "\t", col_names
 annot$X1 <- tolower(annot$X1)
 kk2 <- left_join( kkk, annot, by = c("symbol"="X1") )
 
-
+### ### ### grafos #### ####
+goIds <- readRDS("resources/Hs/GO/GOlinks.Rds")
+goIdsCC <- goIds[ goIds$Ontology == "CC", ]
+goIdsCC2 <- unique(goIdsCC$go_id)
+ccList <- lapply(goIdsCC2, function(x){getAllCCChildren(x)} )
 
 
