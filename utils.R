@@ -2790,7 +2790,7 @@ visnetLegend <- function(kggDT = NULL, rows = NULL){
       ),
         footer = tagList(
           modalButton("Cancel"),
-          actionButton("ok", "OK")
+          downloadButton("ok", "OK")
         )
       )
     }

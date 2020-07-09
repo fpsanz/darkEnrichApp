@@ -1,3 +1,83 @@
+I have found a (not so pretty) solution (but it works), so I share it :
+
+1. First, in the UI part I create an invisible download link (I set label ="" to get it invisible => it allows to declare a downloadLink but not to see it):
+downloadLink("downloadData",label="")
+
+2. I also declare (in the UI part) this javascript code (inspired by this) :
+tags$head(tags$script(HTML('
+                           Shiny.addCustomMessageHandler("jsCode",
+                           function(message) {
+                           eval(message.value);
+                           });'
+)))
+3. In the server part I create thise observer (partially inspired by this)
+observeEvent(input$my_own_trigger, {
+  output$downloadData<<-downloadHandler(filename = x$Nom,content = function(file)file.copy(file0,file) )
+  jsinject <- "setTimeout(function(){window.open($('#downloadData').attr('href'))}, 100);"
+  session$sendCustomMessage(type = 'jsCode', list(value = jsinject))    
+})
+
+So now I can produce a download in the client side with any trigger (input$my_own_trigger)
+
+
+      # nrall <- rowsAll()
+      # nrup <- rowsUp()
+      # nrdown <- rowsdown()
+      # bpnrup <- bprowsup()
+      # mfnrup <- mfrowsup()
+      # ccnrup <- ccrowsup()
+      # bpnrdown <- bprowsdown()
+      # mfnrdown <- mfrowsdown()
+      # ccnrdown <- ccrowsdown()
+      # variablepca <- variables()
+      # samplecluster <- samplename()
+      # gseanr <- gsearow()
+      # bpnrall <- bprowsall()
+      # mfnrall <- mfrowsall()
+      # ccnrall <- ccrowsall()
+      # if(is.null(gseanr)){gseanr <- c(1)}
+      # if(is.null(nrup)){ nrup <- ( if( dim(kggDT$up)[1]<10) 1:dim(kggDT$up)[1] else c(1:10) ) }
+      # if(is.null(nrall)){ nrall <-  ( if( dim(kggDT$all)[1]<10) 1:dim(kggDT$all)[1] else c(1:10) ) }
+      # if(is.null(nrdown)){ nrdown <- ( if( dim(kggDT$down)[1]<10) 1:dim(kggDT$down)[1] else c(1:10) ) }
+      # 
+      # if(is.null(ccnrup)){ ccnrup <- ( if (dim(goDT$up[goDT$up$Ont=="CC", ])[1]<10)
+      #                                        1:dim(goDT$up[goDT$up$Ont=="CC", ])[1] else c(1:10) ) }
+      # if(is.null(mfnrup)){ mfnrup <- ( if (dim(goDT$up[goDT$up$Ont=="MF", ])[1]<10)
+      #                                        1:dim(goDT$up[goDT$up$Ont=="MF", ])[1] else c(1:10) ) }
+      # if(is.null(bpnrup)){ bpnrup <- ( if (dim(goDT$up[goDT$up$Ont=="BP", ])[1]<10)
+      #                                        1:dim(goDT$up[goDT$up$Ont=="BP", ])[1] else c(1:10) )}
+      # 
+      # if(is.null(ccnrdown)){ccnrdown <- ( if (dim(goDT$down[goDT$down$Ont=="CC", ])[1]<10)
+      #                                         1:dim(goDT$down[goDT$down$Ont=="CC", ])[1] else c(1:10) ) }
+      # if(is.null(mfnrdown)){mfnrdown <- ( if (dim(goDT$down[goDT$down$Ont=="MF", ])[1]<10)
+      #                                         1:dim(goDT$down[goDT$down$Ont=="MF", ])[1] else c(1:10) ) }
+      # if(is.null(bpnrdown)){bpnrdown <- ( if (dim(goDT$down[goDT$down$Ont=="BP", ])[1]<10)
+      #                                         1:dim(goDT$down[goDT$down$Ont=="BP", ])[1] else c(1:10) )}
+      # 
+      # if(is.null(bpnrall)){bpnrall <- ( if (dim(goDT$all[goDT$all$Ont=="BP", ])[1]<10)
+      #                                       1:dim(goDT$all[goDT$all$Ont=="BP", ])[1] else c(1:10)) }
+      # if(is.null(mfnrall)){mfnrall <- ( if (dim(goDT$all[goDT$all$Ont=="MF", ])[1]<10)
+      #                                       1:dim(goDT$all[goDT$all$Ont=="MF", ])[1] else c(1:10)) }
+      # if(is.null(ccnrall)){ccnrall <- ( if (dim(goDT$all[goDT$all$Ont=="CC", ])[1]<10)
+      #                                       1:dim(goDT$all[goDT$all$Ont=="CC", ])[1] else c(1:10))}
+      # 
+      # if(is.null(variablepca)){variablepca=NULL}
+      # if(is.null(samplecluster)){samplecluster=NULL}
+      # params <- list(nrup=nrup, nrdown=nrdown, bpnrup=bpnrup, bpnrdown=bpnrdown,
+      #                mfnrup=mfnrup, mfnrdown=mfnrdown, ccnrup=ccnrup, ccnrdown=ccnrdown,
+      #                variablepca=variablepca, samplecluster=samplecluster, tempdir =tempdir(),
+      #                gseanr=gseanr, gene = gene(), numheatmap=numheatmap(), nrall = nrall,
+      #                bpnrall=bpnrall, mfnrall=mfnrall, ccnrall=ccnrall,
+      #                explainPreview=explainPreview(), biologicalText=biologicalText(),
+      #                keggAllText = keggAllText(), GSEAText = GSEAText(), deseq = datos$dds,
+      #                kggAll = kgg$all, kggUp = kgg$up, kggDown = kgg$down,
+      #                kggDTall = kggDT$all, kggDTup = kggDT$up, kggDTdown = kggDT$down,
+      #                goAll = go$all, goDTall = goDT$all, goUp=go$up, goDTup = goDT$up,
+      #                goDown = go$down, goDTdown = goDT$down, gsea = gsea$gsea)
+      # 
+      # 
+
+
 library(shiny)
 library(shinyWidgets)
 
@@ -168,7 +248,6 @@ shinyApp(
     
     # Print inputted text
     output$print <- renderPrint({
-        validate(need(vals$GSEA,""))
         kk <- list()
         kk$gsea <- vals$GSEA
         kk$preview <- vals$preview
