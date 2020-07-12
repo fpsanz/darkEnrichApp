@@ -6,38 +6,15 @@ output:
   rmdformats::readthedown:
     highlight: kate
 params:
-  nrup: NA
-  bpnrup: NA
-  ccnrup: NA
-  mfnrup: NA
-  nrdown: NA
-  bpnrdown: NA
-  mfnrdown: NA
-  ccnrdown: NA
-  nrall: NA
-  bpnrall: NA
-  mfnrall: NA
-  ccnrall: NA
-  variablepca: NA
   tempdir: NA
-  gseanr: NA
-  biologicalText: NA
-  explainPreview: NA
-  keggAllText: NA
-  deseq: NA
-  kggUp: NA
-  kggAll: NA
-  kggDown: NA
-  kggDTall: NA
-  kggDTdown: NA
-  kggDTup: NA
-  goAll: NA
-  goUp: NA
-  goDown: NA
-  goDTall: NA
-  goDTdown: NA
-  goDTup: NA
-  gsea: NA
+  pcaObj: NA
+  rlog: NA
+  colorespca: NA
+  variables: NA
+  samplename: NA
+  boxObj: NA
+  vsd: NA
+  boxplotswitch: NA
 ---
 
 
@@ -114,18 +91,35 @@ source("utils.R")
 # 
 # gsea <- readRDS("tmpResources/gsea.Rds")
 
-if(is.na(params$nrup) ){prvw=FALSE}
 ```
 
-```{r previewTitle, eval=prvw, results='asis'}
+```{r previewTitle, eval=params$pcaObj, results='asis'}
 cat("# Preview section")
 ```
 
+```{r, pcatitle, eval = params$pcaObj, results='asis'}
+cat("## PCA 2D")
+```
 
 
-```{r preview, eval=prvw}
+```{r , pca2d, eval=params$pcaObj}
+    plotPCA(
+        params$rlog,
+        intgroup = params$variables,
+        labels = params$samplename,
+        customColor = params$colorespca
+    ) +
+        theme(plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), "cm")) +
+        scale_size_manual(values = 3) +
+        theme(text = element_text(size = 16))
+```
 
-data(iris)
-plot(iris)
+```{r boxplotitle, eval=params$boxObj, results='asis' }
+cat("## Box/Violin plot")
+```
+
+```{r boxplot, eval=params$boxObj }
+boxViolin( names = params$samplename , vsd=params$vsd, boxplotswitch=params$boxplotswitch,
+                    intgroup=params$variables, customColor = params$colorespca ) 
 ```
 

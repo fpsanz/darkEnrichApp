@@ -216,7 +216,7 @@ server <- function(input, output, session) {
   countfile <- reactiveValues() # para leer count matrix y sample data
   countdata <- reactiveValues() # para convertir count matrix y sample data
   validateCountData <- reactiveValues(ok=FALSE) #para validar count y sample ok
-  
+  vals <- reactiveValues()
   
   observeEvent(input$deseqFile, {
       datos$dds <- readRDS(input$deseqFile$datapath)
@@ -266,7 +266,7 @@ server <- function(input, output, session) {
         res$sh$lfcSE <- round(res$sh$lfcSE,4)
         res$sh$log2FoldChange <- round(res$sh$log2FoldChange,4)
         res$sh <- cbind(`Description`=conversion$description, res$sh)
-          res$sh <- cbind(`GeneName_Symbol`=conversion$consensus, res$sh)
+        res$sh <- cbind(`GeneName_Symbol`=conversion$consensus, res$sh)
         #res$sh$padj <- res$sh$pvalue  ##
         res$sh <-  res$sh %>% dplyr::select(-c(pvalue))
         if(specie() == "Mm" ){spc = "Mus_musculus"}
@@ -1127,7 +1127,7 @@ output$karyoPlot <- renderPlot({
           validate(need(samplename(),"" ) )
           validate(need(coloresPCA$colores(), ""))
           boxViolin( names = samplename() , vsd=vsd$data, boxplotswitch=boxplotswitch(),
-                    intgroup=variables(), customColor = coloresPCA$colores()) 
+                    intgroup=variables(), customColor = coloresPCA$colores() ) 
   })
 
 # ............ ###############################
@@ -2108,7 +2108,9 @@ output$legendChorAll <- renderPlot({
   #   downloadButton("reportpdf", "pdf report")
   # })
   
+  applyPress <- reactiveValues(ok=FALSE)
   observeEvent(input$ok,{
+        applyPress$ok <- TRUE
         vals$preview <- input$modalPreview
         vals$keggAll <- input$modalKeggAll
         vals$keggUp <- input$modalKeggUp
@@ -2117,19 +2119,46 @@ output$legendChorAll <- renderPlot({
         vals$GOUp <- input$modalGOUp
         vals$GODown <- input$modalGODown
         vals$GSEA <- input$modalGSEA
-        removeModal()
+        #removeModal()
   })
-  output$ok <- downloadHandler(
+  
+  output$downloadhtml <- renderUI({
+    validate(need(isTRUE(applyPress$ok), ""))
+    downloadButton("download", "Download report")
+    })
+  
+  output$download <- downloadHandler(
     filename = "report.html",
     content = function(file) {
+      removeModal()
       tempReport <- file.path(tempdir(), "report.Rmd")
       file.copy("report.Rmd", tempReport, overwrite = TRUE)
       file.copy("utils.R", file.path(tempdir(),"utils.R"), overwrite = TRUE)
       file.copy("tmpResources/", tempdir(), overwrite = TRUE, recursive = TRUE)
       file.copy("resources/dna-svg-small-13.gif",
-                 file.path(tempdir(), "tmpResources/dna-svg-small-13.gif"), overwrite = TRUE)
-      nrup <- NA
-      params <- list(nrup=nrup, tempdir=tempdir())
+      file.path(tempdir(), "tmpResources/dna-svg-small-13.gif"), overwrite = TRUE)
+      ## inicializar variables
+      rlogdatos <- colorespca <- variables <- samplename <- NULL
+      vsddata <- boxplotswitch <- NULL
+      pcaObj <- boxObj <- FALSE
+      #para preview
+      if(!is.null(vals$preview)){
+        if( ("PCA" %in% vals$preview) ){ #para PCA
+          pcaObj <- TRUE
+          rlogdatos <- rlog$datos; colorespca <- coloresPCA$colores();
+          variables <- variables(); samplename <- samplename() }
+        if("BoxPlot" %in% vals$preview){ #para boxplot
+          boxObj = TRUE
+          samplename <- samplename(); vsddata <- vsd$data; boxplotswitch <- boxplotswitch()
+          variables <- variables(); colorespca = coloresPCA$colores()
+          }
+      }
+  
+      params <- list(pcaObj = pcaObj, rlog = rlogdatos, colorespca = colorespca,
+                     variables = variables, samplename = samplename,
+                     vsd = vsddata, boxplotswitch = boxplotswitch, boxObj = boxObj )
+      
+      params <- c(params, list(tempdir=tempdir() ))
       rmarkdown::render(
         tempReport,
         output_file = file,

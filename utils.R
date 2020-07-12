@@ -1083,7 +1083,8 @@ loadGenes <- function(filegenes){
                                    size = "tam"),
                                show.legend = FALSE, size=3, nudge_y = 0.1) +
       # scale_size_manual("tam", c(1)) +
-      theme(text = element_text(size=20))}
+      theme(text = element_text(size=20))
+    }
   else{
     p <- ggplot(data = d,
                 aes_string(x = "PC1", y = "PC2", color = "group")) +
@@ -2790,7 +2791,8 @@ visnetLegend <- function(kggDT = NULL, rows = NULL){
       ),
         footer = tagList(
           modalButton("Cancel"),
-          downloadButton("ok", "OK")
+          actionButton("ok", "Apply"),
+          uiOutput("downloadhtml")
         )
       )
     }
