@@ -1102,6 +1102,7 @@ output$texto2 <- renderTable( digits = -2, {
         geom_point(position = position_jitter(width = 0.1, height = 0), size = 2)+
         scale_color_manual( values = coloresPCA$colores() )+
         ggtitle(paste0(symbol) )
+    # texto del plot1 #############
     output$top1text <- renderUI({
         validate(need(gene(), ""))
         texto <- as.data.frame(unique(z[ ,c(variables()[1],"text") ] ))
@@ -2131,16 +2132,27 @@ output$legendChorAll <- renderPlot({
     filename = "report.html",
     content = function(file) {
       removeModal()
+      applyPress$ok <- FALSE
       tempReport <- file.path(tempdir(), "report.Rmd")
       file.copy("report.Rmd", tempReport, overwrite = TRUE)
       file.copy("utils.R", file.path(tempdir(),"utils.R"), overwrite = TRUE)
-      file.copy("tmpResources/", tempdir(), overwrite = TRUE, recursive = TRUE)
+      file.copy("resources/", tempdir(), overwrite = TRUE, recursive = TRUE)
       file.copy("resources/dna-svg-small-13.gif",
-      file.path(tempdir(), "tmpResources/dna-svg-small-13.gif"), overwrite = TRUE)
-      ## inicializar variables
+      file.path(tempdir(), "resources/dna-svg-small-13.gif"), overwrite = TRUE)
+      ## inicializar variables preview
       rlogdatos <- colorespca <- variables <- samplename <- NULL
       vsddata <- boxplotswitch <- NULL
-      pcaObj <- boxObj <- FALSE
+      specie <- numheatmap <- NULL
+      datosdds <- ressh <- NULL
+      gene <- NULL
+      padj <- logfc <- NULL
+      pcaObj <- boxObj <- heatObj <- clusterObj <- top6Obj <- top1Obj <- FALSE
+      karyObj <- FALSE
+      volcObj <- maObj <- FALSE
+      upcolor <- downcolor <- genesvolcano <- NULL
+      ## inicializar variables kegg
+      tablekgaObj <- barkgaObj <- chorkgaObj <- dotkgaObj <- heatkgaObj <- netkgaObj <- FALSE
+      kggall <- genesdeup <- genesdedown <- kggdtall <- rowsall <- datagenesup <- datagenesdown <- typebarkeggall <- NULL
       #para preview
       if(!is.null(vals$preview)){
         if( ("PCA" %in% vals$preview) ){ #para PCA
@@ -2148,15 +2160,82 @@ output$legendChorAll <- renderPlot({
           rlogdatos <- rlog$datos; colorespca <- coloresPCA$colores();
           variables <- variables(); samplename <- samplename() }
         if("BoxPlot" %in% vals$preview){ #para boxplot
-          boxObj = TRUE
+          boxObj <- TRUE
           samplename <- samplename(); vsddata <- vsd$data; boxplotswitch <- boxplotswitch()
           variables <- variables(); colorespca = coloresPCA$colores()
-          }
+        }
+        if("Heatmap" %in% vals$preview){ #para heatmap
+          heatObj <- TRUE
+          samplename <- samplename(); vsddata <- vsd$data;
+          variables <- variables(); colorespca = coloresPCA$colores()
+          specie <- specie(); numheatmap <- numheatmap()
+        }
+        if("Cluster" %in% vals$preview){#para cluster
+          clusterObj <- TRUE
+          samplename <- samplename(); vsddata <- vsd$data;
+        }
+        if("Top6" %in% vals$preview){ #para top6
+          top6Obj <- TRUE
+          ressh <- res$sh; datosdds <- datos$dds;
+          variables <- variables(); colorespca = coloresPCA$colores()
+        }
+        if("Top1" %in% vals$preview){ #para top1
+          top1Obj <- TRUE
+          gene <- gene(); variables <- variables(); colorespca = coloresPCA$colores()
+          ressh <- res$sh; datosdds <- datos$dds; specie <- specie()
+        }
+        if("Karyoplot" %in% vals$preview){ #para keryoplot
+          karyObj <- TRUE
+          padj <- padj(); logfc <- logfc(); specie <- specie(); ressh <- res$sh
+        }
+        if("Volcano" %in% vals$preview){ #para volcano
+          volcObj <- TRUE
+          padj <- padj(); logfc <- logfc(); ressh <- res$sh
+          genesvolcano <- genesVolcano(); upcolor <- input$upColor; downcolor <- input$downColor
+        }
+        if("MA" %in% vals$preview){ #para MA
+          maObj <- TRUE
+          padj <- padj(); logfc <- logfc(); ressh <- res$sh
+          upcolor <- input$upColor; downcolor <- input$downColor
+        }
+      }
+      if(!is.null(vals$keggAll)){ #para keggAll
+        if("Table" %in% vals$keggAll){}
+        if("Barplot" %in% vals$keggAll){}
+        if("Chorplot" %in% vals$keggAll){}
+        if("Dotplot" %in% vals$keggAll){}
+        if("Heatmap" %in% vals$keggAll){}
+        if("Netplot" %in% vals$keggAll){}
+      }
+      if(!is.null(vals$keggUp)){ #para keggUp
+        if("Table" %in% vals$keggUp){}
+        if("Barplot" %in% vals$keggUp){}
+        if("Chorplot" %in% vals$keggUp){}
+        if("Dotplot" %in% vals$keggUp){}
+        if("Heatmap" %in% vals$keggUp){}
+        if("Netplot" %in% vals$keggUp){}
+      }
+      if(!is.null(vals$keggDown)){ #para keggDown
+        if("Table" %in% vals$keggDown){}
+        if("Barplot" %in% vals$keggDown){}
+        if("Chorplot" %in% vals$keggDown){}
+        if("Dotplot" %in% vals$keggDown){}
+        if("Heatmap" %in% vals$keggDown){}
+        if("Netplot" %in% vals$keggDown){}
       }
   
-      params <- list(pcaObj = pcaObj, rlog = rlogdatos, colorespca = colorespca,
+      params <- list( values = vals, 
+                      pcaObj = pcaObj, rlog = rlogdatos, colorespca = colorespca,
                      variables = variables, samplename = samplename,
-                     vsd = vsddata, boxplotswitch = boxplotswitch, boxObj = boxObj )
+                     vsd = vsddata, boxplotswitch = boxplotswitch, boxObj = boxObj,
+                     specie = specie, numheatmap = numheatmap, heatObj = heatObj,
+                     clusterObj = clusterObj, 
+                     ressh = ressh, datosdds = datosdds, top6Obj = top6Obj, 
+                     gene = gene, top1Obj = top1Obj,
+                     karyObj = karyObj, padj =padj, logfc = logfc,
+                     volcObj = volcObj, genesvolcano = genesvolcano, 
+                     upcolor = upcolor, downcolor = downcolor, 
+                     maObj = maObj)
       
       params <- c(params, list(tempdir=tempdir() ))
       rmarkdown::render(

@@ -2672,7 +2672,7 @@ visnetLegend <- function(kggDT = NULL, rows = NULL){
                            inputId = "modalPreview",
                            label = "Select preview elements to report",
                            choices = c("PCA", "BoxPlot", "Heatmap", "Cluster","Top6",
-                                       "Top1", "Volcano","MA"),
+                                       "Top1", "Karyoplot","Volcano","MA"),
                            status = "primary",
                            checkIcon = list(
                                yes = icon("ok",
