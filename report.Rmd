@@ -39,7 +39,6 @@ params:
   genesdeup: NA
   kggdtall: NA
   barkgaObj: NA
-  nparams$nrowsall: NA
   datagenesdown: NA
   datagenesup: NA
   typebarkeggall: NA
@@ -48,6 +47,54 @@ params:
   heatkgaObj: NA
   netkgaObj: NA
   nrowsall: NA
+  tablekguObj: NA
+  barkguObj: NA
+  chorkguObj: NA
+  dotkguObj: NA
+  heatkguObj: NA
+  netkguObj: NA
+  tablekgdObj: NA
+  barkgdObj: NA
+  chorkgdObj: NA
+  dotkgdObj: NA
+  heatkgdObj: NA
+  netkgdObj: NA
+  kggup: NA
+  kggdown: NA
+  kggdtup: NA
+  kggdtdown: NA
+  nrowsup: NA
+  nrowsdown: NA
+  tablegoaObj: NA
+  bargoaObj: NA
+  dotgoaObj: NA
+  gobargoaObj: NA
+  gocirclegoaObj: NA
+  tablegouObj: NA
+  bargouObj: NA
+  dotgouObj: NA
+  gobargouObj: NA
+  gocirclegouObj: NA
+  tablegodObj: NA
+  bargodObj: NA
+  dotgodObj: NA
+  gobargodObj: NA
+  gocirclegodObj: NA
+  goall: NA
+  godtall: NA
+  bprowsall: NA
+  mfrowsall: NA
+  ccrowsall: NA
+  goup: NA
+  godtup: NA
+  bprowsup: NA
+  mfrowsup: NA
+  ccrowsup: NA
+  godown: NA
+  godtdown: NA
+  bprowsdown: NA
+  mfrowsdown: NA
+  ccrowsdown: NA
 ---
 
 
@@ -103,6 +150,13 @@ library('gplots')
 source("utils.R")
 
 if(!is.null(params$values$preview)){preview=TRUE}else{preview=FALSE}
+if(!is.null(params$values$keggAll)){kegg=TRUE}else{kegg=FALSE}
+if(!is.null(params$values$keggUp)){keggUp=TRUE}else{keggUp=FALSE}
+if(!is.null(params$values$keggDown)){keggDown=TRUE}else{keggDown=FALSE}
+if(!is.null(params$values$GOAll)){GOAll=TRUE}else{GOAll=FALSE}
+if(!is.null(params$values$GOUp)){GOUp=TRUE}else{GOUp=FALSE}
+if(!is.null(params$values$GODown)){GODown=TRUE}else{GODown=FALSE}
+
 ```
 
 ```{r previewTitle, eval=preview, results='asis'}
@@ -112,7 +166,6 @@ cat("# Preview section")
 ```{r pcatitle, eval = params$pcaObj, results='asis'}
 cat("## PCA 2D")
 ```
-
 
 ```{r pca2d, eval=params$pcaObj}
     plotPCA(
@@ -254,6 +307,11 @@ MA(params$ressh, main = 'MA plot applying the DESeq2 Shrinkage normalization for
     )
 ```
 
+<!-- kegg all section -->
+
+```{r keggAllsection, eval=kegg, results='asis'}
+cat("# Kegg All section")
+```
 
 ```{r tablekga, eval = params$tablekgaObj, results='asis' }
 cat("## Table kegg All genes")
@@ -325,7 +383,7 @@ cat("## Heatmap kegg All genes")
 ```
 
 ```{r heatkgaplot, eval = params$heatkgaObj}
-heatmapKeggLogFC(kggDT$all, params$ressh, params$nrowsall ) 
+heatmapKeggLogFC(params$kggdtall, params$ressh, params$nrowsall ) 
 ```
 
 ```{r netkga, eval = params$netkgaObj, results='asis' }
@@ -336,5 +394,178 @@ cat("## Netplot kegg All genes")
 customCnetKegg(params$kggall, params$nrowsall, genesUp = params$datagenesup, genesDown = params$datagenesdown)
 ```
 
+<!-- kegg up section -->
 
+```{r keggUpsection, eval=keggUp, results='asis'}
+cat("# Kegg Up section")
+```
+
+```{r tablekgu, eval = params$tablekguObj, results='asis' }
+cat("## Table kegg Up genes")
+```
+
+```{r tablekguplot, eval = params$tablekguObj}
+    kggdtup <- params$kggdtup
+    names(kggdtup)[names(kggdtup) == "DE"] <- "DEG"
+    names(kggdtup)[names(kggdtup) == "P.DE"] <- "p-value"
+    tituloTabla <- paste0("Table: Kegg up-regulated genes | ","log2FC: ",params$logfc[1],"_",params$logfc[2]," | ",
+                          "padj: ",params$padj," | ",
+                          "Num genes Up/down: ",params$numgenesdeup,"/",params$numgenesdedown)
+    customButtons <- list(
+        list(extend = "copy", title=tituloTabla),
+        list(extend = "excel",
+            filename = "keggUp",
+            title = tituloTabla),
+        list(extend = "pdf",
+            filename = "keggUp",
+            title = tituloTabla),
+        list(extend = "print", title=tituloTabla)
+    )
+    datatable2(
+      kggdtup, 
+      vars = c("genes"),
+      filter = list(position="top", clear=FALSE),
+      escape = FALSE,
+      opts = list(order = list(list(5, 'asc')),
+        pageLength = 10, white_space = "normal",
+        buttons = customButtons
+        ) )
+    
+```
+
+
+```{r barkgu, eval = params$barkguObj, results='asis' }
+cat("## Barplot kegg Up genes")
+
+```
+
+```{r  eval = params$barkguObj }
+kggup <- params$kggup
+plotKegg(enrichdf = kggup[params$nrowsup,], nrows = length(params$nrowsup), colors = c(params$upcolor) )
+```
+
+```{r chorkgu, eval = params$chorkguObj, results='asis' }
+cat("## Chorplot Up genes")
+```
+
+```{r chorkguplot, eval = params$chorkguObj}
+chordPlot(params$kggup[params$nrowsup, ], nRows = length(params$nrowsup), orderby = "P.DE")
+legendChorplot(params$kggup[params$nrowsup, ] )
+```
+
+```{r dotkgu, eval = params$dotkguObj, results='asis' }
+cat("## Dotplot kegg Up genes")
+```
+
+```{r dotkguplot, eval = params$dotkguObj}
+kggup <- params$kggup
+dotPlotkegg(params$kggup[params$nrowsup,], n = length(params$nrowsup))
+```
+
+```{r heatkgu, eval = params$heatkguObj, results='asis' }
+cat("## Heatmap kegg Up genes")
+```
+
+```{r heatkguplot, eval = params$heatkguObj}
+heatmapKeggLogFC(params$kggdtup, params$ressh, params$nrowsup ) 
+```
+
+```{r netkgu, eval = params$netkguObj, results='asis' }
+cat("## Netplot kegg Up genes")
+```
+
+```{r netkguplot, eval = params$netkguObj}
+customCnetKegg(params$kggup, params$nrowsup, genesUp = params$datagenesup, genesDown = params$datagenesdown)
+```
+
+
+<!-- kegg down section -->
+
+```{r keggDownsection, eval=keggDown, results='asis'}
+cat("# Kegg Down section")
+```
+
+```{r tablekgd, eval = params$tablekgdObj, results='asis' }
+cat("## Table kegg Down genes")
+```
+
+```{r tablekgdownlot, eval = params$tablekgdObj}
+    kggdtdown <- params$kggdtdown
+    names(kggdtdown)[names(kggdtdown) == "DE"] <- "DEG"
+    names(kggdtdown)[names(kggdtdown) == "P.DE"] <- "p-value"
+    tituloTabla <- paste0("Table: Kegg down-regulated genes | ","log2FC: ",params$logfc[1],"_",params$logfc[2]," | ",
+                          "padj: ",params$padj," | ",
+                          "Num genes Up/down: ",params$numgenesdeup,"/",params$numgenesdedown)
+    customButtons <- list(
+        list(extend = "copy", title=tituloTabla),
+        list(extend = "excel",
+            filename = "keggDown",
+            title = tituloTabla),
+        list(extend = "pdf",
+            filename = "keggDown",
+            title = tituloTabla),
+        list(extend = "print", title=tituloTabla)
+    )
+    datatable2(
+      kggdtdown, 
+      vars = c("genes"),
+      filter = list(position="top", clear=FALSE),
+      escape = FALSE,
+      opts = list(order = list(list(5, 'asc')),
+        pageLength = 10, white_space = "normal",
+        buttons = customButtons
+        ) )
+    
+```
+
+
+```{r barkgd, eval = params$barkgdObj, results='asis' }
+cat("## Barplot kegg Down genes")
+
+```
+
+```{r  eval = params$barkgdObj }
+kggdown <- params$kggdown
+plotKegg(enrichdf = kggdown[params$nrowsdown,], nrows = length(params$nrowsdown), colors = c(params$downcolor) )
+```
+
+```{r chorkgd, eval = params$chorkgdObj, results='asis' }
+cat("## Chorplot Down genes")
+```
+
+```{r chorkgdownlot, eval = params$chorkgdObj}
+chordPlot(params$kggdown[params$nrowsdown, ], nRows = length(params$nrowsdown), orderby = "P.DE")
+legendChorplot(params$kggdown[params$nrowsdown, ] )
+```
+
+```{r dotkgd, eval = params$dotkgdObj, results='asis' }
+cat("## Dotplot kegg Down genes")
+```
+
+```{r dotkgdownlot, eval = params$dotkgdObj}
+kggdown <- params$kggdown
+dotPlotkegg(params$kggdown[params$nrowsdown,], n = length(params$nrowsdown))
+```
+
+```{r heatkgd, eval = params$heatkgdObj, results='asis' }
+cat("## Heatmap kegg Down genes")
+```
+
+```{r heatkgdownlot, eval = params$heatkgdObj}
+heatmapKeggLogFC(params$kggdtdown, params$ressh, params$nrowsdown ) 
+```
+
+```{r netkgd, eval = params$netkgdObj, results='asis' }
+cat("## Netplot kegg Down genes")
+```
+
+```{r netkgdownlot, eval = params$netkgdObj}
+customCnetKegg(params$kggdown, params$nrowsdown, genesUp = params$datagenesup, genesDown = params$datagenesdown)
+```
+
+<!-- go all section -->
+
+<!-- go up section -->
+
+<!-- go down section -->
 

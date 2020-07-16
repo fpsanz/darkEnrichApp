@@ -2128,7 +2128,7 @@ output$legendChorAll <- renderPlot({
     downloadButton("download", "Download report")
     })
   
-  output$download <- downloadHandler(
+    output$download <- downloadHandler(
     filename = "report.html",
     content = function(file) {
       removeModal()
@@ -2145,7 +2145,12 @@ output$legendChorAll <- renderPlot({
       volcObj <- maObj <- FALSE
       ## inicializar variables kegg
       tablekgaObj <- barkgaObj <- chorkgaObj <- dotkgaObj <- heatkgaObj <- netkgaObj <- FALSE
-      
+      tablekguObj <- barkguObj <- chorkguObj <- dotkguObj <- heatkguObj <- netkguObj <- FALSE
+      tablekgdObj <- barkgdObj <- chorkgdObj <- dotkgdObj <- heatkgdObj <- netkgdObj <- FALSE
+      ## inicializar variables Go
+      tablegoaObj <- FALSE; bargoaObj <- FALSE; dotgoaObj <- FALSE; gobargoaObj <- FALSE; gocirclegoaObj <- FALSE
+      tablegouObj <- FALSE; bargouObj <- FALSE; dotgouObj <- FALSE; gobargouObj <- FALSE; gocirclegouObj <- FALSE
+      tablegodObj <- FALSE; bargodObj <- FALSE; dotgodObj <- FALSE; gobargodObj <- FALSE; gocirclegodObj <- FALSE
       ## Asigna variables
           rlogdatos <- rlog$datos; colorespca <- coloresPCA$colores();
           variables <- variables(); samplename <- samplename() 
@@ -2157,77 +2162,80 @@ output$legendChorAll <- renderPlot({
           kggall <- kgg$all; genesdeup <- numgenesDE$up; genesdedown <- numgenesDE$down
           kggdtall <- kggDT$all; datagenesup <- data$genesUp; datagenesdown <- data$genesDown
           typebarkeggall <- typeBarKeggAll()
+          kggup <- kgg$up; kggdown <- kgg$down; kggdtup <- kggDT$up; kggdtdown <- kggDT$down; 
+          goall <- go$all; godtall <- goDT$all; 
+          goup <- go$up; godtup <- goDT$up; 
+          godown <- go$down; godtdown <- goDT$down; 
+          bprowsall <- bprowsall(); mfrowsall <- mfrowsall(); ccrowsall <- ccrowsall()
+          bprowsup <- bprowsup(); mfrowsup <- mfrowsup(); ccrowsup <- ccrowsup()
+          bprowsdown <- bprowsdown(); mfrowsdown <- mfrowsdown(); ccrowsdown <- ccrowsdown()
+      #nrows
           nrowsall <- rowsAll()
           if(is.null(nrowsall)){ 
             nrowsall <-  ( if( dim(kggDT$all)[1]<10) seq_len(nrow(kggDT$all)) else seq_len(10) ) }
-          
-      #para preview
-      if(!is.null(vals$preview)){
-        if( ("PCA" %in% vals$preview) ){ #para PCA
-          pcaObj <- TRUE
-          }
-        if("BoxPlot" %in% vals$preview){ #para boxplot
-          boxObj <- TRUE
-        }
-        if("Heatmap" %in% vals$preview){ #para heatmap
-          heatObj <- TRUE
-        }
-        if("Cluster" %in% vals$preview){#para cluster
-          clusterObj <- TRUE
-        }
-        if("Top6" %in% vals$preview){ #para top6
-          top6Obj <- TRUE
-        }
-        if("Top1" %in% vals$preview){ #para top1
-          top1Obj <- TRUE
-        }
-        if("Karyoplot" %in% vals$preview){ #para karyoplot
-          karyObj <- TRUE
-        }
-        if("Volcano" %in% vals$preview){ #para volcano
-          volcObj <- TRUE
-        }
-        if("MA" %in% vals$preview){ #para MA
-          maObj <- TRUE
-        }
+          nrowsup <- rowsUp()
+          if(is.null(nrowsup)){ 
+            nrowsup <-  ( if( dim(kggDT$up)[1]<10) seq_len(nrow(kggDT$up)) else seq_len(10) ) }
+          nrowsdown <- rowsdown()
+          if(is.null(nrowsdown)){ 
+            nrowsdown <-  ( if( dim(kggDT$down)[1]<10) seq_len(nrow(kggDT$down)) else seq_len(10) ) }
+      if(!is.null(vals$preview)){      #para preview
+        if( ("PCA" %in% vals$preview) ){ pcaObj <- TRUE}
+        if("BoxPlot" %in% vals$preview){boxObj <- TRUE}
+        if("Heatmap" %in% vals$preview){heatObj <- TRUE}
+        if("Cluster" %in% vals$preview){clusterObj <- TRUE}
+        if("Top6" %in% vals$preview){top6Obj <- TRUE}
+        if("Top1" %in% vals$preview){top1Obj <- TRUE}
+        if("Karyoplot" %in% vals$preview){karyObj <- TRUE}
+        if("Volcano" %in% vals$preview){volcObj <- TRUE}
+        if("MA" %in% vals$preview){ maObj <- TRUE}
       }
       if(!is.null(vals$keggAll)){ #para keggAll
-        if("Table" %in% vals$keggAll){
-          tablekgaObj <- TRUE
-        }
-        if("Barplot" %in% vals$keggAll){
-          barkgaObj <- TRUE
-        }
-        if("Chorplot" %in% vals$keggAll){
-          chorkgaObj <- TRUE
-        }
-        if("Dotplot" %in% vals$keggAll){
-          dotkgaObj <- TRUE
-        }
-        if("Heatmap" %in% vals$keggAll){
-          heatkgaObj <- TRUE
-          }
-        if("Netplot" %in% vals$keggAll){
-          netkgaObj <- TRUE
-        }
+        if("Table" %in% vals$keggAll){ tablekgaObj <- TRUE }
+        if("Barplot" %in% vals$keggAll){ barkgaObj <- TRUE }
+        if("Chorplot" %in% vals$keggAll){ chorkgaObj <- TRUE }
+        if("Dotplot" %in% vals$keggAll){ dotkgaObj <- TRUE }
+        if("Heatmap" %in% vals$keggAll){ heatkgaObj <- TRUE }
+        if("Netplot" %in% vals$keggAll){ netkgaObj <- TRUE }
       }
       if(!is.null(vals$keggUp)){ #para keggUp
-        if("Table" %in% vals$keggUp){}
-        if("Barplot" %in% vals$keggUp){}
-        if("Chorplot" %in% vals$keggUp){}
-        if("Dotplot" %in% vals$keggUp){}
-        if("Heatmap" %in% vals$keggUp){}
-        if("Netplot" %in% vals$keggUp){}
+        if("Table" %in% vals$keggUp){ tablekguObj <- TRUE }
+        if("Barplot" %in% vals$keggUp){ barkguObj <- TRUE }
+        if("Chorplot" %in% vals$keggUp){ chorkguObj <- TRUE }
+        if("Dotplot" %in% vals$keggUp){ dotkguObj <- TRUE }
+        if("Heatmap" %in% vals$keggUp){ heatkguObj <- TRUE }
+        if("Netplot" %in% vals$keggUp){ netkguObj <- TRUE }
       }
       if(!is.null(vals$keggDown)){ #para keggDown
-        if("Table" %in% vals$keggDown){}
-        if("Barplot" %in% vals$keggDown){}
-        if("Chorplot" %in% vals$keggDown){}
-        if("Dotplot" %in% vals$keggDown){}
-        if("Heatmap" %in% vals$keggDown){}
-        if("Netplot" %in% vals$keggDown){}
+        if("Table" %in% vals$keggDown){ tablekgdObj <- TRUE }
+        if("Barplot" %in% vals$keggDown){ barkgdObj <- TRUE }
+        if("Chorplot" %in% vals$keggDown){ chorkgdObj <- TRUE }
+        if("Dotplot" %in% vals$keggDown){ dotkgdObj <- TRUE }
+        if("Heatmap" %in% vals$keggDown){ heatkgdObj <- TRUE }
+        if("Netplot" %in% vals$keggDown){ netkgdObj <- TRUE }
       }
-  
+      if(!is.null(vals$GOAll)){#para GoAll
+        if("Table" %in% vals$GOAll){ tablegoaObj <- TRUE }
+        if("Barplot" %in% vals$GOAll){ bargoaObj <- TRUE }
+        if("Dotplot" %in% vals$GOAll){ dotgoaObj <- TRUE }
+        if("GObarplot" %in% vals$GOAll){ gobargoaObj <- TRUE }
+        if("GOcicleplot" %in% vals$GOAll){ gocirclegoaObj <- TRUE }
+      }
+      if(!is.null(vals$GOUp)){#para GoUp
+        if("Table" %in% vals$GOUp){ tablegouObj <- TRUE }
+        if("Barplot" %in% vals$GOUp){ bargouObj <- TRUE }
+        if("Dotplot" %in% vals$GOUp){ dotgouObj <- TRUE }
+        if("GObarplot" %in% vals$GOUp){ gobargouObj <- TRUE }
+        if("GOcicleplot" %in% vals$GOUp){ gocirclegouObj <- TRUE }
+      }
+      if(!is.null(vals$GODown)){#para GoDown
+        if("Table" %in% vals$GODown){ tablegodObj <- TRUE }
+        if("Barplot" %in% vals$GODown){ bargodObj <- TRUE }
+        if("Dotplot" %in% vals$GODown){ dotgodObj <- TRUE }
+        if("GObarplot" %in% vals$GODown){ gobargodObj <- TRUE }
+        if("GOcicleplot" %in% vals$GODown){ gocirclegodObj <- TRUE }
+      }
+
       params <- list( values = vals, 
                       pcaObj = pcaObj, rlog = rlogdatos, colorespca = colorespca,
                      variables = variables, samplename = samplename,
@@ -2245,7 +2253,22 @@ output$legendChorAll <- renderPlot({
                      barkgaObj = barkgaObj, nrowsall = nrowsall, datagenesdown = datagenesdown, 
                      datagenesup = datagenesup, typebarkeggall = typebarkeggall,
                      chorkgaObj = chorkgaObj, dotkgaObj = dotkgaObj, heatkgaObj = heatkgaObj,
-                     netkgaObj = netkgaObj)
+                     netkgaObj = netkgaObj, tablekguObj = tablekguObj, barkguObj = barkguObj,
+                     chorkguObj = chorkguObj, dotkguObj =dotkguObj, heatkguObj = heatkguObj,
+                     netkguObj = netkguObj, tablekgdObj = tablekgdObj, barkgdObj = barkgdObj,
+                     chorkgdObj = chorkgdObj, dotkgdObj = dotkgdObj, heatkgdObj = heatkgdObj,
+                     netkgdObj = netkgdObj, kggup = kggup, kggdown = kggdown, kggdtup = kggdtup, 
+                     kggdtdown = kggdtdown, nrowsup = nrowsup, nrowsdown = nrowsdown, 
+                     tablegoaObj = tablegoaObj, bargoaObj=bargoaObj, dotgoaObj=dotgoaObj,
+                     gobargoaObj=gobargoaObj,gocirclegoaObj=gocirclegoaObj, tablegouObj = tablegouObj,
+                     bargouObj=bargouObj, dotgouObj=dotgouObj, gobargouObj=gobargouObj,
+                     gocirclegouObj=gocirclegouObj, tablegodObj = tablegodObj, bargodObj=bargodObj,
+                     dotgodObj=dotgodObj, gobargodObj=gobargodObj, gocirclegodObj=gocirclegodObj,
+                     goall = goall, godtall=godtall, goall = goup, godtall=godtup, goall = godown, godtall=godtdown,
+                     bprowsall=bprowsall, mfrowsall=mfrowsall, ccrowsall=ccrowsall,
+                     goup = goup, godtup=godtup, bprowsup=bprowsup, mfrowsup=mfrowsup, ccrowsup=ccrowsup,
+                     godown = godown, godtdown=godtdown, bprowsdown=bprowsdown, mfrowsdown=mfrowsdown,
+                     ccrowsdown=ccrowsdown )
       
       params <- c(params, list(tempdir=tempdir() ))
       rmarkdown::render(
