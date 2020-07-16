@@ -12,7 +12,7 @@ tags$head(tags$script(HTML('
 )))
 3. In the server part I create thise observer (partially inspired by this)
 observeEvent(input$my_own_trigger, {
-  output$downloadData<<-downloadHandler(filename = x$Nom,content = function(file)file.copy(file0,file) )
+  output$downloadData <<- downloadHandler(filename = x$Nom, content = function(file){ file.copy(file0,file) } )
   jsinject <- "setTimeout(function(){window.open($('#downloadData').attr('href'))}, 100);"
   session$sendCustomMessage(type = 'jsCode', list(value = jsinject))    
 })
