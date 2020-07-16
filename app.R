@@ -1496,8 +1496,9 @@ output$legendChorAll <- renderPlot({
     validate(need(res$sh,""))
     validate(need( bprowsall() , "Select at least 4 rows"))
     bprowsall <- bprowsall()
+    goall <- go$all[go$all$Ont=="BP", ]
     if(length(bprowsall)>=4){
-      circ <- data2circle(go=go$all[bprowsall, ], res=res$sh, genes=data$genesall)
+      circ <- data2circle(go=goall[bprowsall, ], res=res$sh, genes=data$genesall)
       circle(circ, label.size = 3, nsub = length(bprowsall), table.legend = FALSE)
     }
   })
@@ -1566,8 +1567,9 @@ output$legendChorAll <- renderPlot({
     validate(need(res$sh,""))
     validate(need( mfrowsall() , "Select at least 4 rows"))
     mfrowsall <- mfrowsall()
+    goall <- go$all[go$all$Ont=="MF", ]
     if(length(mfrowsall)>=4){
-      circ <- data2circle(go=go$all[mfrowsall, ], res=res$sh, genes=data$genesall)
+      circ <- data2circle(go=goall[mfrowsall, ], res=res$sh, genes=data$genesall)
       circle(circ, label.size = 3, nsub = length(mfrowsall), table.legend = FALSE)
     }
   })
@@ -1636,8 +1638,9 @@ output$legendChorAll <- renderPlot({
     validate(need(res$sh,""))
     validate(need( ccrowsall() , "Select at least 4 rows"))
     ccrowsall <- ccrowsall()
+    goall <- go$all[go$all$Ont=="CC", ]
     if(length(ccrowsall)>=4){
-      circ <- data2circle(go=go$all[ccrowsall, ], res=res$sh, genes=data$genesall)
+      circ <- data2circle(go=goall[ccrowsall, ], res=res$sh, genes=data$genesall)
       circle(circ, label.size = 3, nsub = length(ccrowsall), table.legend = FALSE)
     }
   })
@@ -2162,6 +2165,8 @@ output$legendChorAll <- renderPlot({
           kggall <- kgg$all; genesdeup <- numgenesDE$up; genesdedown <- numgenesDE$down
           kggdtall <- kggDT$all; datagenesup <- data$genesUp; datagenesdown <- data$genesDown
           typebarkeggall <- typeBarKeggAll()
+          typebarbpall <- typeBarBpAll(); typebarmfall <- typeBarMfAll();
+          typebarccall <- typeBarCcAll()
           kggup <- kgg$up; kggdown <- kgg$down; kggdtup <- kggDT$up; kggdtdown <- kggDT$down; 
           goall <- go$all; godtall <- goDT$all; 
           goup <- go$up; godtup <- goDT$up; 
@@ -2219,21 +2224,21 @@ output$legendChorAll <- renderPlot({
         if("Barplot" %in% vals$GOAll){ bargoaObj <- TRUE }
         if("Dotplot" %in% vals$GOAll){ dotgoaObj <- TRUE }
         if("GObarplot" %in% vals$GOAll){ gobargoaObj <- TRUE }
-        if("GOcicleplot" %in% vals$GOAll){ gocirclegoaObj <- TRUE }
+        if("GOcircleplot" %in% vals$GOAll){ gocirclegoaObj <- TRUE }
       }
       if(!is.null(vals$GOUp)){#para GoUp
         if("Table" %in% vals$GOUp){ tablegouObj <- TRUE }
         if("Barplot" %in% vals$GOUp){ bargouObj <- TRUE }
         if("Dotplot" %in% vals$GOUp){ dotgouObj <- TRUE }
         if("GObarplot" %in% vals$GOUp){ gobargouObj <- TRUE }
-        if("GOcicleplot" %in% vals$GOUp){ gocirclegouObj <- TRUE }
+        if("GOcircleplot" %in% vals$GOUp){ gocirclegouObj <- TRUE }
       }
       if(!is.null(vals$GODown)){#para GoDown
         if("Table" %in% vals$GODown){ tablegodObj <- TRUE }
         if("Barplot" %in% vals$GODown){ bargodObj <- TRUE }
         if("Dotplot" %in% vals$GODown){ dotgodObj <- TRUE }
         if("GObarplot" %in% vals$GODown){ gobargodObj <- TRUE }
-        if("GOcicleplot" %in% vals$GODown){ gocirclegodObj <- TRUE }
+        if("GOcircleplot" %in% vals$GODown){ gocirclegodObj <- TRUE }
       }
 
       params <- list( values = vals, 
@@ -2259,16 +2264,17 @@ output$legendChorAll <- renderPlot({
                      chorkgdObj = chorkgdObj, dotkgdObj = dotkgdObj, heatkgdObj = heatkgdObj,
                      netkgdObj = netkgdObj, kggup = kggup, kggdown = kggdown, kggdtup = kggdtup, 
                      kggdtdown = kggdtdown, nrowsup = nrowsup, nrowsdown = nrowsdown, 
+                     typebarbpall=typebarbpall, typebarmfall=typebarmfall, typebarccall=typebarccall,
                      tablegoaObj = tablegoaObj, bargoaObj=bargoaObj, dotgoaObj=dotgoaObj,
                      gobargoaObj=gobargoaObj,gocirclegoaObj=gocirclegoaObj, tablegouObj = tablegouObj,
                      bargouObj=bargouObj, dotgouObj=dotgouObj, gobargouObj=gobargouObj,
                      gocirclegouObj=gocirclegouObj, tablegodObj = tablegodObj, bargodObj=bargodObj,
                      dotgodObj=dotgodObj, gobargodObj=gobargodObj, gocirclegodObj=gocirclegodObj,
-                     goall = goall, godtall=godtall, goall = goup, godtall=godtup, goall = godown, godtall=godtdown,
+                     goall = goall, godtall=godtall, goup = goup, godtup=godtup,
+                     godown = godown, godtdown=godtdown,
                      bprowsall=bprowsall, mfrowsall=mfrowsall, ccrowsall=ccrowsall,
-                     goup = goup, godtup=godtup, bprowsup=bprowsup, mfrowsup=mfrowsup, ccrowsup=ccrowsup,
-                     godown = godown, godtdown=godtdown, bprowsdown=bprowsdown, mfrowsdown=mfrowsdown,
-                     ccrowsdown=ccrowsdown )
+                     bprowsup=bprowsup, mfrowsup=mfrowsup, ccrowsup=ccrowsup,
+                     bprowsdown=bprowsdown, mfrowsdown=mfrowsdown, ccrowsdown=ccrowsdown )
       
       params <- c(params, list(tempdir=tempdir() ))
       rmarkdown::render(

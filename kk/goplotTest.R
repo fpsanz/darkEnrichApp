@@ -31,14 +31,14 @@ category="BP"
 
 # 
 # library(tidyverse)
-# res <- readRDS("./res.Rds")
-# up <- getSigUpregulated(res, 0.05, 0.5, "Mm" )
-# down <- getSigDownregulated(res, 0.05, -0.5, "Mm" )
-# data <- rbind(up, down)
+ res <- readRDS("./res.Rds")
+ up <- getSigUpregulated(res, 0.05, 0.5, "Mm" )
+ down <- getSigDownregulated(res, 0.05, -0.5, "Mm" )
+ data <- rbind(up, down)
 # 
-# go <- customGO(data, species = "Mm")
-# go2 <- go %>% group_by(Ont) %>% sample_n(size = 30) %>% as.data.frame()
-# goDT <- go2DT(go2, data)
+go <- customGO(data, species = "Mm")
+go2 <- go %>% group_by(Ont) %>% sample_n(size = 30) %>% as.data.frame()
+goDT <- go2DT(go, data)
 # 
 # # preparar tabla GO
 # go2$genes <- goDT$genes
