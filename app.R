@@ -2151,9 +2151,10 @@ output$legendChorAll <- renderPlot({
       tablekguObj <- barkguObj <- chorkguObj <- dotkguObj <- heatkguObj <- netkguObj <- FALSE
       tablekgdObj <- barkgdObj <- chorkgdObj <- dotkgdObj <- heatkgdObj <- netkgdObj <- FALSE
       ## inicializar variables Go
-      tablegoaObj <- FALSE; bargoaObj <- FALSE; dotgoaObj <- FALSE; gobargoaObj <- FALSE; gocirclegoaObj <- FALSE
-      tablegouObj <- FALSE; bargouObj <- FALSE; dotgouObj <- FALSE; gobargouObj <- FALSE; gocirclegouObj <- FALSE
-      tablegodObj <- FALSE; bargodObj <- FALSE; dotgodObj <- FALSE; gobargodObj <- FALSE; gocirclegodObj <- FALSE
+      tablegoaObj <- bargoaObj <- dotgoaObj <- gobargoaObj <- gocirclegoaObj <- FALSE
+      tablegouObj <- bargouObj <- dotgouObj <- gobargouObj <- gocirclegouObj <- FALSE
+      tablegodObj <- bargodObj <- dotgodObj <- gobargodObj <- gocirclegodObj <- FALSE
+      tablegseaObj <- plotgseaObj <- FALSE 
       ## Asigna variables
           rlogdatos <- rlog$datos; colorespca <- coloresPCA$colores();
           variables <- variables(); samplename <- samplename() 
@@ -2174,6 +2175,7 @@ output$legendChorAll <- renderPlot({
           bprowsall <- bprowsall(); mfrowsall <- mfrowsall(); ccrowsall <- ccrowsall()
           bprowsup <- bprowsup(); mfrowsup <- mfrowsup(); ccrowsup <- ccrowsup()
           bprowsdown <- bprowsdown(); mfrowsdown <- mfrowsdown(); ccrowsdown <- ccrowsdown()
+          gsearow <- gsearow(); gseagsea <- gsea$gsea
       #nrows
           nrowsall <- rowsAll()
           if(is.null(nrowsall)){ 
@@ -2240,6 +2242,10 @@ output$legendChorAll <- renderPlot({
         if("GObarplot" %in% vals$GODown){ gobargodObj <- TRUE }
         if("GOcircleplot" %in% vals$GODown){ gocirclegodObj <- TRUE }
       }
+      if(!is.null(vals$GSEA)){#para GSEA
+        if("Table" %in% vals$GSEA){ tablegseaObj <- TRUE}
+        if("GSEA plot" %in% vals$GSEA){ plotgseaObj <- TRUE}
+        }
 
       params <- list( values = vals, 
                       pcaObj = pcaObj, rlog = rlogdatos, colorespca = colorespca,
@@ -2274,7 +2280,9 @@ output$legendChorAll <- renderPlot({
                      godown = godown, godtdown=godtdown,
                      bprowsall=bprowsall, mfrowsall=mfrowsall, ccrowsall=ccrowsall,
                      bprowsup=bprowsup, mfrowsup=mfrowsup, ccrowsup=ccrowsup,
-                     bprowsdown=bprowsdown, mfrowsdown=mfrowsdown, ccrowsdown=ccrowsdown )
+                     bprowsdown=bprowsdown, mfrowsdown=mfrowsdown, ccrowsdown=ccrowsdown,
+                     gsearow = gsearow, gseagsea = gseagsea, tablegseaObj = tablegseaObj,
+                     plotgseaObj = plotgseaObj)
       
       params <- c(params, list(tempdir=tempdir() ))
       rmarkdown::render(

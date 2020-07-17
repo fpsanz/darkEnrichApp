@@ -1,0 +1,89 @@
+---
+title: "RNAseq enrichment report"
+author: ""
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output:
+  rmdformats::readthedown:
+    highlight: kate
+---
+
+```{css, echo=FALSE}
+.info-box {
+  display: block;
+  min-height: 90px;
+  background: #fff;
+  width: 100%;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+  margin-bottom: 15px;
+}
+.info-box-icon {
+  border-top-left-radius: 2px;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 2px;
+  display: block;
+  float: left;
+  height: 90px;
+  width: 90px;
+  text-align: center;
+  font-size: 45px;
+  line-height: 90px;
+  background: rgba(0, 0, 0, 0.2);
+}
+.info-box-content {
+  padding: 5px 10px;
+  margin-left: 90px;
+}
+.info-box-number {
+  display: block;
+  font-weight: bold;
+  font-size: 18px;
+}
+.progress-description,
+.info-box-text {
+  display: block;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.info-box-text {
+  text-transform: uppercase;
+}
+.info-box-more {
+  display: block;
+}
+.progress-description {
+  margin: 0;
+}
+.bg-light-blue,
+.label-primary,
+.modal-primary .modal-body {
+  background-color: #3c8dbc !important;
+}
+
+
+```
+
+::: {#hello .info-box .bg-light-blue width="40%"} ::::::
+
+:::{#hell .info-box-text}
+Hello **world**!
+:::
+:::{#hell .info-box-number}
+12
+:::
+:::::::::::::::
+
+```{r results='asis', echo = FALSE}
+cat('<div id="hello" class="info-box bg-light-blue">
+<span class="info-box-icon">kk</span>
+<div class="info-box-content">
+<span class="info-box-text">Holaaa</span>
+<span class="info-box-number">25</span>
+</div>
+</div>')
+```
+
+
