@@ -2138,6 +2138,7 @@ output$legendChorAll <- renderPlot({
       applyPress$ok <- FALSE
       tempReport <- file.path(tempdir(), "report.Rmd")
       file.copy("report.Rmd", tempReport, overwrite = TRUE)
+      file.copy("mystyle.css", file.path(tempdir(), "mystyle.css"), overwrite = TRUE)
       file.copy("utils.R", file.path(tempdir(),"utils.R"), overwrite = TRUE)
       file.copy("resources/", tempdir(), overwrite = TRUE, recursive = TRUE)
       file.copy("resources/dna-svg-small-13.gif",

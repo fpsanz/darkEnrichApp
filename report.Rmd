@@ -5,6 +5,7 @@ date: "`r format(Sys.time(), '%d %B %Y')`"
 output:
   rmdformats::readthedown:
     highlight: kate
+    css: mystyle.css
 params:
   tempdir: NA
   values: NA
@@ -154,6 +155,7 @@ library('gageData')
 library('EnsDb.Mmusculus.v79')
 library('EnhancedVolcano')
 library('gplots')
+library("htmltools")
 source("utils.R")
 
 setwd(params$tempdir)
@@ -167,17 +169,84 @@ if(!is.null(params$values$GODown)){GODown=TRUE}else{GODown=FALSE}
 if(!is.null(params$values$GSEA)){GSEA=TRUE}else{GSEA=FALSE}
 ```
 
-```{css}
-.greeting {
-  height: 60px;
-  width: 60px;
-  background-color: #555;
-}
+
+```{r echo=FALSE, eval=TRUE}
+upgenes <- params$genesdeup
+downgenes <- params$genesdedown
+allgenes <- upgenes+downgenes
+
+htmltools::tagList(rmarkdown::html_dependency_font_awesome())
+tags$div(id="allbox", class ="col-sm-4",
+  tags$div(id="hello", class="info-box bg-light-blue", 
+           tags$span(class="info-box-icon", tags$i(class="fa fa-arrows-alt-v") ),
+           tags$div(class="info-box-content", 
+                    tags$span(class="info-box-text", "All DE genes"),
+                    tags$span(class="info-box-number", allgenes)
+                    )
+           )
+)
+tags$div(id="allbox", class ="col-sm-4",
+  tags$div(id="hello", class="info-box bg-light-blue", 
+           tags$span(class="info-box-icon", tags$i(class="glyphicon glyphicon-thumbs-down") ),
+           tags$div(class="info-box-content", 
+                    tags$span(class="info-box-text", "Downregulated genes"),
+                    tags$span(class="info-box-number", downgenes)
+                    )
+           )
+)
+tags$div(id="allbox", class ="col-sm-4",
+  tags$div(id="hello", class="info-box bg-light-blue", 
+           tags$span(class="info-box-icon", tags$i(class="glyphicon glyphicon-thumbs-up") ),
+           tags$div(class="info-box-content", 
+                    tags$span(class="info-box-text", "upregulated genes"),
+                    tags$span(class="info-box-number", "50")
+                    )
+           )
+)
+
 ```
 
-::: {#hello .greeting width="40%"}
-Hello **world**!
-:::
+```{r echo = FALSE, eval=TRUE}
+lowfc = params$logfc[1]
+upfc = params$logfc[2]
+pvalue = params$padj
+
+htmltools::tagList(rmarkdown::html_dependency_font_awesome())
+tags$div( class ="col-sm-4",
+  tags$div(class="small-box bg-light-blue", 
+           tags$div(class="inner", 
+                    tags$h3(class="small-box h3", lowfc),
+                    tags$p(class="small-box p", "Lower logFC cutoff")
+                    ),
+           tags$div(class="icon-large",
+                    tags$i(class="glyphicon glyphicon-step-backward")
+                    )
+           )
+)
+tags$div( class ="col-sm-4",
+  tags$div(class="small-box bg-light-blue", 
+           tags$div(class="inner", 
+                    tags$h3(class="small-box h3", upfc),
+                    tags$p(class="small-box p", "Upper logFC cutoff")
+                    ),
+           tags$div(class="icon-large",
+                    tags$i(class="glyphicon glyphicon-step-forward")
+                    )
+           )
+)
+tags$div( class ="col-sm-4",
+  tags$div(class="small-box bg-light-blue", 
+           tags$div(class="inner", 
+                    tags$h3(class="small-box h3", pvalue),
+                    tags$p(class="small-box p", "P-value cutoff")
+                    ),
+           tags$div(class="icon-large",
+                    tags$i(class="glyphicon glyphicon-scissors")
+                    )
+           )
+)
+```
+
 
 ```{r previewTitle, eval=preview, results='asis'}
 cat("# Preview section")

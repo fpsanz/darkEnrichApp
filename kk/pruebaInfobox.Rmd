@@ -5,9 +5,10 @@ date: "`r format(Sys.time(), '%d %B %Y')`"
 output:
   rmdformats::readthedown:
     highlight: kate
+    css: mystyle.css
 ---
 
-```{css, echo=FALSE}
+```{css, echo=FALSE, eval=FALSE}
 .info-box {
   display: block;
   min-height: 90px;
@@ -30,6 +31,7 @@ output:
   font-size: 45px;
   line-height: 90px;
   background: rgba(0, 0, 0, 0.2);
+  color: #fff !important;
 }
 .info-box-content {
   padding: 5px 10px;
@@ -39,6 +41,7 @@ output:
   display: block;
   font-weight: bold;
   font-size: 18px;
+  color: #fff !important;
 }
 .progress-description,
 .info-box-text {
@@ -50,6 +53,7 @@ output:
 }
 .info-box-text {
   text-transform: uppercase;
+  color: #fff !important;
 }
 .info-box-more {
   display: block;
@@ -62,28 +66,95 @@ output:
 .modal-primary .modal-body {
   background-color: #3c8dbc !important;
 }
+#sidebar{
+  width: 300px;
+}
+#content{
+  margin-left: 300px;
+  max-width: 1080px;
+  background: #edf0f2;
+}
+```
 
+```{r echo=FALSE}
+library(htmltools)
+library(shiny)
+```
+
+
+```{r echo=FALSE}
+allgenes <- 200
+upgenes <- 50
+downgenes <- 150
+
+htmltools::tagList(rmarkdown::html_dependency_font_awesome())
+tags$div(id="allbox", class ="col-sm-4",
+  tags$div(id="hello", class="info-box bg-light-blue", 
+           tags$span(class="info-box-icon", tags$i(class="fa fa-arrows-alt-v") ),
+           tags$div(class="info-box-content", 
+                    tags$span(class="info-box-text", "All DE genes"),
+                    tags$span(class="info-box-number", allgenes)
+                    )
+           )
+)
+tags$div(id="allbox", class ="col-sm-4",
+  tags$div(id="hello", class="info-box bg-light-blue", 
+           tags$span(class="info-box-icon", tags$i(class="glyphicon glyphicon-thumbs-down") ),
+           tags$div(class="info-box-content", 
+                    tags$span(class="info-box-text", "Downregulated genes"),
+                    tags$span(class="info-box-number", downgenes)
+                    )
+           )
+)
+tags$div(id="allbox", class ="col-sm-4",
+  tags$div(id="hello", class="info-box bg-light-blue", 
+           tags$span(class="info-box-icon", tags$i(class="glyphicon glyphicon-thumbs-up") ),
+           tags$div(class="info-box-content", 
+                    tags$span(class="info-box-text", "upregulated genes"),
+                    tags$span(class="info-box-number", "50")
+                    )
+           )
+)
 
 ```
 
-::: {#hello .info-box .bg-light-blue width="40%"} ::::::
-
-:::{#hell .info-box-text}
-Hello **world**!
-:::
-:::{#hell .info-box-number}
-12
-:::
-:::::::::::::::
-
-```{r results='asis', echo = FALSE}
-cat('<div id="hello" class="info-box bg-light-blue">
-<span class="info-box-icon">kk</span>
-<div class="info-box-content">
-<span class="info-box-text">Holaaa</span>
-<span class="info-box-number">25</span>
-</div>
-</div>')
+```{r echo = FALSE, eval=TRUE}
+lowfc = -0.5
+upfc = 0.6
+pvalue = 0.05
+htmltools::tagList(rmarkdown::html_dependency_font_awesome())
+tags$div( class ="col-sm-4",
+  tags$div(class="small-box bg-light-blue", 
+           tags$div(class="inner", 
+                    tags$h3(class="small-box h3", lowfc),
+                    tags$p(class="small-box p", "Lower logFC cutoff")
+                    ),
+           tags$div(class="icon-large",
+                    tags$i(class="glyphicon glyphicon-step-backward")
+                    )
+           )
+)
+tags$div( class ="col-sm-4",
+  tags$div(class="small-box bg-light-blue", 
+           tags$div(class="inner", 
+                    tags$h3(class="small-box h3", upfc),
+                    tags$p(class="small-box p", "Upper logFC cutoff")
+                    ),
+           tags$div(class="icon-large",
+                    tags$i(class="glyphicon glyphicon-step-forward")
+                    )
+           )
+)
+tags$div( class ="col-sm-4",
+  tags$div(class="small-box bg-light-blue", 
+           tags$div(class="inner", 
+                    tags$h3(class="small-box h3", pvalue),
+                    tags$p(class="small-box p", "P-value cutoff")
+                    ),
+           tags$div(class="icon-large",
+                    tags$i(class="glyphicon glyphicon-scissors")
+                    )
+           )
+)
 ```
-
 
