@@ -1,39 +1,51 @@
 library(shiny)
 library(shinydashboard)
+library(shinyWidgets)
+library(scales)
+
+choices_brewer2 <- list(
+  as.list(rev(brewer_pal(palette = "Blues")(9))),
+  as.list(rev(brewer_pal(palette = "Greens")(9))),
+  as.list(rev(brewer_pal(palette = "Reds")(9))),
+  as.list(rev(brewer_pal(palette = "Oranges")(9))),
+  as.list(rev(brewer_pal(palette = "Purples")(9))),
+  as.list(rev(brewer_pal(palette = "Greys")(9)))
+)
 
 ui <- dashboardPage(
   dashboardHeader(title = "Value boxes"),
   dashboardSidebar(),
   dashboardBody(
-    fluidRow(
-      # A static valueBox
-      valueBox(10 * 2, "New Orders", icon = icon("credit-card")),
+ useShinydashboard(),
+      spectrumInput(
+            inputId = "paste0(niveles[x])",
+            label = 'paste0("Select ",niveles[x]," color")',
+            selected = "red",
+            choices = list("black","red"),
+            options = list(`toggle-palette-more-text` = "Show more")
+            )
 
-      # Dynamic valueBoxes
-        valueBox(10 * 2, "New Orders", icon = icon("credit-card"), color = "blue"),
-      valueBox(10 * 2, "New Orders", icon = icon("credit-card"), color = "light-blue")
-    ),
-    fluidRow(
-      # Clicking this will increment the progress amount
-      box(width = 4, actionButton("count", "Increment progress"))
-    )
   )
 )
 
 server <- function(input, output) {
-  output$progressBox <- renderValueBox({
-    valueBox(
-      paste0(25 + input$count, "%"), "Progress", icon = icon("list"),
-      color = "purple"
-    )
+  output$colores <- renderUI({
+    # niveles=2
+    # l1 <- rep(1:6, times = niveles / 6 , length.out = niveles)
+    #   l2 <- rep(1:9, each = 6, length.out = niveles)
+      # selectores <- lapply(seq_len(niveles), function(x){
+          spectrumInput(
+            inputId = "paste0(niveles[x])",
+            label = 'paste0("Select ",niveles[x]," color")',
+            selected = "red",
+            choices = list("black","red"),
+            options = list(`toggle-palette-more-text` = "Show more")
+            )
+      # })
   })
+ 
 
-  output$approvalBox <- renderValueBox({
-    valueBox(
-      "80%", "Approval", icon = icon("thumbs-up", lib = "glyphicon"),
-      color = "yellow"
-    )
-  })
+
 }
 
 shinyApp(ui, server)

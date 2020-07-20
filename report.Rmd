@@ -247,6 +247,79 @@ tags$div( class ="col-sm-4",
 )
 ```
 
+## Data info {.tabset}
+
+### Samples information
+
+```{r}
+metadata <- as.data.frame(colData(params$datosdds)) %>% dplyr::select(-any_of(c("sizeFactor", "replaceable")))
+    tituloTabla <- paste0("Table: ColData | ","log2FC: ",params$logfc[1],"_",params$logfc[2]," | ","padj: ",params$padj," | ",
+                          "Num genes Up/down: ",params$genesdeup,"/",params$genesdedown )
+    customButtons <- list(
+        list(extend = "copy", title=tituloTabla),
+        list(extend = "excel", filename="coldata", title=tituloTabla),
+        list(extend = "pdf", filename="coldata", title = tituloTabla),
+        list(extend = "print", title=tituloTabla) )
+    datatable( metadata, extensions = "Buttons",
+               rownames=FALSE,
+               filter = list(position="top", clear=FALSE),
+               options = list(
+                 columnDefs = list(list(orderable = TRUE,
+                                        className = "details-control",
+                                        targets = 1),
+                                   list(className = "dt-right", targets = 1:(ncol(metadata)-1))
+                 ),
+                 dom = "Bfrtipl",
+                 buttons = customButtons,
+                 list(pageLength = 10, white_space = "normal")
+               )
+    )
+```
+
+### Statistical expression values
+
+```{r}
+  res.sh <- params$ressh
+    res.sh <- res.sh[ ((res.sh$log2FoldChange >= params$logfc[2] |
+                          res.sh$log2FoldChange < params$logfc[1]) &
+                         res.sh$padj <= params$padj ),]
+    tituloTabla <- paste0("Table: Expression values | ","log2FC: ",params$logfc[1],"_",params$logfc[2]," | ","padj: ",params$padj," | ",
+                          "Num genes Up/down: ",params$genesdeup,"/",params$genesdedown)
+    customButtons <- list(
+        list(extend = "copy", title=tituloTabla),
+        list(extend = "excel",
+            filename = "expressionValues",
+            title = tituloTabla),
+        list(extend = "pdf",
+            filename = "expressionValues",
+            title = tituloTabla),
+        list(extend = "print", title=tituloTabla)
+    )
+    datatable( res.sh, extensions = "Buttons", escape = FALSE,
+               rownames = FALSE,
+               filter = list(position="top", clear=FALSE),
+               options = list(order = list(list(6, 'asc')),
+                 lengthMenu = list(c(10,25,50,100,-1), c(10,25,50,100,"All")),
+                 columnDefs = list(list(orderable = TRUE,
+                                        className = "details-control",
+                                        targets = 1),
+                                   list(className = "dt-right", targets = 1:(ncol(res.sh)-1))
+                 ),
+                 rowCallback = JS(
+                   "function(row, data) {",
+                   "for (i = 6; i < 8; i++) {",
+                   "if (data[i]>1000 | data[i]<1){",
+                   "$('td:eq('+i+')', row).html(data[i].toExponential(3));",
+                   "}",
+                   "}",
+                   "}"),
+                 dom = "Bfrtipl",
+                 buttons = customButtons,
+                 list(pageLength = 10, white_space = "normal")
+               )
+    )
+```
+
 
 ```{r previewTitle, eval=preview, results='asis'}
 cat("# Preview section")
@@ -265,14 +338,14 @@ cat("## PCA 2D")
     ) +
         theme(plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), "cm")) +
         scale_size_manual(values = 3) +
-        theme(text = element_text(size = 16))
+        theme(text = element_text(size = 12))
 ```
 
 ```{r boxplotitle, eval=params$boxObj, results='asis' }
 cat("## Box/Violin plot")
 ```
 
-```{r boxplot, eval=params$boxObj }
+```{r boxplot, eval=params$boxObj, fig.height=8 }
 boxViolin( names = params$samplename , vsd=params$vsd, boxplotswitch=params$boxplotswitch,
                     intgroup=params$variables, customColor = params$colorespca ) 
 ```
@@ -281,7 +354,7 @@ boxViolin( names = params$samplename , vsd=params$vsd, boxplotswitch=params$boxp
 cat("## Heatmap")
 ```
 
-```{r heatmap, eval=params$heatObj}
+```{r heatmap, eval=params$heatObj, fig.height=8}
 heat2(params$vsd, n=params$numheatmap, intgroup = params$variables, sampleName = params$samplename,
          specie=params$specie, customColor = params$colorespca )
 ```
@@ -290,7 +363,7 @@ heat2(params$vsd, n=params$numheatmap, intgroup = params$variables, sampleName =
 cat("## Cluster")
 ```
 
-```{r cluster, eval=params$clusterObj}
+```{r cluster, eval=params$clusterObj, fig.height=8}
 cluster(params$vsd, intgroup = params$samplename)
 ```
 
@@ -298,7 +371,7 @@ cluster(params$vsd, intgroup = params$samplename)
 cat("## Top 6 genes")
 ```
 
-```{r top6, eval=params$top6Obj}
+```{r top6, eval=params$top6Obj, fig.height=8}
 topGenes <- rownames(params$ressh)[order(params$ressh$padj)][1:6]
 topSymbol <- as.character(params$ressh$GeneName_Symbol)[order(params$ressh$padj)][1:6]
 z <- lapply(topGenes, function(x) plotCounts(dds=params$datosdds, gene=x,
@@ -356,14 +429,14 @@ cat("## Karyoplot")
 
 ```{r karyoplot, eval=params$karyObj}
     krtp(params$ressh, specie = params$specie, pval = params$padj, fcdown = params$logfc[1],
-         fcup = params$logfc[2], bg="#46505a", coldown="#4ADBFF" , colup="#f7665c")
+         fcup = params$logfc[2], bg="#edf0f2", coldown="#1f31ff" , colup="#f7665c")
 ```
 
 ```{r volcanotitle, eval = params$volcObj, results='asis' }
 cat("## Volcano plot")
 ```
 
-```{r volcanoplot, eval = params$volcObj}
+```{r volcanoplot, eval = params$volcObj, fig.height=8}
 CustomVolcano( params$ressh,
   lab = as.character(params$ressh$GeneName_Symbol),
   selectLab = params$genesvolcano,
@@ -373,7 +446,9 @@ CustomVolcano( params$ressh,
   FCcutoffUP = params$logfc[2],
   FCcutoffDOWN = params$logfc[1],
   xlim = c(-8, 8),
-  col = c("gray", "#7cccc3", "#d99c01", params$upcolor, params$downcolor)
+  col = c("gray", "#7cccc3", "#d99c01", params$upcolor, params$downcolor),
+  titleLabSize = 14, subtitleLabSize = 8, captionLabSize = 8, axisLabSize = 12,
+  legendLabSize = 8, legendIconSize = 3
 )
 ```
 
@@ -382,14 +457,14 @@ CustomVolcano( params$ressh,
 cat("## MA plot")
 ```
 
-```{r MAplot, eval = params$maObj}
+```{r MAplot, eval = params$maObj, fig.height=8}
 MA(params$ressh, main = 'MA plot applying the DESeq2 Shrinkage normalization for Foldchange',
-       fdr = params$padj, fcDOWN = params$logfc[1], fcUP = params$logfc[2] , size = 1.5,
+       fdr = params$padj, fcDOWN = params$logfc[1], fcUP = params$logfc[2] , size = 1,
        palette = c(params$upcolor, params$downcolor, "gray"),
        genenames = params$ressh$GeneName_Symbol,
        legend = "top", top = 15, select.top.method = c('padj','fc'),
-       font.label = c("plain", 12),
-       font.legend = c("plain", 15),
+       font.label = c("plain", 10),
+       font.legend = c("plain", 12),
        font.main = "plain",
        cex.axis = 1.1, cex.lab = 1.3,
        ggtheme = theme_classic()
@@ -455,6 +530,8 @@ cat("## Chorplot All genes")
 
 ```{r chorkgaplot, eval = params$chorkgaObj}
 chordPlot(params$kggall[params$nrowsall, ], nRows = length(params$nrowsall), orderby = "P.DE")
+```
+```{r eval = params$chorkgaObj, fig.height=3}
 legendChorplot(params$kggall[params$nrowsall, ] )
 ```
 

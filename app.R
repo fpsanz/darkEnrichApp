@@ -2098,7 +2098,7 @@ output$legendChorAll <- renderPlot({
   #author <- reactive({input$author})
   # generate report #############################
   output$report <- renderUI({
-    #validate(need(datos$dds, ""))
+    validate(need(res$sh, ""))
     #downloadButton("report2", "html report")
     actionButton("report2", "html report")
   })
@@ -2139,7 +2139,7 @@ output$legendChorAll <- renderPlot({
       tempReport <- file.path(tempdir(), "report.Rmd")
       file.copy("report.Rmd", tempReport, overwrite = TRUE)
       file.copy("mystyle.css", file.path(tempdir(), "mystyle.css"), overwrite = TRUE)
-      file.copy("utils.R", file.path(tempdir(),"utils.R"), overwrite = TRUE)
+      file.copy("utilsReport.R", file.path(tempdir(),"utils.R"), overwrite = TRUE)
       file.copy("resources/", tempdir(), overwrite = TRUE, recursive = TRUE)
       file.copy("resources/dna-svg-small-13.gif",
       file.path(tempdir(), "resources/dna-svg-small-13.gif"), overwrite = TRUE)
@@ -2179,14 +2179,20 @@ output$legendChorAll <- renderPlot({
           gsearow <- gsearow(); gseagsea <- gsea$gsea
       #nrows
           nrowsall <- rowsAll()
-          if(is.null(nrowsall)){ 
-            nrowsall <-  ( if( dim(kggDT$all)[1]<10) seq_len(nrow(kggDT$all)) else seq_len(10) ) }
+          if(!is.null(kggDT$all)){
+            if(is.null(nrowsall)){ 
+              nrowsall <-  ( if( dim(kggDT$all)[1]<10) seq_len(nrow(kggDT$all)) else seq_len(10) ) }
+          }
           nrowsup <- rowsUp()
-          if(is.null(nrowsup)){ 
-            nrowsup <-  ( if( dim(kggDT$up)[1]<10) seq_len(nrow(kggDT$up)) else seq_len(10) ) }
+          if(!is.null(kggDT$up)){
+            if(is.null(nrowsup)){ 
+              nrowsup <-  ( if( dim(kggDT$up)[1]<10) seq_len(nrow(kggDT$up)) else seq_len(10) ) }
+          }
           nrowsdown <- rowsdown()
-          if(is.null(nrowsdown)){ 
-            nrowsdown <-  ( if( dim(kggDT$down)[1]<10) seq_len(nrow(kggDT$down)) else seq_len(10) ) }
+          if(!is.null(kggDT$down)){
+            if(is.null(nrowsdown)){ 
+              nrowsdown <-  ( if( dim(kggDT$down)[1]<10) seq_len(nrow(kggDT$down)) else seq_len(10) ) }
+          }
       if(!is.null(vals$preview)){      #para preview
         if( ("PCA" %in% vals$preview) ){ pcaObj <- TRUE}
         if("BoxPlot" %in% vals$preview){boxObj <- TRUE}
