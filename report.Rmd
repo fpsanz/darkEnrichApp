@@ -322,7 +322,7 @@ metadata <- as.data.frame(colData(params$datosdds)) %>% dplyr::select(-any_of(c(
 
 
 ```{r previewTitle, eval=preview, results='asis'}
-cat("# Preview section")
+  cat("# Preview section")
 ```
 
 ```{r pcatitle, eval = params$pcaObj, results='asis'}
