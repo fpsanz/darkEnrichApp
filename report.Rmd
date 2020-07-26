@@ -330,7 +330,7 @@ cat("## PCA 2D")
 ```
 
 ```{r pca2d, eval=params$pcaObj}
-    plotPCA(
+    plotPCAReport(
         params$rlog,
         intgroup = params$variables,
         labels = params$samplename,
@@ -346,7 +346,7 @@ cat("## Box/Violin plot")
 ```
 
 ```{r boxplot, eval=params$boxObj, fig.height=8 }
-boxViolin( names = params$samplename , vsd=params$vsd, boxplotswitch=params$boxplotswitch,
+boxViolinReport( names = params$samplename , vsd=params$vsd, boxplotswitch=params$boxplotswitch,
                     intgroup=params$variables, customColor = params$colorespca ) 
 ```
 
@@ -355,7 +355,7 @@ cat("## Heatmap")
 ```
 
 ```{r heatmap, eval=params$heatObj, fig.height=8}
-heat2(params$vsd, n=params$numheatmap, intgroup = params$variables, sampleName = params$samplename,
+heat2Report(params$vsd, n=params$numheatmap, intgroup = params$variables, sampleName = params$samplename,
          specie=params$specie, customColor = params$colorespca )
 ```
 
@@ -364,7 +364,7 @@ cat("## Cluster")
 ```
 
 ```{r cluster, eval=params$clusterObj, fig.height=8}
-cluster(params$vsd, intgroup = params$samplename)
+clusterReport(params$vsd, intgroup = params$samplename)
 ```
 
 ```{r top6title, eval=params$top6Obj, results='asis'}
@@ -428,7 +428,7 @@ cat("## Karyoplot")
 ```
 
 ```{r karyoplot, eval=params$karyObj}
-    krtp(params$ressh, specie = params$specie, pval = params$padj, fcdown = params$logfc[1],
+    krtpReport(params$ressh, specie = params$specie, pval = params$padj, fcdown = params$logfc[1],
          fcup = params$logfc[2], bg="#edf0f2", coldown="#1f31ff" , colup="#f7665c")
 ```
 
@@ -437,7 +437,7 @@ cat("## Volcano plot")
 ```
 
 ```{r volcanoplot, eval = params$volcObj, fig.height=8}
-CustomVolcano( params$ressh,
+CustomVolcanoReport( params$ressh,
   lab = as.character(params$ressh$GeneName_Symbol),
   selectLab = params$genesvolcano,
   x = 'log2FoldChange',
@@ -458,7 +458,7 @@ cat("## MA plot")
 ```
 
 ```{r MAplot, eval = params$maObj, fig.height=8}
-MA(params$ressh, main = 'MA plot applying the DESeq2 Shrinkage normalization for Foldchange',
+MAReport(params$ressh, main = 'MA plot applying the DESeq2 Shrinkage normalization for Foldchange',
        fdr = params$padj, fcDOWN = params$logfc[1], fcUP = params$logfc[2] , size = 1,
        palette = c(params$upcolor, params$downcolor, "gray"),
        genenames = params$ressh$GeneName_Symbol,
@@ -498,7 +498,7 @@ cat("## Table kegg All genes")
             title = tituloTabla),
         list(extend = "print", title=tituloTabla)
     )
-    datatable2(
+    datatable2Report(
       kggdtall, 
       vars = c("genes"),
       filter = list(position="top", clear=FALSE),
@@ -516,7 +516,7 @@ cat("## Barplot kegg All genes")
 
 ```{r  eval = params$barkgaObj }
 kggall <- params$kggall
-p <- plotKeggAll(enrichdf = kggall[params$nrowsall,], nrows = length(params$nrowsall),
+p <- plotKeggAllReport(enrichdf = kggall[params$nrowsall,], nrows = length(params$nrowsall),
                 genesUp = params$datagenesup, genesDown = params$datagenesdown,
                 colors = c(params$upcolor, params$downcolor))
     if(params$typebarkeggall == "Dodge"){
@@ -529,10 +529,10 @@ cat("## Chorplot All genes")
 ```
 
 ```{r chorkgaplot, eval = params$chorkgaObj}
-chordPlot(params$kggall[params$nrowsall, ], nRows = length(params$nrowsall), orderby = "P.DE")
+chordPlotReport(params$kggall[params$nrowsall, ], nRows = length(params$nrowsall), orderby = "P.DE")
 ```
 ```{r eval = params$chorkgaObj, fig.height=3}
-legendChorplot(params$kggall[params$nrowsall, ] )
+legendChorplotReport(params$kggall[params$nrowsall, ] )
 ```
 
 ```{r dotkga, eval = params$dotkgaObj, results='asis' }
@@ -541,7 +541,7 @@ cat("## Dotplot kegg All genes")
 
 ```{r dotkgaplot, eval = params$dotkgaObj}
 kggall <- params$kggall
-dotPlotkegg(params$kggall[params$nrowsall,], n = length(params$nrowsall))
+dotPlotkeggReport(params$kggall[params$nrowsall,], n = length(params$nrowsall))
 ```
 
 ```{r heatkga, eval = params$heatkgaObj, results='asis' }
@@ -549,7 +549,7 @@ cat("## Heatmap kegg All genes")
 ```
 
 ```{r heatkgaplot, eval = params$heatkgaObj}
-heatmapKeggLogFC(params$kggdtall, params$ressh, params$nrowsall ) 
+heatmapKeggLogFCReport(params$kggdtall, params$ressh, params$nrowsall ) 
 ```
 
 ```{r netkga, eval = params$netkgaObj, results='asis' }
@@ -557,7 +557,7 @@ cat("## Netplot kegg All genes")
 ```
 
 ```{r netkgaplot, eval = params$netkgaObj}
-customCnetKegg(params$kggall, params$nrowsall, genesUp = params$datagenesup, genesDown = params$datagenesdown)
+customCnetKeggReport(params$kggall, params$nrowsall, genesUp = params$datagenesup, genesDown = params$datagenesdown)
 ```
 
 <!-- kegg up section -->
@@ -587,7 +587,7 @@ cat("## Table kegg Up genes")
             title = tituloTabla),
         list(extend = "print", title=tituloTabla)
     )
-    datatable2(
+    datatable2Report(
       kggdtup, 
       vars = c("genes"),
       filter = list(position="top", clear=FALSE),
@@ -607,7 +607,7 @@ cat("## Barplot kegg Up genes")
 
 ```{r  eval = params$barkguObj }
 kggup <- params$kggup
-plotKegg(enrichdf = kggup[params$nrowsup,], nrows = length(params$nrowsup), colors = c(params$upcolor) )
+plotKeggReport(enrichdf = kggup[params$nrowsup,], nrows = length(params$nrowsup), colors = c(params$upcolor) )
 ```
 
 ```{r chorkgu, eval = params$chorkguObj, results='asis' }
@@ -615,8 +615,8 @@ cat("## Chorplot Up genes")
 ```
 
 ```{r chorkguplot, eval = params$chorkguObj}
-chordPlot(params$kggup[params$nrowsup, ], nRows = length(params$nrowsup), orderby = "P.DE")
-legendChorplot(params$kggup[params$nrowsup, ] )
+chordPlotReport(params$kggup[params$nrowsup, ], nRows = length(params$nrowsup), orderby = "P.DE")
+legendChorplotReport(params$kggup[params$nrowsup, ] )
 ```
 
 ```{r dotkgu, eval = params$dotkguObj, results='asis' }
@@ -625,7 +625,7 @@ cat("## Dotplot kegg Up genes")
 
 ```{r dotkguplot, eval = params$dotkguObj}
 kggup <- params$kggup
-dotPlotkegg(params$kggup[params$nrowsup,], n = length(params$nrowsup))
+dotPlotkeggReport(params$kggup[params$nrowsup,], n = length(params$nrowsup))
 ```
 
 ```{r heatkgu, eval = params$heatkguObj, results='asis' }
@@ -633,7 +633,7 @@ cat("## Heatmap kegg Up genes")
 ```
 
 ```{r heatkguplot, eval = params$heatkguObj}
-heatmapKeggLogFC(params$kggdtup, params$ressh, params$nrowsup ) 
+heatmapKeggLogFCReport(params$kggdtup, params$ressh, params$nrowsup ) 
 ```
 
 ```{r netkgu, eval = params$netkguObj, results='asis' }
@@ -641,7 +641,7 @@ cat("## Netplot kegg Up genes")
 ```
 
 ```{r netkguplot, eval = params$netkguObj}
-customCnetKegg(params$kggup, params$nrowsup, genesUp = params$datagenesup, genesDown = params$datagenesdown)
+customCnetKeggReport(params$kggup, params$nrowsup, genesUp = params$datagenesup, genesDown = params$datagenesdown)
 ```
 
 
@@ -672,7 +672,7 @@ cat("## Table kegg Down genes")
             title = tituloTabla),
         list(extend = "print", title=tituloTabla)
     )
-    datatable2(
+    datatable2Report(
       kggdtdown, 
       vars = c("genes"),
       filter = list(position="top", clear=FALSE),
@@ -692,7 +692,7 @@ cat("## Barplot kegg Down genes")
 
 ```{r  eval = params$barkgdObj }
 kggdown <- params$kggdown
-plotKegg(enrichdf = kggdown[params$nrowsdown,], nrows = length(params$nrowsdown), colors = c(params$downcolor) )
+plotKeggReport(enrichdf = kggdown[params$nrowsdown,], nrows = length(params$nrowsdown), colors = c(params$downcolor) )
 ```
 
 ```{r chorkgd, eval = params$chorkgdObj, results='asis' }
@@ -700,8 +700,8 @@ cat("## Chorplot Down genes")
 ```
 
 ```{r chorkgdownlot, eval = params$chorkgdObj}
-chordPlot(params$kggdown[params$nrowsdown, ], nRows = length(params$nrowsdown), orderby = "P.DE")
-legendChorplot(params$kggdown[params$nrowsdown, ] )
+chordPlotReport(params$kggdown[params$nrowsdown, ], nRows = length(params$nrowsdown), orderby = "P.DE")
+legendChorplotReport(params$kggdown[params$nrowsdown, ] )
 ```
 
 ```{r dotkgd, eval = params$dotkgdObj, results='asis' }
@@ -710,7 +710,7 @@ cat("## Dotplot kegg Down genes")
 
 ```{r dotkgdownlot, eval = params$dotkgdObj}
 kggdown <- params$kggdown
-dotPlotkegg(params$kggdown[params$nrowsdown,], n = length(params$nrowsdown))
+dotPlotkeggReport(params$kggdown[params$nrowsdown,], n = length(params$nrowsdown))
 ```
 
 ```{r heatkgd, eval = params$heatkgdObj, results='asis' }
@@ -718,7 +718,7 @@ cat("## Heatmap kegg Down genes")
 ```
 
 ```{r heatkgdownlot, eval = params$heatkgdObj}
-heatmapKeggLogFC(params$kggdtdown, params$ressh, params$nrowsdown ) 
+heatmapKeggLogFCReport(params$kggdtdown, params$ressh, params$nrowsdown ) 
 ```
 
 ```{r netkgd, eval = params$netkgdObj, results='asis' }
@@ -726,7 +726,7 @@ cat("## Netplot kegg Down genes")
 ```
 
 ```{r netkgdownlot, eval = params$netkgdObj}
-customCnetKegg(params$kggdown, params$nrowsdown, genesUp = params$datagenesup, genesDown = params$datagenesdown)
+customCnetKeggReport(params$kggdown, params$nrowsdown, genesUp = params$datagenesup, genesDown = params$datagenesdown)
 ```
 
 <!-- go all section -->
@@ -759,7 +759,7 @@ goDT <- params$godtall
             title = tituloTabla),
         list(extend = "print", title=tituloTabla)
     )
-    datatable2(goDT[goDT$Ont=="BP",], vars = c("genes"),
+    datatable2Report(goDT[goDT$Ont=="BP",], vars = c("genes"),
                filter = list(position="top", clear=FALSE),
                escape = FALSE,
                opts = list(order = list(list(6, 'asc')),
@@ -778,7 +778,7 @@ datagenesdown <- params$datagenesdown
  if(is.null(bprowsall)){ 
              bprowsall <-  ( if( dim(params$godtall)[1]<10) seq_len(nrow(params$godtall)) else seq_len(10) ) }
     gosBP <- params$goall[params$goall$Ont=="BP",]
-    p <- plotGOAll(enrichdf = gosBP[bprowsall, ], nrows = length(bprowsall), ont="BP",
+    p <- plotGOAllReport(enrichdf = gosBP[bprowsall, ], nrows = length(bprowsall), ont="BP",
               genesUp = datagenesup, genesDown = datagenesdown,
               colors = c(params$downcolor, params$upcolor))
     if( params$typebarbpall == "Dodge") { p[[1]]
@@ -795,7 +795,7 @@ cat("## Dotplot GO BP all genes ")
 bprowsall <- params$bprowsall
     if(is.null(bprowsall)){bprowsall <- c(1:20)}
     gosBP <- params$goall[params$goall$Ont=="BP",]
-    dotPlotGO(gosBP[bprowsall,], n = length(bprowsall))
+    dotPlotGOReport(gosBP[bprowsall,], n = length(bprowsall))
 ```
 
 ```{r eval = params$gobargoaObj, results='asis' }
@@ -805,7 +805,7 @@ cat("## GOBarplot GO BP all genes ")
 ```{r eval=params$gobargoaObj}
 bprowsall <- params$bprowsall
 datagenesall <- rbind(params$datagenesup, params$datagenesdown)
-    goBarplot(enrichGO = params$goall, resGO = params$ressh, genes= datagenesall,
+    goBarplotReport(enrichGO = params$goall, resGO = params$ressh, genes= datagenesall,
               category = "BP", nrows = bprowsall)
 ```
 
@@ -818,8 +818,8 @@ bprowsall <- params$bprowsall
 datagenesall <- rbind(params$datagenesup, params$datagenesdown)
     goall <- params$goall[params$goall$Ont=="BP", ]
     if(length(bprowsall)>=4){
-      circ <- data2circle(go=goall[bprowsall, ], res=params$ressh, genes=datagenesall)
-    c <-  circle(circ, label.size = 3, nsub = length(bprowsall), table.legend = FALSE)
+      circ <- data2circleReport(go=goall[bprowsall, ], res=params$ressh, genes=datagenesall)
+    c <-  circleReport(circ, label.size = 3, nsub = length(bprowsall), table.legend = FALSE)
     c
     }
 ```
@@ -849,7 +849,7 @@ goDT <- params$godtall
             title = tituloTabla),
         list(extend = "print", title=tituloTabla)
     )
-    datatable2(goDT[goDT$Ont=="MF",], vars = c("genes"),
+    datatable2Report(goDT[goDT$Ont=="MF",], vars = c("genes"),
                filter = list(position="top", clear=FALSE),
                escape = FALSE,
                opts = list(order = list(list(6, 'asc')),
@@ -868,7 +868,7 @@ datagenesdown <- params$datagenesdown
  if(is.null(mfrowsall)){ 
              mfrowsall <-  ( if( dim(params$godtall)[1]<10) seq_len(nrow(params$godtall)) else seq_len(10) ) }
     gosMF <- params$goall[params$goall$Ont=="MF",]
-    p <- plotGOAll(enrichdf = gosMF[mfrowsall, ], nrows = length(mfrowsall), ont="MF",
+    p <- plotGOAllReport(enrichdf = gosMF[mfrowsall, ], nrows = length(mfrowsall), ont="MF",
               genesUp = datagenesup, genesDown = datagenesdown,
               colors = c(params$downcolor, params$upcolor))
     if( params$typebarmfall == "Dodge") { p[[1]]
@@ -885,7 +885,7 @@ cat("## Dotplot GO MF all genes ")
 mfrowsall <- params$mfrowsall
     if(is.null(mfrowsall)){mfrowsall <- c(1:20)}
     gosMF <- params$goall[params$goall$Ont=="MF",]
-    dotPlotGO(gosMF[mfrowsall,], n = length(mfrowsall))
+    dotPlotGOReport(gosMF[mfrowsall,], n = length(mfrowsall))
 ```
 
 ```{r eval = params$gobargoaObj, results='asis' }
@@ -895,7 +895,7 @@ cat("## GOBarplot GO MF all genes ")
 ```{r eval=params$gobargoaObj}
 mfrowsall <- params$mfrowsall
 datagenesall <- rbind(params$datagenesup, params$datagenesdown)
-    goBarplot(enrichGO = params$goall, resGO = params$ressh, genes= datagenesall,
+    goBarplotReport(enrichGO = params$goall, resGO = params$ressh, genes= datagenesall,
               category = "MF", nrows = mfrowsall)
 ```
 
@@ -908,8 +908,8 @@ mfrowsall <- params$mfrowsall
 datagenesall <- rbind(params$datagenesup, params$datagenesdown)
     goall <- params$goall[params$goall$Ont=="MF", ]
     if(length(mfrowsall)>=4){
-      circ <- data2circle(go=goall[mfrowsall, ], res=params$ressh, genes=datagenesall)
-    c <-  circle(circ, label.size = 3, nsub = length(mfrowsall), table.legend = FALSE)
+      circ <- data2circleReport(go=goall[mfrowsall, ], res=params$ressh, genes=datagenesall)
+    c <-  circleReport(circ, label.size = 3, nsub = length(mfrowsall), table.legend = FALSE)
     c
     }
 ```
@@ -940,7 +940,7 @@ goDT <- params$godtall
             title = tituloTabla),
         list(extend = "print", title=tituloTabla)
     )
-    datatable2(goDT[goDT$Ont=="CC",], vars = c("genes"),
+    datatable2Report(goDT[goDT$Ont=="CC",], vars = c("genes"),
                filter = list(position="top", clear=FALSE),
                escape = FALSE,
                opts = list(order = list(list(6, 'asc')),
@@ -959,7 +959,7 @@ datagenesdown <- params$datagenesdown
  if(is.null(ccrowsall)){ 
              ccrowsall <-  ( if( dim(params$godtall)[1]<10) seq_len(nrow(params$godtall)) else seq_len(10) ) }
     gosCC <- params$goall[params$goall$Ont=="CC",]
-    p <- plotGOAll(enrichdf = gosCC[ccrowsall, ], nrows = length(ccrowsall), ont="CC",
+    p <- plotGOAllReport(enrichdf = gosCC[ccrowsall, ], nrows = length(ccrowsall), ont="CC",
               genesUp = datagenesup, genesDown = datagenesdown,
               colors = c(params$downcolor, params$upcolor))
     if( params$typebarccall == "Dodge") { p[[1]]
@@ -976,7 +976,7 @@ cat("## Dotplot GO CC all genes ")
 ccrowsall <- params$ccrowsall
     if(is.null(ccrowsall)){ccrowsall <- c(1:20)}
     gosCC <- params$goall[params$goall$Ont=="CC",]
-    dotPlotGO(gosCC[ccrowsall,], n = length(ccrowsall))
+    dotPlotGOReport(gosCC[ccrowsall,], n = length(ccrowsall))
 ```
 
 ```{r eval = params$gobargoaObj, results='asis' }
@@ -986,7 +986,7 @@ cat("## GOBarplot GO CC all genes ")
 ```{r eval=params$gobargoaObj}
 ccrowsall <- params$ccrowsall
 datagenesall <- rbind(params$datagenesup, params$datagenesdown)
-    goBarplot(enrichGO = params$goall, resGO = params$ressh, genes= datagenesall,
+    goBarplotReport(enrichGO = params$goall, resGO = params$ressh, genes= datagenesall,
               category = "CC", nrows = ccrowsall)
 ```
 
@@ -999,8 +999,8 @@ ccrowsall <- params$ccrowsall
 datagenesall <- rbind(params$datagenesup, params$datagenesdown)
     goall <- params$goall[params$goall$Ont=="CC", ]
     if(length(ccrowsall)>=4){
-      circ <- data2circle(go=goall[ccrowsall, ], res=params$ressh, genes=datagenesall)
-    c <-  circle(circ, label.size = 3, nsub = length(ccrowsall), table.legend = FALSE)
+      circ <- data2circleReport(go=goall[ccrowsall, ], res=params$ressh, genes=datagenesall)
+    c <-  circleReport(circ, label.size = 3, nsub = length(ccrowsall), table.legend = FALSE)
     c
     }
 ```
@@ -1034,7 +1034,7 @@ cat("## GO BP up genes table")
             title = tituloTabla),
         list(extend = "print", title=tituloTabla)
     )
-    datatable2(goDT[goDT$Ont=="BP",], vars = c("genes"),
+    datatable2Report(goDT[goDT$Ont=="BP",], vars = c("genes"),
                filter = list(position="top", clear=FALSE),
                escape = FALSE,
                opts = list(order = list(list(6, 'asc')),
@@ -1052,7 +1052,7 @@ cat("## Barplot BP Up genes")
     if(is.null(bprowsup)){ 
              bprowsup <-  ( if( dim(params$godtup)[1]<10) seq_len(nrow(params$godtup)) else seq_len(10) ) }
     gosBP <- params$goup[params$goup$Ont=="BP",]
-    plotGO(enrichdf = gosBP[bprowsup, ], nrows = length(bprowsup), ont="BP",
+    plotGOReport(enrichdf = gosBP[bprowsup, ], nrows = length(bprowsup), ont="BP",
            colors = c(params$upcolor) )
 ```
 
@@ -1065,7 +1065,7 @@ cat("## Dotplot GO BP up")
     bprowsup <- params$bprowsup
     if(is.null(bprowsup)){bprowsup <- c(1:20)}
     gosBP <- params$goup[params$goup$Ont=="BP",]
-    dotPlotGO(gosBP[bprowsup,], n = length(bprowsup))
+    dotPlotGOReport(gosBP[bprowsup,], n = length(bprowsup))
 ```
 
 ```{r eval = params$gobargouObj, results='asis'}
@@ -1074,7 +1074,7 @@ cat("## GObarplot GO BP up")
 
 ```{r eval = params$gobargouObj}
 bprowsup <- params$bprowsup
-    goBarplot(enrichGO = params$goup, resGO = params$ressh, genes= params$datagenesup,
+    goBarplotReport(enrichGO = params$goup, resGO = params$ressh, genes= params$datagenesup,
               category = "BP", nrows = bprowsup)
 ```
 
@@ -1085,8 +1085,8 @@ cat("## Circle plot GO BP up")
 ```{r eval=params$gocirclegouObj}
     bprowsup <- params$bprowsup
     if(length(bprowsup)>=4){
-      circ <- data2circle(go=params$goup[bprowsup, ], res=params$ressh, genes=params$datagenesup)
-      circle(circ, label.size = 3, nsub = length(bprowsup), table.legend = FALSE)
+      circ <- data2circleReport(go=params$goup[bprowsup, ], res=params$ressh, genes=params$datagenesup)
+      circleReport(circ, label.size = 3, nsub = length(bprowsup), table.legend = FALSE)
     }
 ```
 
@@ -1115,7 +1115,7 @@ cat("## GO MF up genes table")
             title = tituloTabla),
         list(extend = "print", title=tituloTabla)
     )
-    datatable2(goDT[goDT$Ont=="MF",], vars = c("genes"),
+    datatable2Report(goDT[goDT$Ont=="MF",], vars = c("genes"),
                filter = list(position="top", clear=FALSE),
                escape = FALSE,
                opts = list(order = list(list(6, 'asc')),
@@ -1133,7 +1133,7 @@ cat("## Barplot MF Up genes")
     if(is.null(mfrowsup)){ 
              mfrowsup <-  ( if( dim(params$godtup)[1]<10) seq_len(nrow(params$godtup)) else seq_len(10) ) }
     gosMF <- params$goup[params$goup$Ont=="MF",]
-    plotGO(enrichdf = gosMF[mfrowsup, ], nrows = length(mfrowsup), ont="MF",
+    plotGOReport(enrichdf = gosMF[mfrowsup, ], nrows = length(mfrowsup), ont="MF",
            colors = c(params$upcolor) )
 ```
 
@@ -1146,7 +1146,7 @@ cat("## Dotplot GO MF up")
     mfrowsup <- params$mfrowsup
     if(is.null(mfrowsup)){mfrowsup <- c(1:20)}
     gosMF <- params$goup[params$goup$Ont=="MF",]
-    dotPlotGO(gosMF[mfrowsup,], n = length(mfrowsup))
+    dotPlotGOReport(gosMF[mfrowsup,], n = length(mfrowsup))
 ```
 
 ```{r eval = params$gobargouObj, results='asis'}
@@ -1155,7 +1155,7 @@ cat("## GObarplot GO MF up")
 
 ```{r eval = params$gobargouObj}
 mfrowsup <- params$mfrowsup
-    goBarplot(enrichGO = params$goup, resGO = params$ressh, genes= params$datagenesup,
+    goBarplotReport(enrichGO = params$goup, resGO = params$ressh, genes= params$datagenesup,
               category = "MF", nrows = mfrowsup)
 ```
 
@@ -1166,8 +1166,8 @@ cat("## Circle plot GO MF up")
 ```{r eval=params$gocirclegouObj}
     mfrowsup <- params$mfrowsup
     if(length(mfrowsup)>=4){
-      circ <- data2circle(go=params$goup[mfrowsup, ], res=params$ressh, genes=params$datagenesup)
-      circle(circ, label.size = 3, nsub = length(mfrowsup), table.legend = FALSE)
+      circ <- data2circleReport(go=params$goup[mfrowsup, ], res=params$ressh, genes=params$datagenesup)
+      circleReport(circ, label.size = 3, nsub = length(mfrowsup), table.legend = FALSE)
     }
 ```
 
@@ -1195,7 +1195,7 @@ cat("## GO CC up genes table")
             title = tituloTabla),
         list(extend = "print", title=tituloTabla)
     )
-    datatable2(goDT[goDT$Ont=="CC",], vars = c("genes"),
+    datatable2Report(goDT[goDT$Ont=="CC",], vars = c("genes"),
                filter = list(position="top", clear=FALSE),
                escape = FALSE,
                opts = list(order = list(list(6, 'asc')),
@@ -1213,7 +1213,7 @@ cat("## Barplot CC Up genes")
     if(is.null(ccrowsup)){ 
              ccrowsup <-  ( if( dim(params$godtup)[1]<10) seq_len(nrow(params$godtup)) else seq_len(10) ) }
     gosCC <- params$goup[params$goup$Ont=="CC",]
-    plotGO(enrichdf = gosCC[ccrowsup, ], nrows = length(ccrowsup), ont="CC",
+    plotGOReport(enrichdf = gosCC[ccrowsup, ], nrows = length(ccrowsup), ont="CC",
            colors = c(params$upcolor) )
 ```
 
@@ -1226,7 +1226,7 @@ cat("## Dotplot GO CC up")
     ccrowsup <- params$ccrowsup
     if(is.null(ccrowsup)){ccrowsup <- c(1:20)}
     gosCC <- params$goup[params$goup$Ont=="CC",]
-    dotPlotGO(gosCC[ccrowsup,], n = length(ccrowsup))
+    dotPlotGOReport(gosCC[ccrowsup,], n = length(ccrowsup))
 ```
 
 ```{r eval = params$gobargouObj, results='asis'}
@@ -1235,7 +1235,7 @@ cat("## GObarplot GO CC up")
 
 ```{r eval = params$gobargouObj}
 ccrowsup <- params$ccrowsup
-    goBarplot(enrichGO = params$goup, resGO = params$ressh, genes= params$datagenesup,
+    goBarplotReport(enrichGO = params$goup, resGO = params$ressh, genes= params$datagenesup,
               category = "CC", nrows = ccrowsup)
 ```
 
@@ -1246,8 +1246,8 @@ cat("## Circle plot GO CC up")
 ```{r eval=params$gocirclegouObj}
     ccrowsup <- params$ccrowsup
     if(length(ccrowsup)>=4){
-      circ <- data2circle(go=params$goup[ccrowsup, ], res=params$ressh, genes=params$datagenesup)
-      circle(circ, label.size = 3, nsub = length(ccrowsup), table.legend = FALSE)
+      circ <- data2circleReport(go=params$goup[ccrowsup, ], res=params$ressh, genes=params$datagenesup)
+      circleReport(circ, label.size = 3, nsub = length(ccrowsup), table.legend = FALSE)
     }
 ```
 
@@ -1283,7 +1283,7 @@ cat("## GO BP down genes table")
             title = tituloTabla),
         list(extend = "print", title=tituloTabla)
     )
-    datatable2(goDT[goDT$Ont=="BP",], vars = c("genes"),
+    datatable2Report(goDT[goDT$Ont=="BP",], vars = c("genes"),
                filter = list(position="top", clear=FALSE),
                escape = FALSE,
                opts = list(order = list(list(6, 'asc')),
@@ -1301,7 +1301,7 @@ cat("## Barplot BP Down genes")
     if(is.null(bprowsdown)){ 
              bprowsdown <-  ( if( dim(params$godtdown)[1]<10) seq_len(nrow(params$godtdown)) else seq_len(10) ) }
     gosBP <- params$godown[params$godown$Ont=="BP",]
-    plotGO(enrichdf = gosBP[bprowsdown, ], nrows = length(bprowsdown), ont="BP",
+    plotGOReport(enrichdf = gosBP[bprowsdown, ], nrows = length(bprowsdown), ont="BP",
            colors = c(params$downcolor) )
 ```
 
@@ -1314,7 +1314,7 @@ cat("## Dotplot GO BP down")
     bprowsdown <- params$bprowsdown
     if(is.null(bprowsdown)){bprowsdown <- c(1:20)}
     gosBP <- params$godown[params$godown$Ont=="BP",]
-    dotPlotGO(gosBP[bprowsdown,], n = length(bprowsdown))
+    dotPlotGOReport(gosBP[bprowsdown,], n = length(bprowsdown))
 ```
 
 ```{r eval = params$gobargodObj, results='asis'}
@@ -1323,7 +1323,7 @@ cat("## GObarplot GO BP down")
 
 ```{r eval = params$gobargodObj}
 bprowsdown <- params$bprowsdown
-    goBarplot(enrichGO = params$godown, resGO = params$ressh, genes= params$datagenesdown,
+    goBarplotReport(enrichGO = params$godown, resGO = params$ressh, genes= params$datagenesdown,
               category = "BP", nrows = bprowsdown)
 ```
 
@@ -1334,8 +1334,8 @@ cat("## Circle plot GO BP down")
 ```{r eval=params$gocirclegodObj}
     bprowsdown <- params$bprowsdown
     if(length(bprowsdown)>=4){
-      circ <- data2circle(go=params$godown[bprowsdown, ], res=params$ressh, genes=params$datagenesdown)
-      circle(circ, label.size = 3, nsub = length(bprowsdown), table.legend = FALSE)
+      circ <- data2circleReport(go=params$godown[bprowsdown, ], res=params$ressh, genes=params$datagenesdown)
+      circleReport(circ, label.size = 3, nsub = length(bprowsdown), table.legend = FALSE)
     }
 ```
 
@@ -1364,7 +1364,7 @@ cat("## GO MF down genes table")
             title = tituloTabla),
         list(extend = "print", title=tituloTabla)
     )
-    datatable2(goDT[goDT$Ont=="MF",], vars = c("genes"),
+    datatable2Report(goDT[goDT$Ont=="MF",], vars = c("genes"),
                filter = list(position="top", clear=FALSE),
                escape = FALSE,
                opts = list(order = list(list(6, 'asc')),
@@ -1382,7 +1382,7 @@ cat("## Barplot MF Down genes")
     if(is.null(mfrowsdown)){ 
              mfrowsdown <-  ( if( dim(params$godtdown)[1]<10) seq_len(nrow(params$godtdown)) else seq_len(10) ) }
     gosMF <- params$godown[params$godown$Ont=="MF",]
-    plotGO(enrichdf = gosMF[mfrowsdown, ], nrows = length(mfrowsdown), ont="MF",
+    plotGOReport(enrichdf = gosMF[mfrowsdown, ], nrows = length(mfrowsdown), ont="MF",
            colors = c(params$downcolor) )
 ```
 
@@ -1395,7 +1395,7 @@ cat("## Dotplot GO MF down")
     mfrowsdown <- params$mfrowsdown
     if(is.null(mfrowsdown)){mfrowsdown <- c(1:20)}
     gosMF <- params$godown[params$godown$Ont=="MF",]
-    dotPlotGO(gosMF[mfrowsdown,], n = length(mfrowsdown))
+    dotPlotGOReport(gosMF[mfrowsdown,], n = length(mfrowsdown))
 ```
 
 ```{r eval = params$gobargodObj, results='asis'}
@@ -1404,7 +1404,7 @@ cat("## GObarplot GO MF down")
 
 ```{r eval = params$gobargodObj}
 mfrowsdown <- params$mfrowsdown
-    goBarplot(enrichGO = params$godown, resGO = params$ressh, genes= params$datagenesdown,
+    goBarplotReport(enrichGO = params$godown, resGO = params$ressh, genes= params$datagenesdown,
               category = "MF", nrows = mfrowsdown)
 ```
 
@@ -1415,8 +1415,8 @@ cat("## Circle plot GO MF down")
 ```{r eval=params$gocirclegodObj}
     mfrowsdown <- params$mfrowsdown
     if(length(mfrowsdown)>=4){
-      circ <- data2circle(go=params$godown[mfrowsdown, ], res=params$ressh, genes=params$datagenesdown)
-      circle(circ, label.size = 3, nsub = length(mfrowsdown), table.legend = FALSE)
+      circ <- data2circleReport(go=params$godown[mfrowsdown, ], res=params$ressh, genes=params$datagenesdown)
+      circleReport(circ, label.size = 3, nsub = length(mfrowsdown), table.legend = FALSE)
     }
 ```
 
@@ -1444,7 +1444,7 @@ cat("## GO CC down genes table")
             title = tituloTabla),
         list(extend = "print", title=tituloTabla)
     )
-    datatable2(goDT[goDT$Ont=="CC",], vars = c("genes"),
+    datatable2Report(goDT[goDT$Ont=="CC",], vars = c("genes"),
                filter = list(position="top", clear=FALSE),
                escape = FALSE,
                opts = list(order = list(list(6, 'asc')),
@@ -1462,7 +1462,7 @@ cat("## Barplot CC Down genes")
     if(is.null(ccrowsdown)){ 
              ccrowsdown <-  ( if( dim(params$godtdown)[1]<10) seq_len(nrow(params$godtdown)) else seq_len(10) ) }
     gosCC <- params$godown[params$godown$Ont=="CC",]
-    plotGO(enrichdf = gosCC[ccrowsdown, ], nrows = length(ccrowsdown), ont="CC",
+    plotGOReport(enrichdf = gosCC[ccrowsdown, ], nrows = length(ccrowsdown), ont="CC",
            colors = c(params$downcolor) )
 ```
 
@@ -1475,7 +1475,7 @@ cat("## Dotplot GO CC down")
     ccrowsdown <- params$ccrowsdown
     if(is.null(ccrowsdown)){ccrowsdown <- c(1:20)}
     gosCC <- params$godown[params$godown$Ont=="CC",]
-    dotPlotGO(gosCC[ccrowsdown,], n = length(ccrowsdown))
+    dotPlotGOReport(gosCC[ccrowsdown,], n = length(ccrowsdown))
 ```
 
 ```{r eval = params$gobargodObj, results='asis'}
@@ -1484,7 +1484,7 @@ cat("## GObarplot GO CC down")
 
 ```{r eval = params$gobargodObj}
 ccrowsdown <- params$ccrowsdown
-    goBarplot(enrichGO = params$godown, resGO = params$ressh, genes= params$datagenesdown,
+    goBarplotReport(enrichGO = params$godown, resGO = params$ressh, genes= params$datagenesdown,
               category = "CC", nrows = ccrowsdown)
 ```
 
@@ -1495,8 +1495,8 @@ cat("## Circle plot GO CC down")
 ```{r eval=params$gocirclegodObj}
     ccrowsdown <- params$ccrowsdown
     if(length(ccrowsdown)>=4){
-      circ <- data2circle(go=params$godown[ccrowsdown, ], res=params$ressh, genes=params$datagenesdown)
-      circle(circ, label.size = 3, nsub = length(ccrowsdown), table.legend = FALSE)
+      circ <- data2circleReport(go=params$godown[ccrowsdown, ], res=params$ressh, genes=params$datagenesdown)
+      circleReport(circ, label.size = 3, nsub = length(ccrowsdown), table.legend = FALSE)
     }
 ```
 

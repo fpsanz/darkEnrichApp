@@ -1,5 +1,5 @@
 # Chorplot ##########################################
-legendChorplot <- function(enrichdf){
+legendChorplotReport <- function(enrichdf){
     labels <- enrichdf$Pathway
     colours = colorRampPalette(RColorBrewer::brewer.pal(11, "Spectral"))(length(labels))
     par(bg="#edf0f2", mar=c(0.5,0.5,0.5,0.5))
@@ -13,7 +13,7 @@ legendChorplot <- function(enrichdf){
 text(x=rep(0.01,lng), y =  seq_len(lng)*(1/lng), labels = labels, col = "black", adj=0 )
 }
 
-chordPlot <- function(enrichdf, nRows = 10, ont=NULL,  orderby=NULL) {
+chordPlotReport <- function(enrichdf, nRows = 10, ont=NULL,  orderby=NULL) {
   if(! "dplyr" %in% .packages()) require("dplyr")
   if(! "tidyr" %in% .packages()) require("tidyr")
   if(! "chordiag" %in% .packages()) require("chorddiag")
@@ -127,7 +127,7 @@ customCnet2Cytoscape <- function(kgg, category=NULL, nPath=NULL, byDE=FALSE){
 }
 
 # Plot para plotear cnet para kegg ###############
-customCnetKegg <- function(kgg, category=NULL, nPath=NULL, byDE=FALSE, nr, genesUp, genesDown){
+customCnetKeggReport <- function(kgg, category=NULL, nPath=NULL, byDE=FALSE, nr, genesUp, genesDown){
     if(! "ggraph" %in% .packages()) require("ggraph")
     if(! "igraph" %in% .packages()) require("igraph")
     if(! "dplyr" %in% .packages()) require("dplyr")
@@ -182,12 +182,12 @@ customCnetKegg <- function(kgg, category=NULL, nPath=NULL, byDE=FALSE, nr, genes
     ptmp2 <- left_join(ptmp, genesAll, by = c("name"="ENTREZID"))
     genesColor <- ptmp2$dir[!is.na(ptmp2$dir)]
     ##
-    p <- p + geom_node_text(aes_(label=~name), data = p$data[1:n,]) +
+    p <- p + geom_node_text(aes_(label=~name), size=3, data = p$data[1:n,]) +
         scale_color_gradientn(name = "pval", colors=palette, na.value = genesColor )
     return(p)
  }
 # Plot para plotear cnet para GO ###############
-customCnetGo <- function(gos, category=NULL, nTerm=NULL, byDE=FALSE, ont="BP"){
+customCnetGoReport <- function(gos, category=NULL, nTerm=NULL, byDE=FALSE, ont="BP"){
     if(! "ggraph" %in% .packages()) require("ggraph")
     if(! "igraph" %in% .packages()) require("igraph")
     if(! "dplyr" %in% .packages()) require("dplyr")
@@ -240,7 +240,7 @@ customCnetGo <- function(gos, category=NULL, nTerm=NULL, byDE=FALSE, ont="BP"){
 }
 
 # Función para hacer enrich GO ################
-customGO <- function(data, universe = NULL, species = "Hs", prior.prob = NULL,
+customGOReport <- function(data, universe = NULL, species = "Hs", prior.prob = NULL,
     covariate = NULL, plot = FALSE, coef = 1, FDR = 0.05, golevelFile) {
     if (!is.data.frame(data)) {
         stop("de should be a data.frame with firt column as symbol
@@ -392,7 +392,7 @@ customGO <- function(data, universe = NULL, species = "Hs", prior.prob = NULL,
 }
 
 # Función para hacer enrich kegg ################
-customKegg <- function(data, universe = NULL, restrict.universe = FALSE,
+customKeggReport <- function(data, universe = NULL, restrict.universe = FALSE,
     species = "Hs", species.KEGG = NULL, convert = FALSE, gene.pathway = NULL,
     pathway.names = NULL, prior.prob = NULL, covariate = NULL,
     plot = FALSE, ...) {
@@ -600,7 +600,7 @@ customKegg <- function(data, universe = NULL, restrict.universe = FALSE,
 }
 
 # Función para crear tablas  con desplegable de genes ############
-datatable2 <- function(x, vars = NULL, opts = NULL, ...) {
+datatable2Report <- function(x, vars = NULL, opts = NULL, ...) {
   names_x <- names(x)
   if (is.null(vars))
     stop("'vars' must be specified!")
@@ -675,7 +675,7 @@ datatable2 <- function(x, vars = NULL, opts = NULL, ...) {
 }
 
 # funcion que preparar los datos de enrich go para pasárlos a datatable2 ###############
-go2DT <- function(enrichdf, data, orderby = NULL, nrows = NULL) {
+go2DTReport <- function(enrichdf, data, orderby = NULL, nrows = NULL) {
     if(!is.data.frame(enrichdf) | !is.data.frame(data)){
         stop("enrichdf and data should be data.frame")
     }
@@ -713,7 +713,7 @@ go2DT <- function(enrichdf, data, orderby = NULL, nrows = NULL) {
 # Ejemplo de uso:
 # GOlevel = getGOlevel()
 # Guardar lo que genera en resources/GOlevel.Rds #############
-getGOlevel <- function(specie){
+getGOlevelReport <- function(specie){
   require(GO.db)
     bp <- "GO:0008150"
     mf <- "GO:0003674"
@@ -781,7 +781,7 @@ getGOlevel <- function(specie){
 }
 
 # funcion que preparar los datos de enrich kegg para pasárlos a datatable2 ###############
-kegg2DT <- function(enrichdf, data, orderby = NULL, nrows = NULL) {
+kegg2DTReport <- function(enrichdf, data, orderby = NULL, nrows = NULL) {
     if(!is.data.frame(enrichdf) | !is.data.frame(data)){
         stop("enrichdf and data should be data.frame")
     }
@@ -818,7 +818,7 @@ kegg2DT <- function(enrichdf, data, orderby = NULL, nrows = NULL) {
 }
 
 # Plot barras de GO ####################
-plotGO <- function(enrichdf, nrows = 30, orderby="p-val", ont, colors=NULL){
+plotGOReport <- function(enrichdf, nrows = 30, orderby="p-val", ont, colors=NULL){
     require(plotly)
     if(!is.data.frame(enrichdf)){
         stop("enrichdf should be data.frame")
@@ -857,7 +857,7 @@ plotGO <- function(enrichdf, nrows = 30, orderby="p-val", ont, colors=NULL){
     return(p)
 }
 # Plot barras de GOAll ####################
-plotGOAll <- function(enrichdf, nrows = 30, orderby="p-val",
+plotGOAllReport <- function(enrichdf, nrows = 30, orderby="p-val",
                       ont, genesUp = NULL, genesDown = NULL, colors = NULL){
     require(plotly)
     require(ggplot2)
@@ -922,7 +922,7 @@ plotGOAll <- function(enrichdf, nrows = 30, orderby="p-val",
 }
 
 # Plot barras de Kegg ###########################
-plotKegg <- function(enrichdf, nrows = 30, orderby="p-val", colors = NULL){
+plotKeggReport <- function(enrichdf, nrows = 30, orderby="p-val", colors = NULL){
     require(plotly)
     if(!is.data.frame(enrichdf)){
         stop("enrichdf should be data.frame")
@@ -948,7 +948,7 @@ plotKegg <- function(enrichdf, nrows = 30, orderby="p-val", colors = NULL){
 }
 
 # Plot barras de KeggALL ###################
-plotKeggAll <- function(enrichdf, nrows = 10, orderby = "p-val", 
+plotKeggAllReport <- function(enrichdf, nrows = 10, orderby = "p-val", 
                         genesUp = NULL, genesDown = NULL, colors = NULL){
     require(plotly)
     require(ggplot2)
@@ -1015,7 +1015,7 @@ loadGenes <- function(filegenes){
 
 # PCA de un objeto DESeq #####################
 
-    plotPCA = function(object, intgroup = "condition", ntop = 500,
+    plotPCAReport <- function(object, intgroup = "condition", ntop = 500,
                    returnData = TRUE, labels = NULL, customColor = NULL){
   # calculate the variance for each gene
   rv <- rowVars(assay(object))
@@ -1107,7 +1107,7 @@ loadGenes <- function(filegenes){
     return(p)
 }
 
-pca3dplot <- function(object, intgroup = "condition", ntop = 500,
+pca3dplotReport <- function(object, intgroup = "condition", ntop = 500,
                    returnData = TRUE){
     rv <- rowVars(assay(object))
    select <- order(rv, decreasing = TRUE)[seq_len(min(ntop, length(rv)))]
@@ -1202,7 +1202,7 @@ geneIdConverter <- function(genes, specie="Mm"){ # genes = vector of ensembl gen
 }
 
 # Dotplot de objeto enrich kegg ##########################
-dotPlotkegg <- function(data, n = 20){
+dotPlotkeggReport <- function(data, n = 20){
   names(data) <- gsub("P.DE", "p-val", names(data) )
   names(data) <- gsub("DE", "DEG", names(data) )
   data$ratio <- data$DEG/data$N
@@ -1216,12 +1216,12 @@ dotPlotkegg <- function(data, n = 20){
     labs(x = "ratio (DEG/N)") +
     scale_color_continuous(low = "red", high = "blue",
                            guide = guide_colorbar(reverse = TRUE))+
-    theme(text = element_text(size=20))
+    theme(text = element_text(size=12))
   return(p)
 }
 
 # Dotplot de objeto enrich GO ##########################
-dotPlotGO <- function(data, n = 20){
+dotPlotGOReport <- function(data, n = 20){
     names(data) <- gsub("P.DE", "p-val", names(data) )
   names(data) <- gsub("DE", "DEG", names(data) )
   data$ratio <- data$DEG/data$N
@@ -1235,12 +1235,12 @@ dotPlotGO <- function(data, n = 20){
     labs(x = "ratio (DEG/N)") +
     scale_color_continuous(low = "red", high = "blue", 
                            guide = guide_colorbar(reverse = TRUE))+
-    theme(text = element_text(size=20))
+    theme(text = element_text(size=12))
   return(p)
 }
 
 # Heatmap de objeto enrich kegg ##########################
-heatmapKegg <- function(kdt, nr){
+heatmapKeggReport <- function(kdt, nr){
   kdt <- kdt[nr, ]
   colourCount <- length(unique(kdt$DEG)) # number of levels
   getPalette <- colorRampPalette(RColorBrewer::brewer.pal(9, "YlOrRd"))
@@ -1269,7 +1269,7 @@ heatmapKegg <- function(kdt, nr){
 ####
 # HeatMapKegg con logFC ######
 ####
-heatmapKeggLogFC <- function(kdt, res, nr){
+heatmapKeggLogFCReport <- function(kdt, res, nr){
     kdt <- kdt[nr, ]
     kk <- kdt %>% dplyr::select(Pathway, genes) %>% separate_rows(Pathway, genes, sep=",")
     kk$genes <- gsub(" ", "", kk$genes)
@@ -1278,9 +1278,9 @@ heatmapKeggLogFC <- function(kdt, res, nr){
     kk3 <- left_join(kk, kk2, by = c("genes"="GeneName_Symbol"))
     kk3$padj <- format(kk3$padj, scientific = TRUE, digits = 3)
     yNum <- length(unique(kdt$Pathway))
-    if(yNum <=35){ySize=12}else if(yNum>35 | yNum <=50){ySize=10}else{ySize=0}
+    if(yNum <=35){ySize=10}else if(yNum>35 | yNum <=50){ySize=8}else{ySize=0}
     xNum <- length(unique(kdt$genes))
-    if(xNum <=60){xSize=8}else if(xNum>60 | yNum <=80){xSize=7}else{xSize=0}
+    if(xNum <=60){xSize=7}else if(xNum>60 | yNum <=80){xSize=6}else{xSize=0}
     
     kk3 %>% ggplot(aes_(~genes, ~Pathway)) + 
     geom_tile(aes_(fill = ~log2FoldChange, label= ~padj), color = 'black', size =0.2) +
@@ -1309,7 +1309,7 @@ buildKeggDataset <- function(specie="Mm"){
   }
 
 # Función para hacer GSEA pathway #################################
-gseaKegg <- function(res, specie){
+gseaKeggReport <- function(res, specie){
   pathwayDataSet <- readRDS(paste0("./resources/",specie,"/GSEA/keggDataGSEA.Rds"))
   res.sh <- res
   #res.sh <- as.data.frame(lfcShrink(dds, coef=2, type="apeglm", res = results(dds)))
@@ -1361,7 +1361,7 @@ updateDatabases <- function(species){
     saveRDS(GeneID.PathID, filename)
 }
 ## VOLCANY volcanoplot interactivo ###########################
-volcany <- function(res, padj = NULL, fcup = NULL,
+volcanyReport <- function(res, padj = NULL, fcup = NULL,
                     fcdown = NULL,
                     col = NULL, genes= NULL ){
 
@@ -1448,7 +1448,7 @@ return(p)
 
 # Volcano plot Miriam
 
-VolcanoMiri <- function(res, padj, fcdown, fcup){
+VolcanoMiriReport <- function(res, padj, fcdown, fcup){
   res$log10FDR <- -log10(res$padj)
   res$sig <- as.factor((res$log2FoldChange > fcup & res$padj < padj) | (res$log2FoldChange < fcdown & res$padj < padj))
   ggplot(res,aes(x=log2FoldChange, y=log10FDR, color=sig)) +
@@ -1459,7 +1459,7 @@ VolcanoMiri <- function(res, padj, fcdown, fcup){
 }
 
 # Customized Volcano Plot ###############
-CustomVolcano <- function (toptable, lab, x, y, selectLab = NULL, xlim = c(min(toptable[[x]], 
+CustomVolcanoReport <- function (toptable, lab, x, y, selectLab = NULL, xlim = c(min(toptable[[x]], 
                            na.rm = TRUE), max(toptable[[x]], na.rm = TRUE)), 
                            ylim = c(0, max(-log10(toptable[[y]]), na.rm = TRUE) + 5), xlab = bquote(~Log[2] ~ "fold change"), 
                            ylab = bquote(~-Log[10] ~ italic(P)), axisLabSize = 18, 
@@ -1778,7 +1778,7 @@ CustomVolcano <- function (toptable, lab, x, y, selectLab = NULL, xlim = c(min(t
     levels(x)
     }
 
-MA <- function (data, fdr = 0.05, fcDOWN = -1, fcUP = 1, genenames = NULL, detection_call = NULL, 
+MAReport <- function (data, fdr = 0.05, fcDOWN = -1, fcUP = 1, genenames = NULL, detection_call = NULL, 
           size = NULL, font.label = c(12, "plain", "black"), label.rectangle = FALSE, 
           palette = c("#f7837b", "#1cc3c8", "darkgray"), top = 15, 
           select.top.method = c("padj", "fc"), main = NULL, xlab = "Log2 mean expression", 
@@ -1856,7 +1856,7 @@ MA <- function (data, fdr = 0.05, fcDOWN = -1, fcUP = 1, genenames = NULL, detec
 
 
 # VST ###############  SIN USO CREO !!!!!
-VST <- function (object, blind = TRUE, nsub = 1000, fitType = "parametric") 
+VSTReport <- function (object, blind = TRUE, nsub = 1000, fitType = "parametric") 
 {
   if (nrow(object) < nsub) {
     stop("less than 'nsub' rows,\n  it is recommended to use varianceStabilizingTransformation directly")
@@ -1903,7 +1903,7 @@ VST <- function (object, blind = TRUE, nsub = 1000, fitType = "parametric")
 }
 
 # Heatmap #############
-heat <- function (vsd, n = 40, intgroup = "AAV", sampleName = "condition",
+heatReport <- function (vsd, n = 40, intgroup = "AAV", sampleName = "condition",
                       specie="Mm", customColor = c("red","blue")) 
     {
       require("EnsDb.Mmusculus.v79")
@@ -1965,7 +1965,7 @@ heat <- function (vsd, n = 40, intgroup = "AAV", sampleName = "condition",
              main = "Heatmap top variant genes on normalized data")
 }
 ## New heatmap plotly
-heat2 <- function (vsd, n = 40, intgroup = NULL, sampleName = NULL,
+heat2Report <- function (vsd, n = 40, intgroup = NULL, sampleName = NULL,
                       specie="Mm", customColor = NULL ) 
     {
       require("EnsDb.Mmusculus.v79")
@@ -2034,7 +2034,7 @@ heat2 <- function (vsd, n = 40, intgroup = NULL, sampleName = NULL,
 
 # cluster #############
 
-cluster <- function(vsd, intgroup = "condition")
+clusterReport <- function(vsd, intgroup = "condition")
   {
   #vsd <- vst(data)
   sampleDists_vsd <- dist(t(assay(vsd)))
@@ -2057,7 +2057,7 @@ cluster <- function(vsd, intgroup = "condition")
 #############  TOP6 genes #########################
 
 
-plotCountsSymbol <- function (dds, gene, intgroup = "condition", normalized = TRUE,
+plotCountsSymbolReport <- function (dds, gene, intgroup = "condition", normalized = TRUE,
                               transform = TRUE, main, xlab = "group", returnData = FALSE,
                               replaced = FALSE, pc, specie, ...){
   stopifnot(length(gene) == 1 & (is.character(gene) | (is.numeric(gene) &
@@ -2119,7 +2119,7 @@ plotCountsSymbol <- function (dds, gene, intgroup = "condition", normalized = TR
 
 
 # Boxplot Violin plot ###########################
-boxViolin <- function(datos=NULL, vsd=NULL, names=NULL, boxplotswitch=NULL,
+boxViolinReport <- function(datos=NULL, vsd=NULL, names=NULL, boxplotswitch=NULL,
                       intgroup=NULL, customColor = NULL){
     data <- vsd
     df <- assay(data)
@@ -2168,7 +2168,7 @@ choices_brewer2 <- list(
 
 
 ## karyoplotter ########################
-customkaryploter <- function(genome = "mm10", plot.type = 1, ideogram.plotter = kpAddCytobands, labels.plotter = kpAddChromosomeNames, chromosomes = "auto", zoom = NULL, cytobands = NULL, plot.params = NULL, use.cache = TRUE, main = NULL, bg="white" ){
+customkaryploterReport <- function(genome = "mm10", plot.type = 1, ideogram.plotter = kpAddCytobands, labels.plotter = kpAddChromosomeNames, chromosomes = "auto", zoom = NULL, cytobands = NULL, plot.params = NULL, use.cache = TRUE, main = NULL, bg="white" ){
   require("karyoploteR")
     if (is.null(genome)) 
         stop("genome cannot be NULL.")
@@ -2365,7 +2365,7 @@ customkaryploter <- function(genome = "mm10", plot.type = 1, ideogram.plotter = 
 }
   
   
-krtp <- function(res, specie="Mm", pval, fcdown, 
+krtpReport <- function(res, specie="Mm", pval, fcdown, 
                  fcup, bg="white", coldown="#1f31ff", colup="#DC143C"){
   require(karyoploteR)
   fileAnnot <- paste0("./resources/",specie,"/cytoband/",specie,"_annot.txt")
@@ -2384,7 +2384,7 @@ krtp <- function(res, specie="Mm", pval, fcdown,
   one$data2height <- 300
   dfRanges <- readRDS(paste0("./resources/",specie,"/cytoband/",specie,"_genomicRanges.Rds") )
   dfIdeoBanda <- readRDS(paste0("./resources/",specie,"/cytoband/",specie,"_cytoBand.Rds"))
-  kp <- customkaryploter(genome = dfRanges, cytobands = dfIdeoBanda,
+  kp <- customkaryploterReport(genome = dfRanges, cytobands = dfIdeoBanda,
                          plot.params = one, plot.type = 2, bg=bg, use.cache = FALSE) %>%
   kpPlotRegions(genesSig[genesSig$y>0,], col = colup, data.panel = 1)  %>%
       kpPlotRegions(genesSig[genesSig$y<0,], col = coldown, data.panel = 2)
@@ -2422,7 +2422,7 @@ cytoBandCreate <- function(specie = "Mm"){
   # zcat mm10.gtf.gz | awk '$3=="gene"{print $1,$4,$5,$9}' | awk 'BEGIN{OFS="\t"}{split($4,a,";");print a[1],$1,$2,$3}' | sed 's/ID=gene://g' >Mm_annot.txt
 }
 # customVisNet #######################################
-customVisNet <- function( enrich, kggDT, nTerm = NULL, up = NULL, down = NULL ){
+customVisNetReport <- function( enrich, kggDT, nTerm = NULL, up = NULL, down = NULL ){
     require(visNetwork)
     require(scales)
     enrich$genes <- kggDT$genes
@@ -2480,7 +2480,7 @@ customVisNet <- function( enrich, kggDT, nTerm = NULL, up = NULL, down = NULL ){
     return(list(nodes = nodesf, edges = edgesf))
 } 
 # GoBarplot ########################
-goBarplot <- function(enrichGO=NULL, resGO=NULL, genes=NULL,
+goBarplotReport <- function(enrichGO=NULL, resGO=NULL, genes=NULL,
                       category=NULL, nrows=NULL ){
     require(GOplot)
     go <- enrichGO
@@ -2507,7 +2507,7 @@ goBarplot <- function(enrichGO=NULL, resGO=NULL, genes=NULL,
     GOBar(circ)
 }
 # data2circle ##############################
-data2circle <- function(go=NULL, res=NULL, genes=NULL){
+data2circleReport <- function(go=NULL, res=NULL, genes=NULL){
   go2 <- go %>% group_by(Ont) %>% as.data.frame()
   goDT <- go2DT(go2, genes)
   # preparar tabla GO
@@ -2525,7 +2525,7 @@ data2circle <- function(go=NULL, res=NULL, genes=NULL){
 }
 
 # GO circle ################################
-circle <- function (data, title, nsub, rad1, rad2, table.legend = F, zsc.col, 
+circleReport <- function (data, title, nsub, rad1, rad2, table.legend = F, zsc.col, 
           lfc.col, label.size, label.fontface) {
     require(GOplot)
     xmax <- y1 <- zscore <- y2 <- ID <- logx <- logy2 <- logy <- logFC <- NULL
@@ -2647,7 +2647,7 @@ circle <- function (data, title, nsub, rad1, rad2, table.legend = F, zsc.col,
         }
 }
 # Leyenda para los cnet interactivos #########
-visnetLegend <- function(kggDT = NULL, rows = NULL){
+visnetLegendReport <- function(kggDT = NULL, rows = NULL){
       mydf <- data.frame(id = rep(1, 100), sales = 1:100)
     minVal <- format( min( kggDT$`p-value`[rows] ), scientific = T, digits = 2)
     maxVal <- format( max( kggDT$`p-value`[rows] ), scientific = T, digits = 2)

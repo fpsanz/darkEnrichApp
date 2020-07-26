@@ -54,7 +54,8 @@ sidebar <- dashboardSidebar(useShinyalert(),
                                     pickerInput(
                                         inputId = "specie",
                                         label = "1. Select specie",
-                                        choices = list( "Human" = "Hs", "Mouse" = "Mm", "Ratus" = "Rn"),
+                                        choices = list( "Human" = "Hs",
+                                                        "Mouse" = "Mm", "Ratus" = "Rn"),
                                         options = list(title = "specie"),
                                         selected = NULL
                                     ) 
