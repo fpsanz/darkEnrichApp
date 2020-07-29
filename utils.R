@@ -773,7 +773,7 @@ getGOlevel <- function(specie){
             level= 0))
     GOlevel <- aggregate(level~id, GOlevel, function(x)x[which.min(abs(x))])
     filePath <- paste0("./resources/",specie,"/GO/GOlevel.Rds")
-    saveRDS(GOlevel, filePath <- paste0("./resources/",specie,"/GO/GOlevels.Rds"))
+    saveRDS(GOlevel, filePath = paste0("./resources/",specie,"/GO/GOlevels.Rds"))
 }
 
 # funcion que preparar los datos de enrich kegg para pasárlos a datatable2 ###############

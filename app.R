@@ -862,9 +862,9 @@ server <- function(input, output, session) {
                           "Num genes Up/down: ",numgenesDE$up,"/",numgenesDE$down)
     customButtons <- list(
         list(extend = "copy", title=tituloTabla),
-        list(extend = "excel", filename="coldata", title=tituloTabla),
-        list(extend = "pdf", filename="coldata", title = tituloTabla),
-        list(extend = "print", title=tituloTabla) )
+        list(extend="collection", buttons = c("csv", "excel"),
+             text="Download", filename="coldata", title=tituloTabla ) )
+    
     datatable( metadata, extensions = "Buttons",
                rownames=FALSE,
                filter = list(position="top", clear=FALSE),
@@ -881,7 +881,7 @@ server <- function(input, output, session) {
     )
   })  
   # preview table ###################
-  output$preview <- DT::renderDT(server=TRUE,{
+  output$preview <- DT::renderDT(server=FALSE,{
     validate(need(datos$dds, "Load file to render table"))
     validate(need(res$sh, "Load file to render table"))
     res.sh <- res$sh
@@ -891,15 +891,10 @@ server <- function(input, output, session) {
     tituloTabla <- paste0("Table: Expression values | ","log2FC: ",logfc()[1],"_",logfc()[2]," | ","padj: ",padj()," | ",
                           "Num genes Up/down: ",numgenesDE$up,"/",numgenesDE$down)
     customButtons <- list(
-        list(extend = "copy", title=tituloTabla),
-        list(extend = "excel",
-            filename = "expressionValues",
-            title = tituloTabla),
-        list(extend = "pdf",
-            filename = "expressionValues",
-            title = tituloTabla),
-        list(extend = "print", title=tituloTabla)
-    )
+      list(extend = "copy", title=tituloTabla),
+      list(extend="collection", buttons = c("csv", "excel"),
+           text="Download", filename="expressionValues", title=tituloTabla ) )
+
     datatable( res.sh, extensions = "Buttons", escape = FALSE,
                rownames = FALSE,
                filter = list(position="top", clear=FALSE),
@@ -1134,22 +1129,17 @@ output$karyoPlot <- renderPlot({
 
 # ............ ###############################
 # KEGG table All #####################################
-  output$tableAll <- DT::renderDT(server=TRUE,{
+  output$tableAll <- DT::renderDT(server=FALSE,{
     validate(need(kgg$all, "Load file to render table"))
     names(kggDT$all)[names(kggDT$all) == "DE"] <- "DEG"
     names(kggDT$all)[names(kggDT$all) == "P.DE"] <- "p-value"
     tituloTabla <- paste0("Table: Kegg all genes | ","log2FC: ",logfc()[1],"_",logfc()[2]," | ","padj: ",padj()," | ",
                           "Num genes Up/down: ",numgenesDE$up,"/",numgenesDE$down)
     customButtons <- list(
-        list(extend = "copy", title=tituloTabla),
-        list(extend = "excel",
-            filename = "keggAll",
-            title = tituloTabla),
-        list(extend = "pdf",
-            filename = "keggAll",
-            title = tituloTabla),
-        list(extend = "print", title=tituloTabla)
-    )
+      list(extend = "copy", title=tituloTabla),
+      list(extend="collection", buttons = c("csv", "excel"),
+           text="Download", filename="keggAll", title=tituloTabla ) )
+      
     datatable2(
       kggDT$all, 
       vars = c("genes"),
@@ -1244,22 +1234,17 @@ output$legendChorAll <- renderPlot({
   })
   # ............ ###############################
   # KEGG table up#####################################
-  output$table <- DT::renderDT(server=TRUE,{
+  output$table <- DT::renderDT(server=FALSE,{
     validate(need(kgg$up, "Load file to render table"))
     names(kggDT$up)[names(kggDT$up) == "DE"] <- "DEG"
     names(kggDT$up)[names(kggDT$up) == "P.DE"] <- "p-value"
     tituloTabla <- paste0("Table: Kegg up-regulated genes | ","log2FC: ",logfc()[1],"_",logfc()[2]," | ","padj: ",padj()," | ",
                           "Num genes Up/down: ",numgenesDE$up,"/",numgenesDE$down)
     customButtons <- list(
-        list(extend = "copy", title=tituloTabla),
-        list(extend = "excel",
-            filename = "keggUp",
-            title = tituloTabla),
-        list(extend = "pdf",
-            filename = "keggUp",
-            title = tituloTabla),
-        list(extend = "print", title=tituloTabla)
-    )
+      list(extend = "copy", title=tituloTabla),
+      list(extend="collection", buttons = c("csv", "excel"),
+           text="Download", filename="keggUp", title=tituloTabla ) )
+
     datatable2(
       kggDT$up,
       vars = c("genes"),
@@ -1341,22 +1326,17 @@ output$legendChorAll <- renderPlot({
   
   # ............ ###############################
   # KEGG table down #####################################
-  output$tableDown <- DT::renderDT(server=TRUE,{
+  output$tableDown <- DT::renderDT(server=FALSE,{
     validate(need(kgg$down, "Load file to render table"))
     names(kggDT$down)[names(kggDT$down) == "DE"] <- "DEG"
     names(kggDT$down)[names(kggDT$down) == "P.DE"] <- "p-value"
     tituloTabla <- paste0("Table: Kegg down-regulated genes | ","log2FC: ",logfc()[1],"_",logfc()[2]," | ","padj: ",padj()," | ",
                           "Num genes Up/down: ",numgenesDE$up,"/",numgenesDE$down)
     customButtons <- list(
-        list(extend = "copy", title=tituloTabla),
-        list(extend = "excel",
-            filename = "keggDown",
-            title = tituloTabla),
-        list(extend = "pdf",
-            filename = "keggDown",
-            title = tituloTabla),
-        list(extend = "print", title=tituloTabla)
-    )
+      list(extend = "copy", title=tituloTabla),
+      list(extend="collection", buttons = c("csv", "excel"),
+           text="Download", filename="keggDown", title=tituloTabla ) )
+
     datatable2(
       kggDT$down,
       vars = c("genes"),
@@ -1436,7 +1416,7 @@ output$legendChorAll <- renderPlot({
   })
   # ............ ###############################
   # GO table BP ALL #####################
-  output$tableBPall <- DT::renderDataTable(server=TRUE,{
+  output$tableBPall <- DT::renderDataTable(server=FALSE,{
     validate(need(goDT$all, "Load file to render table"))
     goDT <- goDT$all 
     names(goDT)[names(goDT) == "DE"] <- "DEG"
@@ -1446,15 +1426,10 @@ output$legendChorAll <- renderPlot({
     tituloTabla <- paste0("Table: GO-BP all genes | ","log2FC: ",logfc()[1],"_",logfc()[2]," | ","padj: ",padj()," | ",
                           "Num genes Up/down: ",numgenesDE$up,"/",numgenesDE$down)
     customButtons <- list(
-        list(extend = "copy", title=tituloTabla),
-        list(extend = "excel",
-            filename = "BPall",
-            title = tituloTabla),
-        list(extend = "pdf",
-            filename = "BPall",
-            title = tituloTabla),
-        list(extend = "print", title=tituloTabla)
-    )
+      list(extend = "copy", title=tituloTabla),
+      list(extend="collection", buttons = c("csv", "excel"),
+           text="Download", filename="BPall", title=tituloTabla ) )
+      
     datatable2(goDT[goDT$Ont=="BP",], vars = c("genes"),
                filter = list(position="top", clear=FALSE),
                escape = FALSE,
@@ -1515,15 +1490,10 @@ output$legendChorAll <- renderPlot({
     tituloTabla <- paste0("Table: GO-MF all genes | ","log2FC: ",logfc()[1],"_",logfc()[2]," | ","padj: ",padj()," | ",
                           "Num genes Up/down: ",numgenesDE$up,"/",numgenesDE$down)
     customButtons <- list(
-        list(extend = "copy", title=tituloTabla),
-        list(extend = "excel",
-            filename = "MFall",
-            title = tituloTabla),
-        list(extend = "pdf",
-            filename = "MFall",
-            title = tituloTabla),
-        list(extend = "print", title=tituloTabla)
-    )
+      list(extend = "copy", title=tituloTabla),
+      list(extend="collection", buttons = c("csv", "excel"),
+           text="Download", filename="MFall", title=tituloTabla ) )
+
     datatable2(goDT[goDT$Ont=="MF",], vars = c("genes"),
                filter = list(position="top", clear=FALSE),
                escape = FALSE,
@@ -1576,7 +1546,7 @@ output$legendChorAll <- renderPlot({
   })
   # ............ ###############################
   # GO table CC all #####################
-  output$tableCCall <- DT::renderDataTable(server=TRUE,{
+  output$tableCCall <- DT::renderDataTable(server=FALSE,{
     validate(need(goDT$all, "Load file to render table"))
     goDT <- goDT$all
     names(goDT)[names(goDT) == "DE"] <- "DEG"
@@ -1586,15 +1556,10 @@ output$legendChorAll <- renderPlot({
     tituloTabla <- paste0("Table: GO-CC all genes | ","log2FC: ",logfc()[1],"_",logfc()[2]," | ","padj: ",padj()," | ",
                           "Num genes Up/down: ",numgenesDE$up,"/",numgenesDE$down)
     customButtons <- list(
-        list(extend = "copy", title=tituloTabla),
-        list(extend = "excel",
-            filename = "CCall",
-            title = tituloTabla),
-        list(extend = "pdf",
-            filename = "CCall",
-            title = tituloTabla),
-        list(extend = "print", title=tituloTabla)
-    )
+      list(extend = "copy", title=tituloTabla),
+      list(extend="collection", buttons = c("csv", "excel"),
+           text="Download", filename="CCall", title=tituloTabla ) )
+      
     datatable2(goDT[goDT$Ont=="CC",], vars = c("genes"),
                filter = list(position="top", clear=FALSE),
                escape = FALSE,
@@ -1647,7 +1612,7 @@ output$legendChorAll <- renderPlot({
   })
   # ............ ###############################
   # GO table BP UP#####################
-  output$tableBP <- DT::renderDataTable(server=TRUE,{
+  output$tableBP <- DT::renderDataTable(server=FALSE,{
     validate(need(goDT$up, "Load file to render table"))
     goDT <- goDT$up
     names(goDT)[names(goDT) == "DE"] <- "DEG"
@@ -1657,15 +1622,10 @@ output$legendChorAll <- renderPlot({
     tituloTabla <- paste0("Table: GO-BP up-regulated genes | ","log2FC: ",logfc()[1],"_",logfc()[2]," | ","padj: ",padj()," | ",
                           "Num genes Up/down: ",numgenesDE$up,"/",numgenesDE$down)
     customButtons <- list(
-        list(extend = "copy", title=tituloTabla),
-        list(extend = "excel",
-            filename = "BPup",
-            title = tituloTabla),
-        list(extend = "pdf",
-            filename = "BPup",
-            title = tituloTabla),
-        list(extend = "print", title=tituloTabla)
-    )
+      list(extend = "copy", title=tituloTabla),
+      list(extend="collection", buttons = c("csv", "excel"),
+           text="Download", filename="BPup", title=tituloTabla ) )
+    
     datatable2(goDT[goDT$Ont=="BP",], vars = c("genes"),
                filter = list(position="top", clear=FALSE),
                escape = FALSE,
@@ -1721,15 +1681,10 @@ output$legendChorAll <- renderPlot({
     tituloTabla <- paste0("Table: GO-MF up-regulated genes | ","log2FC: ",logfc()[1],"_",logfc()[2]," | ","padj: ",padj()," | ",
                           "Num genes Up/down: ",numgenesDE$up,"/",numgenesDE$down)
     customButtons <- list(
-        list(extend = "copy", title=tituloTabla),
-        list(extend = "excel",
-            filename = "MFup",
-            title = tituloTabla),
-        list(extend = "pdf",
-            filename = "MFup",
-            title = tituloTabla),
-        list(extend = "print", title=tituloTabla)
-    )
+      list(extend = "copy", title=tituloTabla),
+      list(extend="collection", buttons = c("csv", "excel"),
+           text="Download", filename="MFup", title=tituloTabla ) )
+    
     datatable2(goDT[goDT$Ont=="MF",], vars = c("genes"),
                filter = list(position="top", clear=FALSE),
                escape = FALSE,
@@ -1777,7 +1732,7 @@ output$legendChorAll <- renderPlot({
   })
   # ............ ###############################
   # GO table CC UP #####################
-  output$tableCC <- DT::renderDataTable(server=TRUE,{
+  output$tableCC <- DT::renderDataTable(server=FALSE,{
     validate(need(goDT$up, "Load file to render table"))
     goDT <- goDT$up
     names(goDT)[names(goDT) == "DE"] <- "DEG"
@@ -1787,15 +1742,10 @@ output$legendChorAll <- renderPlot({
     tituloTabla <- paste0("Table: GO-CC up-regulated genes | ","log2FC: ",logfc()[1],"_",logfc()[2]," | ","padj: ",padj()," | ",
                           "Num genes Up/down: ",numgenesDE$up,"/",numgenesDE$down)
     customButtons <- list(
-        list(extend = "copy", title=tituloTabla),
-        list(extend = "excel",
-            filename = "CCup",
-            title = tituloTabla),
-        list(extend = "pdf",
-            filename = "CCup",
-            title = tituloTabla),
-        list(extend = "print", title=tituloTabla)
-    )
+      list(extend = "copy", title=tituloTabla),
+      list(extend="collection", buttons = c("csv", "excel"),
+           text="Download", filename="CCup", title=tituloTabla ) )
+    
     datatable2(goDT[goDT$Ont=="CC",], vars = c("genes"),
                filter = list(position="top", clear=FALSE),
                escape = FALSE,
@@ -1843,7 +1793,7 @@ output$legendChorAll <- renderPlot({
   })
   # ............ ###############################
   # GO table BP DOWN #####################
-  output$tableBPdown <- DT::renderDataTable(server=TRUE,{
+  output$tableBPdown <- DT::renderDataTable(server=FALSE,{
     validate(need(goDT$down, "Load file to render table"))
     goDT <- goDT$down
     names(goDT)[names(goDT) == "DE"] <- "DEG"
@@ -1853,15 +1803,10 @@ output$legendChorAll <- renderPlot({
     tituloTabla <- paste0("Table: GO-BP down-regulated genes | ","log2FC: ",logfc()[1],"_",logfc()[2]," | ","padj: ",padj()," | ",
                           "Num genes Up/down: ",numgenesDE$up,"/",numgenesDE$down)
     customButtons <- list(
-        list(extend = "copy", title=tituloTabla),
-        list(extend = "excel",
-            filename = "BPdown",
-            title = tituloTabla),
-        list(extend = "pdf",
-            filename = "BPdown",
-            title = tituloTabla),
-        list(extend = "print", title=tituloTabla)
-    )
+      list(extend = "copy", title=tituloTabla),
+      list(extend="collection", buttons = c("csv", "excel"),
+           text="Download", filename="BPdown", title=tituloTabla ) )
+    
     datatable2(goDT[goDT$Ont=="BP",], vars = c("genes"),
                filter = list(position="top", clear=FALSE),
                escape = FALSE,
@@ -1918,15 +1863,10 @@ output$legendChorAll <- renderPlot({
     tituloTabla <- paste0("Table: GO-MF down-regulated genes | ","log2FC: ",logfc()[1],"_",logfc()[2]," | ","padj: ",padj()," | ",
                           "Num genes Up/down: ",numgenesDE$up,"/",numgenesDE$down)
     customButtons <- list(
-        list(extend = "copy", title=tituloTabla),
-        list(extend = "excel",
-            filename = "MFdown",
-            title = tituloTabla),
-        list(extend = "pdf",
-            filename = "MFdown",
-            title = tituloTabla),
-        list(extend = "print", title=tituloTabla)
-    )
+      list(extend = "copy", title=tituloTabla),
+      list(extend="collection", buttons = c("csv", "excel"),
+           text="Download", filename="MFdown", title=tituloTabla ) )
+    
     datatable2(goDT[goDT$Ont=="MF",], vars = c("genes"),
                filter = list(position="top", clear=FALSE),
                escape = FALSE,
@@ -1974,7 +1914,7 @@ output$legendChorAll <- renderPlot({
   })
   # ............ ###############################
   # GO table CC DOWN #####################
-  output$tableCCdown <- DT::renderDataTable(server=TRUE,{
+  output$tableCCdown <- DT::renderDataTable(server=FALSE,{
     validate(need(goDT$down, "Load file to render table"))
     goDT <- goDT$down
     names(goDT)[names(goDT) == "DE"] <- "DEG"
@@ -1984,15 +1924,10 @@ output$legendChorAll <- renderPlot({
     tituloTabla <- paste0("Table: GO-CC down-regulated genes | ","log2FC: ",logfc()[1],"_",logfc()[2]," | ","padj: ",padj()," | ",
                           "Num genes Up/down: ",numgenesDE$up,"/",numgenesDE$down)
     customButtons <- list(
-        list(extend = "copy", title=tituloTabla),
-        list(extend = "excel",
-            filename = "CCdown",
-            title = tituloTabla),
-        list(extend = "pdf",
-            filename = "CCdown",
-            title = tituloTabla),
-        list(extend = "print", title=tituloTabla)
-    )
+      list(extend = "copy", title=tituloTabla),
+      list(extend="collection", buttons = c("csv", "excel"),
+           text="Download", filename="CCdown", title=tituloTabla ) )
+    
     datatable2(goDT[goDT$Ont=="CC",], vars = c("genes"),
                filter = list(position="top", clear=FALSE),
                escape = FALSE,
@@ -2055,15 +1990,10 @@ output$legendChorAll <- renderPlot({
     tituloTabla <- paste0("Table: GSEA pathway | ","log2FC: ",logfc()[1],"_",logfc()[2]," | ","padj: ",padj()," | ",
                           "Num genes Up/down: ",numgenesDE$up,"/",numgenesDE$down)
     customButtons <- list(
-        list(extend = "copy", title=tituloTabla),
-        list(extend = "excel",
-            filename = "GSEAkegg",
-            title = tituloTabla),
-        list(extend = "pdf",
-            filename = "GSEAkegg",
-            title = tituloTabla),
-        list(extend = "print", title=tituloTabla)
-    )
+      list(extend = "copy", title=tituloTabla),
+      list(extend="collection", buttons = c("csv", "excel"),
+           text="Download", filename="GSEAkegg", title=tituloTabla ) )
+    
     DT::datatable( table,
                    rownames=FALSE,
                    filter = list(position="top", clear=FALSE),
