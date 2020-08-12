@@ -25,10 +25,11 @@ fluidPage(
                     "information1",
                     paste0("Customize here the statistical values that you intend",
                            " to apply to your experiment as a cutoff to consider a",
-                           " gene differentially expressed. The numbers per",
-                           " category can be checked above. Click on Apply values",
-                           " once you have finished exploring this tab and",
-                           " before moving to the next one."),
+                           " gene differentially expressed",
+                           " (you can either set the fold change in log scale or regular one).",
+                           " Click on Apply values to make effective your changes.",
+                           " The values per category can be checked above."),
+                    
                     trigger = "hover",
                     placement = "right"
                 ),
@@ -116,11 +117,11 @@ fluidPage(
              fluidRow( column(width = 12,
                  tabBox(width = 12,
                      tabPanel(
-                         title = "Samples information (Coldata)",
+                         title = "Samples information - Coldata ",
                          DTOutput("samples")
                      ),
                      tabPanel(
-                         title = "Statistical expression values",
+                         title = "Statistical - Expression values",
                          DTOutput("preview")
                      )
                  )
@@ -135,9 +136,10 @@ fluidPage(
              ),
              bsTooltip(
                "information2",
-               paste0("Choose here the conditions from your Coldata that will ", 
-               "help to represent the data graphically ", 
-               "and explore all the variables properly."),
+               paste0("Choose here the conditions from your 'Coldata' that will ", 
+               "help you to represent the graphs ", 
+               "and explore all the variables properly. ",
+               "This may need to be adjusted or fit for some images."),
                trigger = "hover",
                placement = "right"
              ),
@@ -161,8 +163,8 @@ fluidPage(
                                      bsTooltip(
                                        "information3",
                                        paste0("Up to two conditions may be accepted for PCA 2D. ", 
-                                       "The first one of them ",
-                                       "will be represented with different colours ",
+                                       "The first of them ",
+                                       "will be represented with the different colours ",
                                        "and the second will correspond to the dot shape. ",
                                        "For PCA 3D only the first one is taken."),
                                        trigger = "hover",
@@ -179,8 +181,7 @@ fluidPage(
                                         #rglwidgetOutput("pca3d", width = "100%", height = "800px")
                                      )
                                      ))),
-                                                                  tabPanel(
-                                     title = "Box/violin plot",
+                                     tabPanel(title = "Box/violin plot",
                                      circleButton(
                                             inputId = "infobox",
                                             icon = icon("info"),
@@ -216,7 +217,7 @@ fluidPage(
                                             paste0("Up to two conditions may be accepted for the heatmap. ",
                                             "Every condition will be represented on top ",
                                             "of the plot with different colors showing the ",
-                                            "distincts group per sample."),
+                                            "distincts group per sample. Change also the number of gene shown."),
                                             trigger = "hover",
                                             placement = "right"
                                           ),
@@ -239,6 +240,18 @@ fluidPage(
                                           ),
                                  tabPanel(
                                       title = "Cluster",
+                                      circleButton(
+                                        inputId = "information2020",
+                                        icon = icon("info"),
+                                        size = "xs",
+                                        status = "primary"
+                                      ),
+                                      bsTooltip(
+                                        "information2020",
+                                        paste0("Only the sample name can be changed here."),
+                                        trigger = "hover",
+                                        placement = "right"
+                                      ),
                                       plotlyOutput("cluster", width = "100%", height = "800px")
                                  ),
                                  tabPanel(title = "Top 6 genes",
@@ -289,7 +302,7 @@ fluidPage(
                                           ),
                                           bsTooltip(
                                             "karyoInfo",
-                                            paste0("Pon lo que te salga del ornotorrinco "),
+                                            paste0("Genes up regulated will be shown above and down regolated below chromosome."),
                                             trigger = "hover",
                                             placement = "right"
                                           ),
@@ -396,11 +409,43 @@ fluidPage(
          title = "",
          tabPanel(
                 title = "Volcano plot",
+                
+                circleButton(
+                  inputId = "informationVol",
+                  icon = icon("info"),
+                  size = "xs",
+                  status = "primary"
+                ),
+                bsTooltip(
+                  "informationVol",
+                  paste0("Click over the dots to explore the gene values.",
+                         " You can also label individual genes by adding the name on the left bar.",
+                         " The color scale may be changed and the statistics threshole ",
+                         "are consistent with the previous selection above."),
+                  trigger = "hover",
+                  placement = "right"
+                ),
+                
                 plotOutput("volcano", click = "plot_click1" , width = "100%", height = "600px"),
                 tableOutput("texto1")
             ),
          tabPanel(
                 title = "MA plot",
+                
+                circleButton(
+                  inputId = "informationMA",
+                  icon = icon("info"),
+                  size = "xs",
+                  status = "primary"
+                ),
+                bsTooltip(
+                  "informationMA",
+                  paste0(" The color scale may be changed and the statistics threshole ",
+                         "are consistent with the previous selection above."),
+                  trigger = "hover",
+                  placement = "right"
+                ),
+                
                   plotOutput("MA", click = "plot_click2" , width = "100%", height = "600px"),
                   tableOutput("texto2")
             )
@@ -408,7 +453,7 @@ fluidPage(
  fluidRow(column(width = 4, offset = 4,
             strong("Click to compute enrichment"),
             tags$br(),
-            actionButton("runEnrich", "Apply values", width = "100%")
+            actionButton("runEnrich", "Run enrichment", width = "100%")
              ))
 ) # fin page
 
