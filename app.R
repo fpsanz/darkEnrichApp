@@ -200,24 +200,24 @@ server <- function(input, output, session) {
                imageWidth = 200, imageHeight = 100, html=TRUE)})
 
 # Definir reactiveVariables globales ##############
-  data <- reactiveValues() # genes
-  goDT <- reactiveValues() #pretabla GO
-  kgg <- reactiveValues() # enrich kegg
-  go <- reactiveValues() # enrich GO
-  kggDT <- reactiveValues() # pretabla kegg
-  datos <- reactiveValues(dds=NULL) #objetos dds post DESeq()
-  gsea <- reactiveValues() # objeto GSEA
-  logfcRange <- reactiveValues() # min y max logfc
-  fcRange <- reactiveValues() # min y max fc
-  res <- reactiveValues()
-  vsd <- reactiveValues()
-  rlog <- reactiveValues()
   coloresPCA <- reactiveValues(niveles=NULL, numNiveles=NULL)
-  numgenesDE <- reactiveValues(up=NULL, down=NULL)
-  countfile <- reactiveValues() # para leer count matrix y sample data
   countdata <- reactiveValues() # para convertir count matrix y sample data
+  countfile <- reactiveValues() # para leer count matrix y sample data
+  data <- reactiveValues() # genes
+  datos <- reactiveValues(dds=NULL) #objetos dds post DESeq()
+  fcRange <- reactiveValues() # min y max fc
+  go <- reactiveValues() # enrich GO
+  goDT <- reactiveValues() #pretabla GO
+  gsea <- reactiveValues() # objeto GSEA
+  kgg <- reactiveValues() # enrich kegg
+  kggDT <- reactiveValues() # pretabla kegg
+  logfcRange <- reactiveValues() # min y max logfc
+  numgenesDE <- reactiveValues(up=NULL, down=NULL)
+  res <- reactiveValues()
+  rlog <- reactiveValues()
   validateCountData <- reactiveValues(ok=FALSE) #para validar count y sample ok
   vals <- reactiveValues()
+  vsd <- reactiveValues()
   
   observeEvent(input$deseqFile, {
       datos$dds <- readRDS(input$deseqFile$datapath)
