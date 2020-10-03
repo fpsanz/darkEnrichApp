@@ -39,6 +39,8 @@ options(shiny.maxRequestSize = 3000*1024^2)
 header <- dashboardHeader(title = "RNAseq viewer and report App", 
                           titleWidth = 300, 
                           dropdownMenuOutput("messageMenu"),
+                          tags$li(class="dropdown", actionButton("notesButton","Notes"),
+                                  style="margin-top:8px; margin-right: 5px"),
                           tags$li(class = "dropdown", actionButton("aboutButton", "About"),
                                   style="margin-top:8px; margin-right: 5px")
 )
@@ -171,7 +173,9 @@ body <- dashboardBody(
                     local = TRUE,
                     encoding = "UTF-8",
                     )$value)
-  ) # fin tab items
+  ), # fin tab items
+    bsModal("modalNotes", "Notes", "notesButton",size="large",
+          textAreaInput("textNotes", "Text Notes", width = "850px", height = "575px"))
 )# fin dashboardbody
 
 ########################################## UI #################################################
@@ -198,6 +202,7 @@ server <- function(input, output, session) {
     For any suggestion or bug, please contact us"),
                imageUrl = "dna-svg-small-13.gif", 
                imageWidth = 200, imageHeight = 100, html=TRUE)})
+
 
 # Definir reactiveVariables globales ##############
   coloresPCA <- reactiveValues(niveles=NULL, numNiveles=NULL)
