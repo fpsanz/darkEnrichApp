@@ -1224,7 +1224,7 @@ dotPlotGO <- function(data, n = 20){
   data <- data[order(data$ratio, decreasing = F), ]
   data <- data[seq_len(n),]
   data$Term <- factor(data$Term, levels = data$Term)
-  p <- ggplot(data, aes(y=Term, x=ratio, color=`p-val`))+
+  p <- ggplot(data, aes(y=stringr::str_wrap(Term,40), x=ratio, color=`p-val`))+
     geom_point(aes(size=DEG), stat="identity")+
     scale_radius()+
     theme_bw()+
@@ -2673,6 +2673,8 @@ visnetLegend <- function(kggDT = NULL, rows = NULL){
                            label = "Select preview elements to report",
                            choices = c("PCA", "BoxPlot", "Heatmap", "Cluster","Top6",
                                        "Top1", "Karyoplot","Volcano","MA"),
+                           selected = c("PCA", "BoxPlot", "Heatmap", "Cluster","Top6",
+                                       "Top1", "Karyoplot","Volcano","MA"),
                            status = "primary",
                            checkIcon = list(
                                yes = icon("ok",
@@ -2688,7 +2690,10 @@ visnetLegend <- function(kggDT = NULL, rows = NULL){
                            individual = TRUE,
                            inputId = "modalkeggAll",
                            label = "Select elements to report Kegg All",
-                           choices = c("Table", "Barplot", "Chorplot", "Dotplot", "Heatmap", "Netplot"),
+                           choices = c("Table", "Barplot", "Chorplot", "Dotplot",
+                                       "Heatmap", "Netplot"),
+                           selected = c("Table", "Barplot", "Chorplot", "Dotplot",
+                                       "Heatmap", "Netplot"),
                            status = "primary",
                            checkIcon = list(
                                yes = icon("ok",
@@ -2702,7 +2707,10 @@ visnetLegend <- function(kggDT = NULL, rows = NULL){
                            individual = TRUE,
                            inputId = "modalkeggUp",
                            label = "Select elements to report Kegg Up",
-                           choices = c("Table", "Barplot", "Chorplot", "Dotplot", "Heatmap", "Netplot"),
+                           choices = c("Table", "Barplot", "Chorplot", "Dotplot",
+                                       "Heatmap", "Netplot"),
+                           selected = c("Table", "Barplot", "Chorplot", "Dotplot",
+                                       "Heatmap", "Netplot"),
                            status = "primary",
                            checkIcon = list(
                                yes = icon("ok",
@@ -2716,7 +2724,10 @@ visnetLegend <- function(kggDT = NULL, rows = NULL){
                            individual = TRUE,
                            inputId = "modalkeggDown",
                            label = "Select elements to report Kegg Down",
-                           choices = c("Table", "Barplot", "Chorplot", "Dotplot", "Heatmap", "Netplot"),
+                           choices = c("Table", "Barplot", "Chorplot", "Dotplot",
+                                       "Heatmap", "Netplot"),
+                           selected = c("Table", "Barplot", "Chorplot", "Dotplot",
+                                       "Heatmap", "Netplot"),
                            status = "primary",
                            checkIcon = list(
                                yes = icon("ok",
@@ -2733,6 +2744,7 @@ visnetLegend <- function(kggDT = NULL, rows = NULL){
                            inputId = "modalGOAll",
                            label = "Select elements to report GO All",
                            choices = c("Table", "Barplot", "Dotplot", "GObarplot", "GOcircleplot"),
+                           selected = c("Table", "Barplot", "Dotplot", "GObarplot", "GOcircleplot"),
                            status = "primary",
                            checkIcon = list(
                                yes = icon("ok",
@@ -2747,6 +2759,7 @@ visnetLegend <- function(kggDT = NULL, rows = NULL){
                            inputId = "modalGOUp",
                            label = "Select elements to report GO Up",
                            choices = c("Table", "Barplot", "Dotplot", "GObarplot", "GOcircleplot"),
+                           selected = c("Table", "Barplot", "Dotplot", "GObarplot", "GOcircleplot"),
                            status = "primary",
                            checkIcon = list(
                                yes = icon("ok",
@@ -2761,6 +2774,7 @@ visnetLegend <- function(kggDT = NULL, rows = NULL){
                            inputId = "modalGODown",
                            label = "Select elements to report GO Down",
                            choices = c("Table", "Barplot", "Dotplot", "GObarplot", "GOcircleplot"),
+                           selected = c("Table", "Barplot", "Dotplot", "GObarplot", "GOcircleplot"),
                            status = "primary",
                            checkIcon = list(
                                yes = icon("ok",
@@ -2777,6 +2791,7 @@ visnetLegend <- function(kggDT = NULL, rows = NULL){
                            inputId = "modalGSEA",
                            label = "Select elements to report GSEA",
                            choices = c("Table", "GSEA plot"),
+                           selected = c("Table", "GSEA plot"),
                            status = "primary",
                            checkIcon = list(
                                yes = icon("ok",

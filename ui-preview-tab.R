@@ -287,7 +287,7 @@ fluidPage(
                                           tagList(fluidRow(
                                             column(
                                               width = 3,
-                                              textInput("gene", value="", label = "Select the ensembl gene of interest"),
+                                              textInput("gene", value="", label = "Select gene name of interest"),
                                               htmlOutput("top1text")
                                             ),
                                             column(width = 9,

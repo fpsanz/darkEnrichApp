@@ -75,10 +75,11 @@ sidebar <- dashboardSidebar(useShinyalert(),
                             sidebarMenu(fluidRow(
                                         column(width = 11,
                                           menuItem(uiOutput("sampleFile"))))),
-                            sidebarMenu(menuItem(uiOutput("design"))),
                             sidebarMenu(id="menuimport",sidebarMenuOutput("importvw")),
                             sidebarMenu(id = "previewMenu", sidebarMenuOutput("prevw")),
                             sidebarMenu("", sidebarMenuOutput("menu")),
+                            tags$br(),
+                            sidebarMenu(menuItem(uiOutput("design"))),
                             box(width = 12,
                             h5(strong("Generate report"), align = 'center'),
                               sidebarMenu( 
@@ -575,6 +576,7 @@ server <- function(input, output, session) {
       names()
     selectInput("variables", label="Select condition[s] of interest to highlight",
                 choices = nvars,
+                selected = nvars[1],
                 multiple = TRUE)
   })
   # ........................####
@@ -2092,6 +2094,7 @@ output$legendChorAll <- renderPlot({
       tablegoaObj <- bargoaObj <- dotgoaObj <- gobargoaObj <- gocirclegoaObj <- FALSE
       tablegouObj <- bargouObj <- dotgouObj <- gobargouObj <- gocirclegouObj <- FALSE
       tablegodObj <- bargodObj <- dotgodObj <- gobargodObj <- gocirclegodObj <- FALSE
+      ## inicializar variables GSEA
       tablegseaObj <- plotgseaObj <- FALSE 
       ## Asigna variables
           rlogdatos <- rlog$datos; colorespca <- coloresPCA$colores();
@@ -2114,6 +2117,7 @@ output$legendChorAll <- renderPlot({
           bprowsup <- bprowsup(); mfrowsup <- mfrowsup(); ccrowsup <- ccrowsup()
           bprowsdown <- bprowsdown(); mfrowsdown <- mfrowsdown(); ccrowsdown <- ccrowsdown()
           gsearow <- gsearow(); gseagsea <- gsea$gsea
+          textnotes <- input$textNotes
       #nrows
           nrowsall <- rowsAll()
           if(!is.null(kggDT$all)){
@@ -2226,7 +2230,7 @@ output$legendChorAll <- renderPlot({
                      bprowsup=bprowsup, mfrowsup=mfrowsup, ccrowsup=ccrowsup,
                      bprowsdown=bprowsdown, mfrowsdown=mfrowsdown, ccrowsdown=ccrowsdown,
                      gsearow = gsearow, gseagsea = gseagsea, tablegseaObj = tablegseaObj,
-                     plotgseaObj = plotgseaObj)
+                     plotgseaObj = plotgseaObj, textnotes = textnotes)
       
       params <- c(params, list(tempdir=tempdir() ))
       rmarkdown::render(

@@ -103,6 +103,7 @@ params:
   gseagsea: NA
   tablegseaObj: NA
   plotgseaObj: NA
+  textnotes: NA
 ---
 
 
@@ -167,6 +168,7 @@ if(!is.null(params$values$GOAll)){GOAll=TRUE}else{GOAll=FALSE}
 if(!is.null(params$values$GOUp)){GOUp=TRUE}else{GOUp=FALSE}
 if(!is.null(params$values$GODown)){GODown=TRUE}else{GODown=FALSE}
 if(!is.null(params$values$GSEA)){GSEA=TRUE}else{GSEA=FALSE}
+if(params$textnotes!=""){notes=TRUE}else{notes=FALSE}
 ```
 
 
@@ -247,6 +249,7 @@ tags$div( class ="col-sm-4",
 )
 ```
 
+
 ## Data info {.tabset}
 
 ### Samples information
@@ -320,6 +323,13 @@ metadata <- as.data.frame(colData(params$datosdds)) %>% dplyr::select(-any_of(c(
     )
 ```
 
+```{r notesTitle, eval=notes, results='asis'}
+  cat("# Notes section")
+```
+
+```{r notesBody, eval=notes, results='asis'}
+cat(params$textnotes)
+```
 
 ```{r previewTitle, eval=preview, results='asis'}
   cat("# Preview section")
@@ -396,17 +406,19 @@ cat("## Top 1 gene")
 ```
 
 ```{r top1, eval = params$top1Obj}
-if (grepl("^ENS", params$gene, ignore.case = TRUE)) {
-        gene <- toupper(params$gene)
+gene <- params$gene
+if(gene==""){gene <-  params$ressh$GeneName_Symbol[which.max( abs(params$ressh$log2FoldChange) )] }
+if (grepl("^ENS", gene, ignore.case = TRUE)) {
+        gene <- toupper(gene)
         z <- plotCounts(dds = params$datosdds,gene = gene, returnData = TRUE,
                         intgroup = params$variables[1])
         symbol = as.character(params$ressh$GeneName_Symbol[rownames(params$ressh) == gene])
     } else{
         if (params$specie == "Mm" | params$specie == "Rn") {
-            gene <- stringr::str_to_title(params$gene)
+            gene <- stringr::str_to_title(gene)
         }
         else{
-            gene = toupper(params$gene)
+            gene = toupper(gene)
         }
         z <- plotCountsSymbol(dds = params$datosdds, gene = gene, returnData = TRUE,
                               intgroup = params$variables[1], specie=params$specie )
@@ -793,7 +805,8 @@ cat("## Dotplot GO BP all genes ")
 
 ```{r eval=params$dotgoaObj}
 bprowsall <- params$bprowsall
-    if(is.null(bprowsall)){bprowsall <- c(1:20)}
+ if(is.null(bprowsall)){ 
+             bprowsall <-  ( if( dim(params$godtall)[1]<20) seq_len(nrow(params$godtall)) else seq_len(20) ) }
     gosBP <- params$goall[params$goall$Ont=="BP",]
     dotPlotGOReport(gosBP[bprowsall,], n = length(bprowsall))
 ```
@@ -804,6 +817,8 @@ cat("## GOBarplot GO BP all genes ")
 
 ```{r eval=params$gobargoaObj}
 bprowsall <- params$bprowsall
+ if(is.null(bprowsall)){ 
+             bprowsall <-  ( if( dim(params$godtall)[1]<30) seq_len(nrow(params$godtall)) else seq_len(30) ) }
 datagenesall <- rbind(params$datagenesup, params$datagenesdown)
     goBarplotReport(enrichGO = params$goall, resGO = params$ressh, genes= datagenesall,
               category = "BP", nrows = bprowsall)
@@ -815,6 +830,8 @@ cat("## Circle-plot GO BP all genes ")
 
 ```{r eval=params$gocirclegoaObj}
 bprowsall <- params$bprowsall
+ if(is.null(bprowsall)){ 
+             bprowsall <-  ( if( dim(params$godtall)[1]<6) seq_len(nrow(params$godtall)) else seq_len(6) ) }
 datagenesall <- rbind(params$datagenesup, params$datagenesdown)
     goall <- params$goall[params$goall$Ont=="BP", ]
     if(length(bprowsall)>=4){
@@ -883,7 +900,8 @@ cat("## Dotplot GO MF all genes ")
 
 ```{r eval=params$dotgoaObj}
 mfrowsall <- params$mfrowsall
-    if(is.null(mfrowsall)){mfrowsall <- c(1:20)}
+     if(is.null(mfrowsall)){ 
+             mfrowsall <-  ( if( dim(params$godtall)[1]<20) seq_len(nrow(params$godtall)) else seq_len(20) ) }
     gosMF <- params$goall[params$goall$Ont=="MF",]
     dotPlotGOReport(gosMF[mfrowsall,], n = length(mfrowsall))
 ```
@@ -894,6 +912,8 @@ cat("## GOBarplot GO MF all genes ")
 
 ```{r eval=params$gobargoaObj}
 mfrowsall <- params$mfrowsall
+ if(is.null(mfrowsall)){ 
+             mfrowsall <-  ( if( dim(params$godtall)[1]<30) seq_len(nrow(params$godtall)) else seq_len(30) ) }
 datagenesall <- rbind(params$datagenesup, params$datagenesdown)
     goBarplotReport(enrichGO = params$goall, resGO = params$ressh, genes= datagenesall,
               category = "MF", nrows = mfrowsall)
@@ -905,6 +925,8 @@ cat("## Circle-plot GO MF all genes ")
 
 ```{r eval=params$gocirclegoaObj}
 mfrowsall <- params$mfrowsall
+ if(is.null(mfrowsall)){ 
+             mfrowsall <-  ( if( dim(params$godtall)[1]<6) seq_len(nrow(params$godtall)) else seq_len(6) ) }
 datagenesall <- rbind(params$datagenesup, params$datagenesdown)
     goall <- params$goall[params$goall$Ont=="MF", ]
     if(length(mfrowsall)>=4){
@@ -974,7 +996,8 @@ cat("## Dotplot GO CC all genes ")
 
 ```{r eval=params$dotgoaObj}
 ccrowsall <- params$ccrowsall
-    if(is.null(ccrowsall)){ccrowsall <- c(1:20)}
+     if(is.null(ccrowsall)){ 
+             ccrowsall <-  ( if( dim(params$godtall)[1]<20) seq_len(nrow(params$godtall)) else seq_len(20) ) }
     gosCC <- params$goall[params$goall$Ont=="CC",]
     dotPlotGOReport(gosCC[ccrowsall,], n = length(ccrowsall))
 ```
@@ -985,6 +1008,8 @@ cat("## GOBarplot GO CC all genes ")
 
 ```{r eval=params$gobargoaObj}
 ccrowsall <- params$ccrowsall
+ if(is.null(ccrowsall)){ 
+             ccrowsall <-  ( if( dim(params$godtall)[1]<30) seq_len(nrow(params$godtall)) else seq_len(30) ) }
 datagenesall <- rbind(params$datagenesup, params$datagenesdown)
     goBarplotReport(enrichGO = params$goall, resGO = params$ressh, genes= datagenesall,
               category = "CC", nrows = ccrowsall)
@@ -996,6 +1021,8 @@ cat("## Circle-plot GO CC all genes ")
 
 ```{r eval=params$gocirclegoaObj}
 ccrowsall <- params$ccrowsall
+ if(is.null(ccrowsall)){ 
+             ccrowsall <-  ( if( dim(params$godtall)[1]<6) seq_len(nrow(params$godtall)) else seq_len(6) ) }
 datagenesall <- rbind(params$datagenesup, params$datagenesdown)
     goall <- params$goall[params$goall$Ont=="CC", ]
     if(length(ccrowsall)>=4){
@@ -1063,7 +1090,8 @@ cat("## Dotplot GO BP up")
 
 ```{r eval = params$dotgouObj}
     bprowsup <- params$bprowsup
-    if(is.null(bprowsup)){bprowsup <- c(1:20)}
+        if(is.null(bprowsup)){ 
+             bprowsup <-  ( if( dim(params$godtup)[1]<20) seq_len(nrow(params$godtup)) else seq_len(20) ) }
     gosBP <- params$goup[params$goup$Ont=="BP",]
     dotPlotGOReport(gosBP[bprowsup,], n = length(bprowsup))
 ```
@@ -1074,6 +1102,8 @@ cat("## GObarplot GO BP up")
 
 ```{r eval = params$gobargouObj}
 bprowsup <- params$bprowsup
+    if(is.null(bprowsup)){ 
+             bprowsup <-  ( if( dim(params$godtup)[1]<30) seq_len(nrow(params$godtup)) else seq_len(30) ) }
     goBarplotReport(enrichGO = params$goup, resGO = params$ressh, genes= params$datagenesup,
               category = "BP", nrows = bprowsup)
 ```
@@ -1084,6 +1114,8 @@ cat("## Circle plot GO BP up")
 
 ```{r eval=params$gocirclegouObj}
     bprowsup <- params$bprowsup
+    if(is.null(bprowsup)){ 
+             bprowsup <-  ( if( dim(params$godtup)[1]<6) seq_len(nrow(params$godtup)) else seq_len(6) ) }
     if(length(bprowsup)>=4){
       circ <- data2circleReport(go=params$goup[bprowsup, ], res=params$ressh, genes=params$datagenesup)
       circleReport(circ, label.size = 3, nsub = length(bprowsup), table.legend = FALSE)
@@ -1144,7 +1176,8 @@ cat("## Dotplot GO MF up")
 
 ```{r eval = params$dotgouObj}
     mfrowsup <- params$mfrowsup
-    if(is.null(mfrowsup)){mfrowsup <- c(1:20)}
+        if(is.null(mfrowsup)){ 
+             mfrowsup <-  ( if( dim(params$godtup)[1]<20) seq_len(nrow(params$godtup)) else seq_len(20) ) }
     gosMF <- params$goup[params$goup$Ont=="MF",]
     dotPlotGOReport(gosMF[mfrowsup,], n = length(mfrowsup))
 ```
@@ -1155,6 +1188,8 @@ cat("## GObarplot GO MF up")
 
 ```{r eval = params$gobargouObj}
 mfrowsup <- params$mfrowsup
+    if(is.null(mfrowsup)){ 
+             mfrowsup <-  ( if( dim(params$godtup)[1]<30) seq_len(nrow(params$godtup)) else seq_len(30) ) }
     goBarplotReport(enrichGO = params$goup, resGO = params$ressh, genes= params$datagenesup,
               category = "MF", nrows = mfrowsup)
 ```
@@ -1165,6 +1200,8 @@ cat("## Circle plot GO MF up")
 
 ```{r eval=params$gocirclegouObj}
     mfrowsup <- params$mfrowsup
+    if(is.null(mfrowsup)){ 
+             mfrowsup <-  ( if( dim(params$godtup)[1]<6) seq_len(nrow(params$godtup)) else seq_len(6) ) }
     if(length(mfrowsup)>=4){
       circ <- data2circleReport(go=params$goup[mfrowsup, ], res=params$ressh, genes=params$datagenesup)
       circleReport(circ, label.size = 3, nsub = length(mfrowsup), table.legend = FALSE)
@@ -1224,7 +1261,8 @@ cat("## Dotplot GO CC up")
 
 ```{r eval = params$dotgouObj}
     ccrowsup <- params$ccrowsup
-    if(is.null(ccrowsup)){ccrowsup <- c(1:20)}
+        if(is.null(ccrowsup)){ 
+             ccrowsup <-  ( if( dim(params$godtup)[1]<20) seq_len(nrow(params$godtup)) else seq_len(20) ) }
     gosCC <- params$goup[params$goup$Ont=="CC",]
     dotPlotGOReport(gosCC[ccrowsup,], n = length(ccrowsup))
 ```
@@ -1235,6 +1273,8 @@ cat("## GObarplot GO CC up")
 
 ```{r eval = params$gobargouObj}
 ccrowsup <- params$ccrowsup
+    if(is.null(ccrowsup)){ 
+             ccrowsup <-  ( if( dim(params$godtup)[1]<30) seq_len(nrow(params$godtup)) else seq_len(30) ) }
     goBarplotReport(enrichGO = params$goup, resGO = params$ressh, genes= params$datagenesup,
               category = "CC", nrows = ccrowsup)
 ```
@@ -1245,17 +1285,16 @@ cat("## Circle plot GO CC up")
 
 ```{r eval=params$gocirclegouObj}
     ccrowsup <- params$ccrowsup
+    if(is.null(ccrowsup)){ 
+             ccrowsup <-  ( if( dim(params$godtup)[1]<6) seq_len(nrow(params$godtup)) else seq_len(6) ) }
     if(length(ccrowsup)>=4){
       circ <- data2circleReport(go=params$goup[ccrowsup, ], res=params$ressh, genes=params$datagenesup)
       circleReport(circ, label.size = 3, nsub = length(ccrowsup), table.legend = FALSE)
     }
 ```
 
-<!-- go down section -->
-<!-- --------------- -->
 <!-- go Down section -->
 <!-- go BP Down section -->
-
 
 ```{r eval = GODown, results='asis'}
 cat("# GO down genes section")
@@ -1312,7 +1351,8 @@ cat("## Dotplot GO BP down")
 
 ```{r eval = params$dotgodObj}
     bprowsdown <- params$bprowsdown
-    if(is.null(bprowsdown)){bprowsdown <- c(1:20)}
+       if(is.null(bprowsdown)){ 
+             bprowsdown <-  ( if( dim(params$godtdown)[1]<20) seq_len(nrow(params$godtdown)) else seq_len(20) ) }
     gosBP <- params$godown[params$godown$Ont=="BP",]
     dotPlotGOReport(gosBP[bprowsdown,], n = length(bprowsdown))
 ```
@@ -1323,6 +1363,8 @@ cat("## GObarplot GO BP down")
 
 ```{r eval = params$gobargodObj}
 bprowsdown <- params$bprowsdown
+    if(is.null(bprowsdown)){ 
+             bprowsdown <-  ( if( dim(params$godtdown)[1]<30) seq_len(nrow(params$godtdown)) else seq_len(30) ) }
     goBarplotReport(enrichGO = params$godown, resGO = params$ressh, genes= params$datagenesdown,
               category = "BP", nrows = bprowsdown)
 ```
@@ -1333,6 +1375,8 @@ cat("## Circle plot GO BP down")
 
 ```{r eval=params$gocirclegodObj}
     bprowsdown <- params$bprowsdown
+    if(is.null(bprowsdown)){ 
+             bprowsdown <-  ( if( dim(params$godtdown)[1]<6) seq_len(nrow(params$godtdown)) else seq_len(6) ) }
     if(length(bprowsdown)>=4){
       circ <- data2circleReport(go=params$godown[bprowsdown, ], res=params$ressh, genes=params$datagenesdown)
       circleReport(circ, label.size = 3, nsub = length(bprowsdown), table.legend = FALSE)
@@ -1393,7 +1437,8 @@ cat("## Dotplot GO MF down")
 
 ```{r eval = params$dotgodObj}
     mfrowsdown <- params$mfrowsdown
-    if(is.null(mfrowsdown)){mfrowsdown <- c(1:20)}
+    if(is.null(mfrowsdown)){ 
+             mfrowsdown <-  ( if( dim(params$godtdown)[1]<20) seq_len(nrow(params$godtdown)) else seq_len(20) ) }
     gosMF <- params$godown[params$godown$Ont=="MF",]
     dotPlotGOReport(gosMF[mfrowsdown,], n = length(mfrowsdown))
 ```
@@ -1404,6 +1449,8 @@ cat("## GObarplot GO MF down")
 
 ```{r eval = params$gobargodObj}
 mfrowsdown <- params$mfrowsdown
+    if(is.null(mfrowsdown)){ 
+             mfrowsdown <-  ( if( dim(params$godtdown)[1]<30) seq_len(nrow(params$godtdown)) else seq_len(30) ) }
     goBarplotReport(enrichGO = params$godown, resGO = params$ressh, genes= params$datagenesdown,
               category = "MF", nrows = mfrowsdown)
 ```
@@ -1414,6 +1461,8 @@ cat("## Circle plot GO MF down")
 
 ```{r eval=params$gocirclegodObj}
     mfrowsdown <- params$mfrowsdown
+    if(is.null(mfrowsdown)){ 
+             mfrowsdown <-  ( if( dim(params$godtdown)[1]<6) seq_len(nrow(params$godtdown)) else seq_len(6) ) }
     if(length(mfrowsdown)>=4){
       circ <- data2circleReport(go=params$godown[mfrowsdown, ], res=params$ressh, genes=params$datagenesdown)
       circleReport(circ, label.size = 3, nsub = length(mfrowsdown), table.legend = FALSE)
@@ -1473,7 +1522,8 @@ cat("## Dotplot GO CC down")
 
 ```{r eval = params$dotgodObj}
     ccrowsdown <- params$ccrowsdown
-    if(is.null(ccrowsdown)){ccrowsdown <- c(1:20)}
+    if(is.null(ccrowsdown)){ 
+             ccrowsdown <-  ( if( dim(params$godtdown)[1]<20) seq_len(nrow(params$godtdown)) else seq_len(20) ) }
     gosCC <- params$godown[params$godown$Ont=="CC",]
     dotPlotGOReport(gosCC[ccrowsdown,], n = length(ccrowsdown))
 ```
@@ -1484,6 +1534,8 @@ cat("## GObarplot GO CC down")
 
 ```{r eval = params$gobargodObj}
 ccrowsdown <- params$ccrowsdown
+    if(is.null(ccrowsdown)){ 
+             ccrowsdown <-  ( if( dim(params$godtdown)[1]<30) seq_len(nrow(params$godtdown)) else seq_len(30) ) }
     goBarplotReport(enrichGO = params$godown, resGO = params$ressh, genes= params$datagenesdown,
               category = "CC", nrows = ccrowsdown)
 ```
@@ -1494,6 +1546,8 @@ cat("## Circle plot GO CC down")
 
 ```{r eval=params$gocirclegodObj}
     ccrowsdown <- params$ccrowsdown
+    if(is.null(ccrowsdown)){ 
+             ccrowsdown <-  ( if( dim(params$godtdown)[1]<6) seq_len(nrow(params$godtdown)) else seq_len(6) ) }
     if(length(ccrowsdown)>=4){
       circ <- data2circleReport(go=params$godown[ccrowsdown, ], res=params$ressh, genes=params$datagenesdown)
       circleReport(circ, label.size = 3, nsub = length(ccrowsdown), table.legend = FALSE)
