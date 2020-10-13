@@ -1224,7 +1224,7 @@ dotPlotGO <- function(data, n = 20){
   data <- data[order(data$ratio, decreasing = F), ]
   data <- data[seq_len(n),]
   data$Term <- factor(data$Term, levels = data$Term)
-  p <- ggplot(data, aes(y=stringr::str_wrap(Term,40), x=ratio, color=`p-val`))+
+  p <- ggplot(data, aes(y=Term, x=ratio, color=`p-val`))+
     geom_point(aes(size=DEG), stat="identity")+
     scale_radius()+
     theme_bw()+
