@@ -1235,7 +1235,8 @@ dotPlotGOReport <- function(data, n = 20){
     labs(x = "ratio (DEG/N)") +
     scale_color_continuous(low = "red", high = "blue", 
                            guide = guide_colorbar(reverse = TRUE))+
-    theme(text = element_text(size=12))
+    theme(text = element_text(size=12))+
+    scale_y_discrete(labels = function(Term){stringr::str_wrap(Term,50)})
   return(p)
 }
 

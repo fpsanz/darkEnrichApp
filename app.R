@@ -2045,12 +2045,7 @@ output$legendChorAll <- renderPlot({
   observeEvent(input$report2, {
       showModal(popupModal())
     })
-  
-  # output$pdf <- renderUI({
-  #   #validate(need(datos$dds, ""))
-  #   downloadButton("reportpdf", "pdf report")
-  # })
-  
+
   applyPress <- reactiveValues(ok=FALSE)
   observeEvent(input$ok,{
         applyPress$ok <- TRUE
