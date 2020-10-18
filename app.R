@@ -80,6 +80,7 @@ sidebar <- dashboardSidebar(useShinyalert(),
                             sidebarMenu("", sidebarMenuOutput("menu")),
                             tags$br(),
                             sidebarMenu(menuItem(uiOutput("design"))),
+                            tags$div(
                             box(width = 12,
                             h5(strong("Generate report"), align = 'center'),
                               sidebarMenu( 
@@ -88,7 +89,8 @@ sidebar <- dashboardSidebar(useShinyalert(),
                               sidebarMenu(
                                 menuItem(
                                   fluidRow(column(12, align = "center", offset=0, uiOutput("pdf")))))
-                            ))
+                            ), style = "position: absolute; bottom:0;width:100%;")
+                            )
                       
 
 ### BODY ###############
