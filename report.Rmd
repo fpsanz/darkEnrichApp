@@ -167,7 +167,9 @@ if(!is.null(params$values$keggDown)){keggDown=TRUE}else{keggDown=FALSE}
 if(!is.null(params$values$GOAll)){GOAll=TRUE}else{GOAll=FALSE}
 if(!is.null(params$values$GOUp)){GOUp=TRUE}else{GOUp=FALSE}
 if(!is.null(params$values$GODown)){GODown=TRUE}else{GODown=FALSE}
-if(!is.null(params$values$GSEA)){GSEA=TRUE}else{GSEA=FALSE}
+if(is.null(params$gseagsea)){GSEA=FALSE} else{
+  if(!is.null(params$values$GSEA) & dim(params$gseagsea@result)[1]!=0)
+    { GSEA=TRUE}else{GSEA=FALSE} }
 if(params$textnotes!=""){notes=TRUE}else{notes=FALSE}
 ```
 
@@ -1348,7 +1350,6 @@ cat("## Barplot BP Down genes")
 cat("## Dotplot GO BP down")
 ```
 
-
 ```{r eval = params$dotgodObj}
     bprowsdown <- params$bprowsdown
        if(is.null(bprowsdown)){ 
@@ -1433,7 +1434,6 @@ cat("## Barplot MF Down genes")
 ```{r eval = params$dotgodObj, results='asis'}
 cat("## Dotplot GO MF down")
 ```
-
 
 ```{r eval = params$dotgodObj}
     mfrowsdown <- params$mfrowsdown
@@ -1560,12 +1560,12 @@ cat("## Circle plot GO CC down")
 cat("# GSEA section")
 ```
 
-```{r eval = params$tablegseaObj, results='asis'}
+```{r eval = GSEA, results='asis'}
 cat("## GSEA table results")
 ```
 
 
-```{r eval = params$tablegseaObj}
+```{r eval = GSEA}
 mygsea <- params$gseagsea
     if( length(which(mygsea@result$p.adjust<=0.05)) == 0 ){
       break()
@@ -1602,11 +1602,11 @@ mygsea <- params$gseagsea
     }
 ```
 
-```{r eval=params$plotgseaObj, results='asis'}
+```{r eval=GSEA, results='asis'}
 cat("## GSEA plot")
 ```
 
-```{r eval=params$plotgseaObj}
+```{r eval=GSEA}
 gseanr <- params$gsearow
     if(is.null(gseanr)){gseanr <- c(1)}
     mygsea <- params$gseagsea
