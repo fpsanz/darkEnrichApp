@@ -106,14 +106,14 @@ fluidPage(
             tags$br(),
             fluidRow(  # primera fila
                 column( width = 3,
-                    box(title = h3("Every breath you take. The Police"),
+                    box(title = h3("Shiny happy people. REM"),
                         width = "100%",
                         status = "info",
-                        p("Every breath you take"),
-                        p("Every move you make"),
-                        p("Every bond you break"),
-                        p("Every step you take"),
-                        p("I'll be watching you...")
+                        p("Meet me in the crowd, people, people"),
+                        p("Throw your love around, love me, love me"),
+                        p("Take it into town, happy, happy"),
+                        p("Put it in the ground where the flowers grow"),
+                        p("Gold and silver shine...")
                     )
                 ),
                 column( width = 9,
@@ -187,14 +187,13 @@ fluidPage(
             tags$br(),
             fluidRow(  # primera fila
                 column( width = 3,
-                    box(title = h3("Every breath you take. The Police"),
+                    box(title = h3("Walk of life. Dire Straits"),
                         width = "100%",
                         status = "info",
-                        p("Every breath you take"),
-                        p("Every move you make"),
-                        p("Every bond you break"),
-                        p("Every step you take"),
-                        p("I'll be watching you...")
+                        p("Here comes Johnny singing oldies, goldies"),
+                        p("Be-Bop-A-Lula, Baby What I Say"),
+                        p("Here comes Johnny singing, I Gotta Woman"),
+                        p("Down in the tunnels, trying to make it pay..."),
                     )
                 ),
                 column( width = 9,
