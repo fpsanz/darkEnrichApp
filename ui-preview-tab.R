@@ -59,58 +59,14 @@ fluidPage(
     column(
         width = 5,
         offset = 1,
-        tabBox(
+        box(
             width = 12,
-            # title = "Biological context",
-            # solidHeader = FALSE,
-            # status = "primary",
-            # width = 12,
-            tabPanel(
-                title = "Biological Context",
-                circleButton(
-                    inputId = "info1",
-                    icon = icon("info"),
-                    size = "xs",
-                    status = "primary"
-                ),
-                bsTooltip(
-                    "info1",
-                    "Enter free text explaining biological experiment.",
-                    trigger = "hover",
-                    placement = "right"
-                ),
-                textAreaInput(
-                    "biologicalText",
-                    label = NULL,
-                    resize = NULL
-                    #width = "100%",
-                    #height = "258px"
-                )
-            ),
-            # tabpanel
-            tabPanel(
-                title = "Experiment results / Statistics",
-                circleButton(
-                  inputId = "info2",
-                  icon = icon("info"),
-                  size = "xs",
-                  status = "primary"
-                ),
-                bsTooltip(
-                  "info2",
-                  paste0("Enter free text explaining the results obtained here",
-                  " or the statistical value selected."),
-                  trigger = "hover",
-                  placement = "right"
-                ),
-                textAreaInput(
-                    "explainPreview",
-                    label = NULL,
-                    resize = NULL
-                    #width = "100%",
-                    #height = "258px"
-                ) #texarea
-            ) #tabpanel
+            status = "info",
+            h3("Hooked on a feeling. Blue Swede"),
+            p("I can't stop this feeling"),
+            p("Deep inside of me"),
+            p("Girl, you just don't realize"),
+            p("What you do to me...")
         ) #tabbox
     ) #column
     ), 

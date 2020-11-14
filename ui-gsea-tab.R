@@ -2,28 +2,16 @@ fluidPage(
     h3("Gene Set Enrichment Analysis"),
     fluidRow(
       column(width = 3,
-             box(title = "GSEA description",
-                 circleButton(
-                   inputId = "information20",
-                   icon = icon("info"),
-                   size = "xs",
-                   status = "primary"
-                 ),
-                 bsTooltip(
-                   "information20",
-                   paste0("Enter free text explaining the results ",
-                   "obtained here or the data selected"),
-                   trigger = "hover",
-                   placement = "right"
-                 ),
-                 solidHeader = FALSE,
-                 status = "primary",
-                 width = NULL, 
-                 textAreaInput(
-                   "GSEAText",
-                   label = "",
-                   resize = NULL )
-                 )
+             box(
+               title = h3("Always. Bon Jovi"),
+               width = "100%",
+               status = "info",
+               p("...And I will love you, baby, always"),
+               p("And I'll be there forever and a day, always"),
+               p("I'll be there 'til the stars don't shine"),
+               p("Till the heavens burst and the words don't rhyme"),
+               p("I know when I die, you'll be on my mind...")
+             )
              ),
       column(width = 9,
              box(title = "Table of GSEA pathways",

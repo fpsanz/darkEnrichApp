@@ -4,28 +4,14 @@ fluidPage(
             tags$br(),
             fluidRow(  # primera fila
                 column( width = 3,
-                    box(title = "Kegg description",
-                        circleButton(
-                            inputId = "information8",
-                            icon = icon("info"),
-                            size = "xs",
-                            status = "primary"
-                        ),
-                        bsTooltip(
-                            "information8",
-                            paste0("Enter free text explaining the results",
-                            " obtained here or the data selected"),
-                            trigger = "hover",
-                            placement = "right"
-                        ),
-                        solidHeader = FALSE,
-                        status = "primary",
-                        width = NULL, 
-                        textAreaInput(
-                            "keggAllText",
-                            label = "Kegg all genes",
-                            resize = NULL
-                        )
+                    box(title = h3("Every breath you take. The Police"),
+                        width = "100%",
+                        status = "info",
+                        p("Every breath you take"),
+                        p("Every move you make"),
+                        p("Every bond you break"),
+                        p("Every step you take"),
+                        p("I'll be watching you...")
                     ) # fin caja para el texto
                 ),
                 column( width = 9,
@@ -120,29 +106,15 @@ fluidPage(
             tags$br(),
             fluidRow(  # primera fila
                 column( width = 3,
-                    box(title = "Kegg description",
-                        circleButton(
-                            inputId = "information9",
-                            icon = icon("info"),
-                            size = "xs",
-                            status = "primary"
-                        ),
-                        bsTooltip(
-                            "information9",
-                            paste0("Enter free text explaining the results obtained ",
-                            " here or the data selected"),
-                            trigger = "hover",
-                            placement = "right"
-                        ),
-                        solidHeader = FALSE,
-                        status = "primary",
-                        width = NULL, 
-                        textAreaInput(
-                            "keggUpText",
-                            label = "Kegg upregulated genes",
-                            resize = NULL
-                        )
-                    ) # fin caja para el texto
+                    box(title = h3("Every breath you take. The Police"),
+                        width = "100%",
+                        status = "info",
+                        p("Every breath you take"),
+                        p("Every move you make"),
+                        p("Every bond you break"),
+                        p("Every step you take"),
+                        p("I'll be watching you...")
+                    )
                 ),
                 column( width = 9,
                     box(title = "Table of pathways",
@@ -215,29 +187,15 @@ fluidPage(
             tags$br(),
             fluidRow(  # primera fila
                 column( width = 3,
-                    box(title = "Kegg description",
-                        circleButton(
-                            inputId = "information10",
-                            icon = icon("info"),
-                            size = "xs",
-                            status = "primary"
-                        ),
-                        bsTooltip(
-                            "information10",
-                            paste0("Enter free text explaining the results ",
-                            "obtained here or the data selected"),
-                            trigger = "hover",
-                            placement = "right"
-                        ),
-                        solidHeader = FALSE,
-                        status = "primary",
-                        width = NULL, 
-                        textAreaInput(
-                            "keggDownText",
-                            label = "Kegg downregulated genes",
-                            resize = NULL
-                        )
-                    ) # fin caja para el texto
+                    box(title = h3("Every breath you take. The Police"),
+                        width = "100%",
+                        status = "info",
+                        p("Every breath you take"),
+                        p("Every move you make"),
+                        p("Every bond you break"),
+                        p("Every step you take"),
+                        p("I'll be watching you...")
+                    )
                 ),
                 column( width = 9,
                     box(title = "Table of pathways",
