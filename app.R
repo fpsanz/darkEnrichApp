@@ -990,7 +990,7 @@ output$pca3d <- renderRglwidget({
                     pCutoff = padj(),
                     FCcutoffUP = logfc()[2],
                     FCcutoffDOWN = logfc()[1],
-                    xlim = c(-8, 8),
+                    #xlim = c(-8, 8),
                     col = c("gray", "#7cccc3", "#d99c01", input$upColor, input$downColor))
     })
     #volcany(res$sh, padj=padj(), fcdown=logfc()[1], fcup=logfc()[2],

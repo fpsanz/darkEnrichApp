@@ -1462,7 +1462,7 @@ VolcanoMiriReport <- function(res, padj, fcdown, fcup){
 # Customized Volcano Plot ###############
 CustomVolcanoReport <- function (toptable, lab, x, y, selectLab = NULL, xlim = c(min(toptable[[x]], 
                            na.rm = TRUE), max(toptable[[x]], na.rm = TRUE)), 
-                           ylim = c(0, max(-log10(toptable[[y]]), na.rm = TRUE) + 5), xlab = bquote(~Log[2] ~ "fold change"), 
+                           ylim = c(0, max(-log10(toptable[[y]]), na.rm = TRUE) ), xlab = bquote(~Log[2] ~ "fold change"), 
                            ylab = bquote(~-Log[10] ~ italic(P)), axisLabSize = 18, 
                            title = "Volcano plot highlighting the different groups of signification", subtitle = "", caption = paste0("Total = ", 
                            nrow(toptable), " variables"), titleLabSize = 18, subtitleLabSize = 14, 

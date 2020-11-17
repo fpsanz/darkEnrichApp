@@ -459,7 +459,7 @@ CustomVolcanoReport( params$ressh,
   pCutoff = params$padj,
   FCcutoffUP = params$logfc[2],
   FCcutoffDOWN = params$logfc[1],
-  xlim = c(-8, 8),
+  #xlim = c(-8, 8),
   col = c("gray", "#7cccc3", "#d99c01", params$upcolor, params$downcolor),
   titleLabSize = 14, subtitleLabSize = 8, captionLabSize = 8, axisLabSize = 12,
   legendLabSize = 8, legendIconSize = 3
