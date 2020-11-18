@@ -47,10 +47,6 @@ fluidPage(
             tags$br(),
             uiOutput("fc_control"),
             tags$br(),
-            # uiOutput("fc"),
-            # tags$br(),
-            # uiOutput("logfc"),
-            # tags$br(),
             uiOutput("padj"),
             tags$br(),
             actionButton("applyParam", label = "Click to apply values")

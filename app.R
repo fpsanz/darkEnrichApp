@@ -97,9 +97,10 @@ sidebar <- dashboardSidebar(useShinyalert(),
 body <- dashboardBody(
     tags$script(HTML("$('body').addClass('fixed');")),
     add_busy_gif(src="dna-mini.gif", position = "full-page", width = 10, height = 10 ),
-     tags$head(
-       tags$link(rel = "stylesheet", type = "text/css", href = "customDark.css")
-     ),
+     # tags$head(
+     #   tags$link(rel = "stylesheet", type = "text/css", href = "customDark.css")
+     # ),
+    includeCSS("./www/customDark.css"),
     setShadow(class = "shiny-plot-output"),
     setShadow( class = "box"),
     setShadow( class = "svg-container"),
