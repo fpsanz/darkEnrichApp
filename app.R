@@ -89,8 +89,17 @@ sidebar <- dashboardSidebar(useShinyalert(),
                               sidebarMenu(
                                 menuItem(
                                   fluidRow(column(12, align = "center", offset=0, uiOutput("pdf")))))
-                            ), style = "position: absolute; bottom:0;width:100%;")
-                            )
+                            ),
+                            tags$a(href='https://jacob.cea.fr/drf/ifrancoisjacob/Pages/Departements/MIRCen/themes/astrocytes-reactifs-biomarqueurs-imagerie-cibles-therapeutiques.aspx', target="_blank",
+                                   tags$img(src='mircen.png',width='50%',
+                                            style="padding: 5px; position: absolute; bottom:10px; left:0") ),
+                            tags$a(href='http://www.bioinformatica.imib.es', target="_blank",
+                                   tags$img(src='imib.png',width='50%',
+                                            style="padding: 5px; float: right;") ),
+                            
+                            style = "position: absolute; bottom:0;width:100%;")
+                            
+)
                       
 
 ### BODY ###############
