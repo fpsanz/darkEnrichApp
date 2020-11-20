@@ -1459,8 +1459,9 @@ CustomVolcano <- function (toptable, lab, x, y, selectLab = NULL, xlim = c(min(t
                            na.rm = TRUE), max(toptable[[x]], na.rm = TRUE)), 
                            ylim = c(0, max(-log10(toptable[[y]])+1, na.rm = TRUE) ), xlab = bquote(~Log[2] ~ "fold change"), 
                            ylab = bquote(~-Log[10] ~ italic(P)), axisLabSize = 18, 
-                           title = "Volcano plot highlighting the different groups of signification", subtitle = "", caption = paste0("Total = ", 
-                           nrow(toptable), " variables"), titleLabSize = 18, subtitleLabSize = 14, 
+                           title = "Volcano plot highlighting the different groups of signification", subtitle = "",
+                           caption = paste0("Total = ", nrow(toptable), " variables"),
+                           titleLabSize = 18, subtitleLabSize = 14, 
                            captionLabSize = 14, pCutoff = 1e-05, pLabellingCutoff = pCutoff, 
                            FCcutoffDOWN = -1, FCcutoffUP = 1 , cutoffLineType = "longdash", cutoffLineCol = "black", 
                            cutoffLineWidth = 0.4, transcriptPointSize = 0.8, transcriptLabSize = 3, 
@@ -1681,14 +1682,20 @@ CustomVolcano <- function (toptable, lab, x, y, selectLab = NULL, xlim = c(min(t
   }
   if (boxedLabels == FALSE) {
     if (drawConnectors == TRUE && is.null(selectLab)) {
-      plot <- plot + geom_text_repel(data = subset(toptable, 
-                  toptable[[y]] < pLabellingCutoff & ((toptable[[x]] > FCcutoffUP) | (toptable[[x]] < FCcutoffDOWN))),
-                  aes(label = subset(toptable, toptable[[y]] < pLabellingCutoff & ((toptable[[x]] > FCcutoffUP) | (toptable[[x]] < FCcutoffDOWN)))[["lab"]]), 
-                  size = labSize, segment.color = colConnectors, 
-                  segment.size = widthConnectors, arrow = arrow(length = lengthConnectors, 
-                                     type = typeConnectors, ends = endsConnectors), 
-                                     hjust = labhjust, vjust = labvjust, colour = labCol, 
-                                     fontface = labFace, na.rm = TRUE)
+      # plot <- plot + geom_text_repel(data = subset(toptable, 
+      #             toptable[[y]] < pLabellingCutoff & ((toptable[[x]] > FCcutoffUP) | (toptable[[x]] < FCcutoffDOWN))),
+      #             aes(label = subset(toptable, toptable[[y]] < pLabellingCutoff & ((toptable[[x]] > FCcutoffUP) | (toptable[[x]] < FCcutoffDOWN)))[["lab"]]), 
+      #             size = labSize, segment.color = colConnectors, 
+      #             segment.size = widthConnectors, arrow = arrow(length = lengthConnectors, 
+      #                                type = typeConnectors, ends = endsConnectors), 
+      #                                hjust = labhjust, vjust = labvjust, colour = labCol, 
+      #                                fontface = labFace, na.rm = TRUE)
+      plot <- plot + stat_density2d(data = subset(toptable, 
+                                                  rownames(toptable) %in% shade), fill = shadeFill, 
+                                    alpha = shadeAlpha, geom = "polygon", contour = TRUE, 
+                                    size = shadeSize, bins = shadeBins, show.legend = FALSE, 
+                                    na.rm = TRUE) + scale_fill_identity(name = shadeLabel, 
+                                                                        labels = shadeLabel, guide = "legend")
     }
     else if (drawConnectors == TRUE && !is.null(selectLab)) {
       plot <- plot + geom_text_repel(data = subset(toptable, 
@@ -2793,7 +2800,8 @@ visnetLegend <- function(kggDT = NULL, rows = NULL){
                            choices = c("Table", "GSEA plot"),
                            selected = c("Table", "GSEA plot"),
                            status = "primary",
-                           checkIcon = list(
+                           chec459+8ç
+                           kIcon = list(
                                yes = icon("ok",
                                           lib = "glyphicon"),
                                no = icon("remove",
