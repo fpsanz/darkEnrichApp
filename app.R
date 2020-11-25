@@ -80,10 +80,6 @@ sidebar <- dashboardSidebar(useShinyalert(),
                             sidebarMenu("", sidebarMenuOutput("menu")),
                             tags$br(),
                             sidebarMenu(menuItem(uiOutput("design"))),
-                            tags$div(
-                              column(12, align="center",
-                                     actionBttn(inputId = "resetbutton",label = "Reset App",style="simple",
-                                                color ="danger")),
                             box(width = 12,
                             h5(strong("Generate report"), align = 'center'),
                               sidebarMenu( 
@@ -93,6 +89,10 @@ sidebar <- dashboardSidebar(useShinyalert(),
                                 menuItem(
                                   fluidRow(column(12, align = "center", offset=0, uiOutput("pdf")))))
                             ),
+                            tags$div(
+                              column(12, align="center",
+                                     actionBttn(inputId = "resetbutton",label = "Reset App",style="simple",
+                                                color ="danger")),
                             tags$a(href='https://jacob.cea.fr/drf/ifrancoisjacob/Pages/Departements/MIRCen/themes/astrocytes-reactifs-biomarqueurs-imagerie-cibles-therapeutiques.aspx', target="_blank",
                                    tags$img(src='mircen.png',width='50%',
                                             style="padding: 5px; position: absolute; bottom:10px; left:0") ),
