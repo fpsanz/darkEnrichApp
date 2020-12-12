@@ -902,7 +902,7 @@ server <- function(input, output, session) {
     datatable( res.sh, extensions = "Buttons", escape = FALSE,
                rownames = FALSE,
                filter = list(position="top", clear=FALSE),
-               options = list(order = list(list(6, 'asc')),
+               options = list(order = list(list(7, 'asc')),
                  lengthMenu = list(c(10,25,50,100,-1), c(10,25,50,100,"All")),
                  columnDefs = list(list(orderable = TRUE,
                                         className = "details-control",
