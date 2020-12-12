@@ -1046,7 +1046,8 @@ output$texto1 <- renderTable( digits = -2, {
        font.legend = c("plain", 15),
        font.main = "plain",
        cex.axis = 1.1, cex.lab = 1.3,
-       ggtheme = theme_classic()
+       ggtheme = theme_classic(),
+       usergenes = genesVolcano()
     )
   })
 

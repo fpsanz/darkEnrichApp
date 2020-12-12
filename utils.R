@@ -1787,7 +1787,7 @@ MA <- function (data, fdr = 0.05, fcDOWN = -1, fcUP = 1, genenames = NULL, detec
           size = NULL, font.label = c(12, "plain", "black"), label.rectangle = FALSE, 
           palette = c("#f7837b", "#1cc3c8", "darkgray"), top = 15, 
           select.top.method = c("padj", "fc"), main = NULL, xlab = "Log2 mean expression", 
-          ylab = "Log2 fold change", ggtheme = theme_classic(), ...) 
+          ylab = "Log2 fold change", ggtheme = theme_classic(), usergenes=NULL, ...) 
 {
   if (!base::inherits(data, c("matrix", "data.frame", "DataFrame", 
                               "DE_Results", "DESeqResults"))) 
@@ -1829,7 +1829,9 @@ MA <- function (data, fdr = 0.05, fcDOWN = -1, fcUP = 1, genenames = NULL, detec
   labs_data <- stats::na.omit(data)
   labs_data <- subset(labs_data, padj <= fdr & name != "" & 
                         (lfc >= fcUP | lfc <=fcDOWN) )
-  labs_data <- utils::head(labs_data, top)
+  if(!is.null(usergenes) ){
+    labs_data <- labs_data[which(labs_data$name %in% usergenes),  ] }
+  else{  labs_data <- utils::head(labs_data, top) }
   font.label <- ggpubr:::.parse_font(font.label)
   font.label$size <- ifelse(is.null(font.label$size), 12, 
                             font.label$size)
