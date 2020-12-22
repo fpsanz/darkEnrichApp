@@ -1213,7 +1213,8 @@ output$karyoPlot <- renderPlot({
         }
     chordPlot(kgg$all[rowsAll, ], nRows = length(rowsAll), orderby = "P.DE")
   })
-output$legendChorAll <- renderPlot({
+
+  output$legendChorAll <- renderPlot({
     validate(need(kgg$all, "Load file to render ChordPlot"))
     rowsAll <- rowsAll()
     if(is.null(rowsAll)){
