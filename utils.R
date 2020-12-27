@@ -2823,6 +2823,7 @@ visnetLegend <- function(kggDT = NULL, rows = NULL){
           )
       ),
         footer = tagList(
+          actionButton("unselect","Select/Unselect all"),
           modalButton("Cancel"),
           actionButton("ok", "Apply"),
           uiOutput("downloadhtml")

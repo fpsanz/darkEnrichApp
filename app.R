@@ -34,6 +34,7 @@ library(shinybusy)
 library(visNetwork)
 library(ggrepel)
 source("utils.R")
+source("updatepopModals.R")
 options(shiny.maxRequestSize = 3000*1024^2)
   
 ### HEADER ############ 
@@ -596,9 +597,10 @@ server <- function(input, output, session) {
       as.data.frame() %>% 
       dplyr::select(-any_of(c("sizeFactor", "replaceable"))) %>% 
       names()
+    def_nvar <- nvars[which(nvars %in% as.character(datos$dds@design)[2] ) ]
     selectInput("variables", label="Select condition[s] of interest to highlight",
                 choices = nvars,
-                selected = nvars[1],
+                selected = def_nvar,
                 multiple = TRUE)
   })
   # ........................####
@@ -2067,33 +2069,40 @@ output$karyoPlot <- renderPlot({
   #author <- reactive({input$author})
   # generate report #############################
   output$report <- renderUI({
-    validate(need(res$sh, ""))
-    #downloadButton("report2", "html report")
     actionButton("report2", "html report")
   })
   
   observeEvent(input$report2, {
-      showModal(popupModal())
-    })
+    showModal(popupModal())
+  })
 
-  applyPress <- reactiveValues(ok=FALSE)
-  observeEvent(input$ok,{
-        applyPress$ok <- TRUE
-        vals$preview <- input$modalPreview
-        vals$keggAll <- input$modalkeggAll
-        vals$keggUp <- input$modalkeggUp
-        vals$keggDown <- input$modalkeggDown
-        vals$GOAll <- input$modalGOAll
-        vals$GOUp <- input$modalGOUp
-        vals$GODown <- input$modalGODown
-        vals$GSEA <- input$modalGSEA
-        #removeModal()
+  observeEvent(input$unselect, {
+    if (input$unselect > 0) {
+      if (input$unselect %% 2 == 0) {
+        selectPopUpModal(session = session)
+      } else{
+        unselectPopUpModal(session = session)
+      }
+    }
+  })
+  
+  applyPress <- reactiveValues(ok = FALSE)
+  observeEvent(input$ok, {
+    applyPress$ok <- TRUE
+    vals$preview <- input$modalPreview
+    vals$keggAll <- input$modalkeggAll
+    vals$keggUp <- input$modalkeggUp
+    vals$keggDown <- input$modalkeggDown
+    vals$GOAll <- input$modalGOAll
+    vals$GOUp <- input$modalGOUp
+    vals$GODown <- input$modalGODown
+    vals$GSEA <- input$modalGSEA
   })
   
   output$downloadhtml <- renderUI({
     validate(need(isTRUE(applyPress$ok), ""))
     downloadButton("download", "Download report")
-    })
+  })
   
     output$download <- downloadHandler(
     filename = "report.html",
