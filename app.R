@@ -1169,6 +1169,13 @@ output$karyoPlot <- renderPlot({
   })
 
 # ............ ###############################
+  myHeightfunction <- function(filas){
+    if(length( filas ) <=10){
+      return(400)
+    }else{
+      return(600)
+    }
+  }
 # KEGG table All #####################################
   output$tableAll <- DT::renderDT(server=FALSE,{
     validate(need(kgg$all, "Load file to render table"))
@@ -1192,7 +1199,7 @@ output$karyoPlot <- renderPlot({
         ) )
   }) 
 # KEGG barplot All ################
-  output$keggPlotAll <- renderPlotly ({
+  output$keggPlotAll <- renderPlotly({
     validate(need(kgg$all, "Load file to render BarPlot"))
     rowsAll <- rowsAll()
     if(is.null(rowsAll)){
@@ -1202,10 +1209,16 @@ output$karyoPlot <- renderPlot({
     p <- plotKeggAll(enrichdf = kgg$all[rowsAll,], nrows = length(rowsAll),
                 genesUp = data$genesUp, genesDown = data$genesDown,
                 colors = c(input$downColor, input$upColor))
-    if(typeBarKeggAll() == "Dodge"){
-        print(p[[1]])   } else if(typeBarKeggAll()=="Stack"){
-            print(p[[2]])} else {print(p[[3]])}
-        
+    if (typeBarKeggAll() == "Dodge") {
+      plt <- p[[1]]
+    } else if (typeBarKeggAll() == "Stack") {
+      plt <- p[[2]]
+    } else {
+      plt <- p[[3]]
+    }
+    plt$height <- myHeightfunction( rowsAll() )
+    plt$x$layout$height <- myHeightfunction(rowsAll() )
+    plt
   })
   # KEGG chordiag plot All ###############
   output$keggChordAll <- renderMychordplot({
@@ -1228,20 +1241,27 @@ output$karyoPlot <- renderPlot({
         }
     legendChorplot(kgg$all[rowsAll, ] )
   })
-  # KEGG dotplot All ################### 
+  
+
+  # KEGG dotplot All ###################
   output$keggDotAll <- renderPlot({
     validate(need(kgg$all, "Load file and select to render dotPlot"),
              need(rowsAll(), "Select the paths of interest to render DotPlot"))
     rowsAll <- rowsAll()
     if(is.null(rowsAll)){rowsAll <- c(1:20)}
-    dotPlotkegg(kgg$all[rowsAll,], n = length(rowsAll))
-  })
+    p <- dotPlotkegg(kgg$all[rowsAll,], n = length(rowsAll))
+    print(p)
+  }, height = reactive( myHeightfunction(rowsAll() ) ) )
   # KEGG heatmap All #################
   output$heatmapKeggAll <- renderPlotly({
     validate(need(kgg$all, "Load file and select to render Heatmap"),
              need(rowsAll(), "Select the paths of interest to render HeatMap"),
              need(kggDT$all, ""))
-    heatmapKeggLogFC(kggDT$all, res$sh, rowsAll() ) 
+    plt <- heatmapKeggLogFC(kggDT$all, res$sh, rowsAll() ) 
+    plt <- ggplotly(plt)
+    plt$height <- myHeightfunction( rowsAll() )
+    plt$x$layout$height <- myHeightfunction(rowsAll() )
+    plt
   })
   # KEGG cnet All #################
   output$legend <- renderPlot({
@@ -1305,7 +1325,10 @@ output$karyoPlot <- renderPlot({
         if( dim(kgg$up)[1]<10 ){rowsUp <-  seq_len(nrow(kgg$up)) }
         else{ rowsUp <-  seq_len(10)  }
         }
-    plotKegg(enrichdf = kgg$up[rowsUp,], nrows = length(rowsUp), colors = c(input$upColor))
+    plt <- plotKegg(enrichdf = kgg$up[rowsUp,], nrows = length(rowsUp), colors = c(input$upColor))
+    plt$height <- myHeightfunction( rowsAll() )
+    plt$x$layout$height <- myHeightfunction(rowsAll() )
+    plt
   })
   # KEGG chordiag plot up ###############
   output$keggChord <- renderMychordplot({
@@ -1334,15 +1357,20 @@ output$karyoPlot <- renderPlot({
              need(rowsUp(), "Select the paths of interest to render DotPlot"))
     rowsUp <- rowsUp()
     if(is.null(rowsUp)){rowsUp <- c(1:20)}
-    dotPlotkegg(kgg$up[rowsUp,], n = length(rowsUp))
-  })
+    p <- dotPlotkegg(kgg$up[rowsUp,], n = length(rowsUp))
+    print(p)
+  }, height = reactive( myHeightfunction(rowsUp() ) ))
   # KEGG heatmap Up #################
   output$heatmapKeggUp <- renderPlotly({
     validate(need(kgg$up, "Load file and select to render Heatmap"),
              need(rowsUp(), "Select the paths of interest to render HeatMap"),
              need(kggDT$up, ""))
     #heatmapKegg(kggDT$up, rowsUp())
-    heatmapKeggLogFC(kggDT$up, res$sh, rowsUp() ) 
+    plt <- heatmapKeggLogFC(kggDT$up, res$sh, rowsUp() )
+    plt <- ggplotly(plt)
+    plt$height <- myHeightfunction( rowsUp() )
+    plt$x$layout$height <- myHeightfunction(rowsUp() )
+    plt
   })
   # KEGG cnet Up #################
    output$keggUpNet <- renderUI({
@@ -1398,8 +1426,11 @@ output$karyoPlot <- renderPlot({
         if( dim(kgg$down)[1]<10 ){rowsdown <-  seq_len(nrow(kgg$down)) }
         else{ rowsdown <-  seq_len(10)  }
         }
-    plotKegg(enrichdf = kgg$down[rowsdown,], nrows = length(rowsdown), 
+    plt <- plotKegg(enrichdf = kgg$down[rowsdown,], nrows = length(rowsdown), 
              colors = c(input$downColor))
+    plt$height <- myHeightfunction( rowsdown() )
+    plt$x$layout$height <- myHeightfunction(rowsdown() )
+    plt
   })
   # KEGG chordiag plot down ###############
   output$keggChordDown <- renderMychordplot({
@@ -1427,14 +1458,19 @@ output$karyoPlot <- renderPlot({
              need(rowsdown(), "Select the paths of interest to render dotPlot"))
     rowsdown <- rowsdown()
     if(is.null(rowsdown)){rowsdown <- c(1:20)}
-    dotPlotkegg(kgg$down[rowsdown,], n = length(rowsdown))
-  })
+    p <- dotPlotkegg(kgg$down[rowsdown,], n = length(rowsdown))
+    print(p)
+  }, height = reactive( myHeightfunction(rowsdown() ) ))
+
   # KEGG heatmap Down #################
   output$heatmapKeggDown <- renderPlotly({
     validate(need(kgg$down, "Load file to render Heatmap"),
              need(rowsdown(), "Select the paths of interest to render Heatmap"))
-    #heatmapKegg(kggDT$down, rowsdown())
-    heatmapKeggLogFC(kggDT$down, res$sh, rowsdown() ) 
+    plt <- heatmapKeggLogFC(kggDT$down, res$sh, rowsdown() )
+    plt <- ggplotly(plt)
+    plt$height <- myHeightfunction( rowsdown() )
+    plt$x$layout$height <- myHeightfunction(rowsdown() )
+    plt
   })
     # KEGG cnet Down #################
    output$keggDownNet <- renderUI({

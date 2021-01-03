@@ -1280,7 +1280,7 @@ heatmapKeggLogFC <- function(kdt, res, nr){
     xNum <- length(unique(kdt$genes))
     if(xNum <=60){xSize=8}else if(xNum>60 | yNum <=80){xSize=7}else{xSize=0}
     
-    kk3 %>% ggplot(aes_(~genes, ~Pathway)) + 
+    p <- kk3 %>% ggplot(aes_(~genes, ~Pathway)) + 
     geom_tile(aes_(fill = ~log2FoldChange, label= ~padj), color = 'black', size =0.2) +
     xlab(NULL) + ylab(NULL) +
     theme_minimal() +
@@ -1290,6 +1290,7 @@ heatmapKeggLogFC <- function(kdt, res, nr){
     # scale_fill_brewer(palette = "YlOrRd")
     # scale_fill_manual(values = getPalette(colourCount))+
     theme(text = element_text(size=ySize, angle=0), plot.margin = unit(c(15,25,15,15), "pt"))
+    return(p)
 }
 
 # Función para crear dataset para hacer GSEA pathway ##################
