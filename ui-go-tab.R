@@ -32,6 +32,8 @@ fluidPage(
             fluidRow( # 2 fila
                 column( width = 9, offset = 3,
                     tabBox( width = 12, # caja con pestañas para los plots
+                            tabPanel(title = "GO term cloud", 
+                                     plotOutput("cloudBPAll"), width = "100%", height = "600px" ),
                             tabPanel(title = "Barplot",
                                      fluidRow(column(
                                          width = 3,
@@ -64,9 +66,7 @@ fluidPage(
                                      ),
                             tabPanel(title = "GoCirclePlot",
                                      plotOutput("goCircleAllBP")
-                                     ),
-                            tabPanel(title = "GO term cloud", 
-                                     plotOutput("cloudBPAll") )
+                                     )
                         )
                     )
             )),
@@ -98,6 +98,8 @@ fluidPage(
             fluidRow( # 2 fila
                 column( width = 9, offset = 3,
                     tabBox( width = 12, # caja con pestañas para los plots
+                            tabPanel(title = "GO term cloud", 
+                                     plotOutput("cloudMFAll"), width = "100%", height = "600px" ),
                             tabPanel(title = "Barplot",
                                      fluidRow(column(
                                          width = 3,
@@ -129,8 +131,7 @@ fluidPage(
                                      plotOutput("gobarplotAllMF")
                                      ),
                             tabPanel(title = "GoCirclePlot",
-                                     plotOutput("goCircleAllMF")
-                            )
+                                     plotOutput("goCircleAllMF"))
                         )
                     )
             )),
@@ -161,6 +162,8 @@ fluidPage(
             fluidRow( # 2 fila
                 column( width = 9, offset = 3,
                     tabBox( width = 12, # caja con pestañas para los plots
+                            tabPanel(title = "GO term cloud", 
+                                     plotOutput("cloudCCAll"), width = "100%", height = "600px" ),
                             tabPanel(title = "Barplot",
                                      fluidRow(column(
                                          width = 3,
@@ -194,6 +197,7 @@ fluidPage(
                             tabPanel(title = "GoCirclePlot",
                                      plotOutput("goCircleAllCC")
                             )
+                           
                         ) #tabbox
                     ) #column 
             ) #fluidrow
@@ -230,6 +234,8 @@ fluidPage(
             fluidRow( # 2 fila
                 column( width = 9, offset = 3,
                     tabBox( width = 12, # caja con pestañas para los plots
+                        tabPanel(title = "GO term cloud", 
+                                     plotOutput("cloudBPUp"), width = "100%", height = "600px" ),
                         tabPanel(title = "Barplot",
                                   plotlyOutput("plotBP")
                                               ),  #barplot
@@ -272,6 +278,8 @@ fluidRow(  # primera fila
             fluidRow( # 2 fila
                 column( width = 9, offset = 3,
                     tabBox( width = 12, # caja con pestañas para los plots
+                        tabPanel(title = "GO term cloud", 
+                                     plotOutput("cloudMFUp"), width = "100%", height = "600px" ),
                         tabPanel(title = "Barplot",
                                   plotlyOutput("plotMF")
                                               ),  #barplot
@@ -314,6 +322,8 @@ fluidRow(  # primera fila
             fluidRow( # 2 fila
                 column( width = 9, offset = 3,
                     tabBox( width = 12, # caja con pestañas para los plots
+                        tabPanel(title = "GO term cloud", 
+                                     plotOutput("cloudCCUp"), width = "100%", height = "600px" ),
                         tabPanel(title = "Barplot",
                                   plotlyOutput("plotCC")
                                               ),  #barplot
@@ -360,6 +370,8 @@ fluidRow(  # primera fila
             fluidRow( # 2 fila
                 column( width = 9, offset = 3,
                     tabBox( width = 12, # caja con pestañas para los plots
+                        tabPanel(title = "GO term cloud", 
+                                     plotOutput("cloudBPDown"), width = "100%", height = "600px" ),
                         tabPanel(title = "Barplot",
                                   plotlyOutput("plotBPdown")
                                               ),  #barplot
@@ -402,6 +414,8 @@ fluidRow(  # primera fila
             fluidRow( # 2 fila
                 column( width = 9, offset = 3,
                     tabBox( width = 12, # caja con pestañas para los plots
+                        tabPanel(title = "GO term cloud", 
+                                     plotOutput("cloudMFDown"), width = "100%", height = "600px" ),
                         tabPanel(title = "Barplot",
                                   plotlyOutput("plotMFdown")
                                               ),  #barplot
@@ -444,6 +458,8 @@ fluidRow(  # primera fila
             fluidRow( # 2 fila
                 column( width = 9, offset = 3,
                     tabBox( width = 12, # caja con pestañas para los plots
+                        tabPanel(title = "GO term cloud", 
+                                     plotOutput("cloudCCDown"), width = "100%", height = "600px" ),
                         tabPanel(title = "Barplot",
                                   plotlyOutput("plotCCdown")
                                               ),  #barplot

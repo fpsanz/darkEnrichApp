@@ -35,7 +35,8 @@ library(visNetwork)
 library(ggrepel)
 library(mychordplot)
 library(tidytext)
-library(wordcloud)
+library(ggwordcloud)
+library(randomcoloR)
 source("utils.R")
 source("updatepopModals.R")
 options(shiny.maxRequestSize = 3000*1024^2)
@@ -1588,21 +1589,14 @@ myHeightfunction <- function(filas) {
       circle(circ, label.size = 3, nsub = length(bprowsall), table.legend = FALSE)
     }
   })
-  # GO cloud BO all #######################
+  
+  # GO cloud BP all #######################
   output$cloudBPAll <- renderPlot({
     validate(need(go$all, "Load file to render dotPlot"))
-    df <- go$all
-    text_df <- tibble( text = paste0( df$Term, collapse = " "), line = 1)
-    unigrama <- text_df %>% unnest_tokens(input = text, output = bigram, token = "ngrams", n = 1 )
-    counter <- unigrama %>% dplyr::count(bigram, sort = TRUE)
-    bigram_filter <- counter %>% filter(!bigram %in% stop_words$word)
-    
-    wordcloud(words = bigram_filter$bigram, freq = bigram_filter$n, 
-              min.freq = 2, max.words = 200, random.order = FALSE,
-              rot.per = 0.50,
-              colors = colorRampPalette( 
-                RColorBrewer::brewer.pal(8, "Dark2"))( length(unique(bigram_filter$n)) ) )
-  })
+    goall <- go$all[go$all$Ont=="BP", ]
+     p <- myggwordcloud(goall)
+     p 
+  }, height = 600)
   
   # ............ ###############################
   # GO table MF all #####################
@@ -1681,6 +1675,14 @@ myHeightfunction <- function(filas) {
       circle(circ, label.size = 3, nsub = length(mfrowsall), table.legend = FALSE)
     }
   })
+  
+  # GO cloud MF all #######################
+  output$cloudMFAll <- renderPlot({
+    validate(need(go$all, "Load file to render dotPlot"))
+    goall <- go$all[go$all$Ont=="MF", ]
+     p <- myggwordcloud(goall)
+     p 
+  }, height = 600)
   # ............ ###############################
   # GO table CC all #####################
   output$tableCCall <- DT::renderDataTable(server=FALSE,{
@@ -1756,6 +1758,13 @@ myHeightfunction <- function(filas) {
       circle(circ, label.size = 3, nsub = length(ccrowsall), table.legend = FALSE)
     }
   })
+    # GO cloud CC all #######################
+  output$cloudCCAll <- renderPlot({
+    validate(need(go$all, "Load file to render dotPlot"))
+    goall <- go$all[go$all$Ont=="CC", ]
+     p <- myggwordcloud(goall)
+     p 
+  }, height = 600)
   # ............ ###############################
   # GO table BP UP#####################
   output$tableBP <- DT::renderDataTable(server=FALSE,{
@@ -1819,6 +1828,13 @@ myHeightfunction <- function(filas) {
       circle(circ, label.size = 3, nsub = length(bprowsup), table.legend = FALSE)
     }
   })
+    # GO cloud BP UP  #######################
+  output$cloudBPUp <- renderPlot({
+    validate(need(go$up, "Load file to render dotPlot"))
+    goup <- go$up[go$up$Ont=="BP", ]
+     p <- myggwordcloud(goup)
+     p 
+  }, height = 600)
   # ............ ###############################
   # GO table MF UP #####################
   output$tableMF <- DT::renderDataTable({
@@ -1883,6 +1899,13 @@ myHeightfunction <- function(filas) {
       circle(circ, label.size = 3, nsub = length(mfrowsup), table.legend = FALSE)
     }
   })
+  # GO cloud MF UP  #######################
+  output$cloudMFUp <- renderPlot({
+    validate(need(go$up, "Load file to render dotPlot"))
+    goup <- go$up[go$up$Ont=="MF", ]
+     p <- myggwordcloud(goup)
+     p 
+  }, height = 600)
   # ............ ###############################
   # GO table CC UP #####################
   output$tableCC <- DT::renderDataTable(server=FALSE,{
@@ -1947,6 +1970,13 @@ myHeightfunction <- function(filas) {
       circle(circ, label.size = 3, nsub = length(ccrowsup), table.legend = FALSE)
     }
   })
+    # GO cloud CC UP  #######################
+  output$cloudCCUp <- renderPlot({
+    validate(need(go$up, "Load file to render dotPlot"))
+    goup <- go$up[go$up$Ont=="CC", ]
+     p <- myggwordcloud(goup)
+     p 
+  }, height = 600)
   # ............ ###############################
   # GO table BP DOWN #####################
   output$tableBPdown <- DT::renderDataTable(server=FALSE,{
@@ -2010,6 +2040,13 @@ myHeightfunction <- function(filas) {
       circle(circ, label.size = 3, nsub = length(bprowsdown), table.legend = FALSE)
     }
   })
+  # GO cloud BP Down #######################
+  output$cloudBPDown <- renderPlot({
+    validate(need(go$down, "Load file to render dotPlot"))
+    godown <- go$down[go$down$Ont=="BP", ]
+     p <- myggwordcloud(godown)
+     p 
+  }, height = 600)
   # ............ ###############################
   # GO table MF DOWN #####################
   output$tableMFdown <- DT::renderDataTable({
@@ -2074,6 +2111,13 @@ myHeightfunction <- function(filas) {
       circle(circ, label.size = 3, nsub = length(mfrowsdown), table.legend = FALSE)
     }
   })
+    # GO cloud MF Down #######################
+  output$cloudMFDown <- renderPlot({
+    validate(need(go$down, "Load file to render dotPlot"))
+    godown <- go$down[go$down$Ont=="MF", ]
+     p <- myggwordcloud(godown)
+     p 
+  }, height = 600)
   # ............ ###############################
   # GO table CC DOWN #####################
   output$tableCCdown <- DT::renderDataTable(server=FALSE,{
@@ -2139,6 +2183,13 @@ myHeightfunction <- function(filas) {
       circle(circ, label.size = 3, nsub = length(ccrowsdown), table.legend = FALSE)
     }
   })
+    # GO cloud CC Down #######################
+  output$cloudCCDown <- renderPlot({
+    validate(need(go$down, "Load file to render dotPlot"))
+    godown <- go$down[go$down$Ont=="CC", ]
+     p <- myggwordcloud(godown)
+     p 
+  }, height = 600)
   # ............ ###############################
   # GSEA table ##########################
   output$gseaTable <- renderDataTable({

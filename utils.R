@@ -2831,3 +2831,22 @@ visnetLegend <- function(kggDT = NULL, rows = NULL){
         )
       )
     }
+## myggwordcloud ############################
+  myggwordcloud <- function(data){
+    df <- data
+    text_df <- tibble( text = paste0( df$Term, collapse = " "), line = 1)
+    unigrama <- text_df %>% 
+      unnest_tokens(input = text, output = bigram, token = "ngrams", n = 1 )
+    counter <- unigrama %>% 
+      dplyr::count(bigram, sort = TRUE)
+    bigram_filter <- counter %>% 
+      filter(!bigram %in% stop_words$word)
+    p <- ggwordcloud(bigram_filter$bigram, bigram_filter$n , scale = c(6,1),
+                     min.freq = 2, max.words = 200, random.order = FALSE,
+                     random.color = TRUE,
+                     colors = distinctColorPalette(
+                       length(unique(bigram_filter$n)))  ) +
+      theme(panel.background = element_rect(fill = "#343e48", colour = NA),
+          plot.background = element_rect(fill = "#343e48", colour = NA))
+    return(p)
+  }
