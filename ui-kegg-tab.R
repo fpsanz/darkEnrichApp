@@ -71,8 +71,7 @@ fluidPage(
                                                                          height = "600px") 
                                                          ),
                                                   column(width = 4,
-                                                         plotOutput("legendChorAll", width="100%",
-                                                                    height="600px")
+                                                         plotOutput("legendChorAll", width="100%")
                                                          )) )
                                  ), #cordplot
                         tabPanel(title = "Dotplot",

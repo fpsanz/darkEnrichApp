@@ -197,7 +197,8 @@ body <- dashboardBody(
                     )$value)
   ), # fin tab items
     bsModal("modalNotes", "Notes", "notesButton",size="large",
-          textAreaInput("textNotes", "Text Notes", width = "850px", height = "575px"))
+          textAreaInput("textNotes", "Comments", width = "850px", height = "575px", placeholder = "Input comments about your analysis here. What you write will be incorporated into the report. Markdown notation is accepted.\n
+In order to avoid creating first level sections, please use double or triple # to define a section instead of a single #" ))
 )# fin dashboardbody
 
 ########################################## UI #################################################
@@ -1169,12 +1170,15 @@ output$karyoPlot <- renderPlot({
   })
 
 # ............ ###############################
-  myHeightfunction <- function(filas){
-    if(length( filas ) <=10){
-      return(400)
-    }else{
-      return(600)
-    }
+# Funcion tamaño plot ########################
+myHeightfunction <- function(filas) {
+  if (length(filas) <= 10) {
+    return(400)
+  } else if (length(filas) > 10 & length(filas) <= 35) {
+    return(600)
+  } else{
+    return(800)
+  }
   }
 # KEGG table All #####################################
   output$tableAll <- DT::renderDT(server=FALSE,{
@@ -1527,10 +1531,20 @@ output$karyoPlot <- renderPlot({
     p <- plotGOAll(enrichdf = gosBP[bprowsall, ], nrows = length(bprowsall), ont="BP", 
               genesUp = data$genesUp, genesDown = data$genesDown,
               colors = c(input$downColor, input$upColor))
-    if( typeBarBpAll() == "Dodge") { print(p[[1]]) }
-    else if ( typeBarBpAll() == "Stack") { print(p[[2]]) }
-    else { print(p[[3]]) }
+    if (typeBarBpAll() == "Dodge") {
+      plt <- p[[1]]
+    }
+    else if (typeBarBpAll() == "Stack") {
+      plt <- p[[2]]
+    }
+    else {
+      plt <- p[[3]]
+    }
+    plt$height <- myHeightfunction( bprowsall() )
+    plt$x$layout$height <- myHeightfunction(bprowsall() )
+    plt
   })
+  
   # GO BP dotplot all ################### 
   output$BPDotall <- renderPlot({
     validate(need(go$all, "Load file to render dotPlot"),
@@ -1539,7 +1553,8 @@ output$karyoPlot <- renderPlot({
     if(is.null(bprowsall)){bprowsall <- c(1:20)}
     gosBP <- go$all[go$all$Ont=="BP",]
     dotPlotGO(gosBP[bprowsall,], n = length(bprowsall))
-  })
+  }, height = reactive( myHeightfunction(bprowsall() ) ) )
+  
   # GO gobarplot BP all #######################
   output$gobarplotAllBP <- renderPlot({
     validate(need(go$all, "Load file to render dotPlot"))
@@ -1593,9 +1608,18 @@ output$karyoPlot <- renderPlot({
     p <- plotGOAll(enrichdf = gosMF[mfrowsall, ], nrows = length(mfrowsall), ont="MF", 
                    genesUp = data$genesUp, genesDown = data$genesDown,
                    colors = c(input$downColor, input$upColor))
-    if( typeBarMfAll() == "Dodge") { print(p[[1]]) }
-    else if ( typeBarMfAll() == "Stack") { print(p[[2]]) }
-    else { print(p[[3]]) }
+    if (typeBarMfAll() == "Dodge") {
+      plt <- p[[1]]
+    }
+    else if (typeBarMfAll() == "Stack") {
+      plt <- p[[2]]
+    }
+    else {
+      plt <- p[[3]]
+    }
+    plt$height <- myHeightfunction( mfrowsall() )
+    plt$x$layout$height <- myHeightfunction(mfrowsall() )
+    plt
   })
   # GO MF dotplot all ################### 
   output$MFDotall <- renderPlot({
@@ -1605,7 +1629,8 @@ output$karyoPlot <- renderPlot({
     if(is.null(mfrowsall)){mfrowsall <- c(1:20)}
     gosMF <- go$all[go$all$Ont=="MF",]
     dotPlotGO(gosMF[mfrowsall,], n = length(mfrowsall))
-  })
+  }, height = reactive( myHeightfunction(mfrowsall() ) ) )
+  
   # GO gobarplot MF all ####################
   output$gobarplotAllMF <- renderPlot({
     validate(need(go$all, "Load file to render dotPlot"))
@@ -1613,6 +1638,7 @@ output$karyoPlot <- renderPlot({
     goBarplot(enrichGO = go$all, resGO = res$sh, genes= data$genesall,
               category = "MF", nrows = mfrowsall)
   })
+  
   # GO circle MF all #####################
   output$goCircleAllMF <- renderPlot({
     validate(need(go$all, "Load file to render dotPlot"),
@@ -1659,9 +1685,18 @@ output$karyoPlot <- renderPlot({
     p <- plotGOAll(enrichdf = gosCC[ccrowsall, ], nrows = length(ccrowsall), ont="CC", 
                    genesUp = data$genesUp, genesDown = data$genesDown,
                    colors = c(input$downColor, input$upColor))
-    if( typeBarCcAll() == "Dodge") { print(p[[1]]) }
-    else if ( typeBarCcAll() == "Stack") { print(p[[2]]) }
-    else { print(p[[3]]) }
+    if (typeBarCcAll() == "Dodge") {
+      plt <- p[[1]]
+    }
+    else if (typeBarCcAll() == "Stack") {
+      plt <- p[[2]]
+    }
+    else {
+      plt <- p[[3]]
+    }
+    plt$height <- myHeightfunction( ccrowsall() )
+    plt$x$layout$height <- myHeightfunction(ccrowsall() )
+    plt
   })
   # GO CC dotplot all ################### 
   output$CCDotall <- renderPlot({
@@ -1671,7 +1706,7 @@ output$karyoPlot <- renderPlot({
     if(is.null(ccrowsall)){ccrowsall <- c(1:20)}
     gosCC <- go$all[go$all$Ont=="CC",]
     dotPlotGO(gosCC[ccrowsall,], n = length(ccrowsall))
-  })
+  }, height = reactive( myHeightfunction(ccrowsall() ) ) )
   # GO gobarplot CC all #######################
   output$gobarplotAllCC <- renderPlot({
     validate(need(go$all, "Load file to render dotPlot"))
@@ -1720,8 +1755,11 @@ output$karyoPlot <- renderPlot({
     bprowsup <- bprowsup()
     if(is.null(bprowsup)){bprowsup <- c(1:10)}
     gosBP <- go$up[go$up$Ont=="BP",]
-    plotGO(enrichdf = gosBP[bprowsup, ], nrows = length(bprowsup), ont="BP",
+    plt <- plotGO(enrichdf = gosBP[bprowsup, ], nrows = length(bprowsup), ont="BP",
            colors = c(input$upColor) )
+    plt$height <- myHeightfunction( bprowsup() )
+    plt$x$layout$height <- myHeightfunction(bprowsup() )
+    plt
   })
   # GO BP dotplot up ################### 
   output$BPDotUp <- renderPlot({
@@ -1731,7 +1769,8 @@ output$karyoPlot <- renderPlot({
     if(is.null(bprowsup)){bprowsup <- c(1:20)}
     gosBP <- go$up[go$up$Ont=="BP",]
     dotPlotGO(gosBP[bprowsup,], n = length(bprowsup))
-  })
+  }, height = reactive( myHeightfunction(bprowsup() ) ) )
+  
   # GO gobarplot BP Up #######################
   output$gobarplotUpBP <- renderPlot({
     validate(need(go$up, "Load file to render dotPlot"))
@@ -1781,8 +1820,11 @@ output$karyoPlot <- renderPlot({
     mfrowsup <- mfrowsup()
     if(is.null(mfrowsup)){mfrowsup <- c(1:10)}
     gosMF <- go$up[go$up$Ont=="MF",]
-    plotGO(enrichdf = gosMF[mfrowsup, ], nrows = length(mfrowsup), ont = "MF",
+    plt <- plotGO(enrichdf = gosMF[mfrowsup, ], nrows = length(mfrowsup), ont = "MF",
            colors = c(input$upColor) )
+    plt$height <- myHeightfunction( mfrowsup() )
+    plt$x$layout$height <- myHeightfunction(mfrowsup() )
+    plt
   })
   # GO MF dotplot up ################### 
   output$MFDotUp <- renderPlot({
@@ -1792,7 +1834,7 @@ output$karyoPlot <- renderPlot({
     if(is.null(mfrowsup)){mfrowsup <- c(1:20)}
     gosMF <- go$up[go$up$Ont=="MF",]
     dotPlotGO(gosMF[mfrowsup,], n = length(mfrowsup))
-  })
+  }, height = reactive( myHeightfunction(mfrowsup() ) ) )
   # GO gobarplot MF Up #######################
   output$gobarplotUpMF <- renderPlot({
     validate(need(go$up, "Load file to render dotPlot"))
@@ -1842,8 +1884,11 @@ output$karyoPlot <- renderPlot({
     ccrowsup <- ccrowsup()
     if(is.null(ccrowsup)){ccrowsup <- c(1:10)}
     gosCC <- go$up[go$up$Ont=="CC",]
-    plotGO(enrichdf = gosCC[ccrowsup,], nrows = length(ccrowsup), ont="CC",
+    plt <- plotGO(enrichdf = gosCC[ccrowsup,], nrows = length(ccrowsup), ont="CC",
            colors = c(input$upColor))
+    plt$height <- myHeightfunction( ccrowsup() )
+    plt$x$layout$height <- myHeightfunction(ccrowsup() )
+    plt
   })
   # GO CC dotplot up ################### 
   output$CCDotUp <- renderPlot({
@@ -1853,7 +1898,7 @@ output$karyoPlot <- renderPlot({
     if(is.null(ccrowsup)){ccrowsup <- c(1:20)}
     gosCC <- go$up[go$up$Ont=="CC",]
     dotPlotGO(gosCC[ccrowsup,], n = length(ccrowsup))
-  })
+  }, height = reactive( myHeightfunction(ccrowsup() ) ) )
   # GO gobarplot CC Up #######################
   output$gobarplotUpCC <- renderPlot({
     validate(need(go$up, "Load file to render dotPlot"))
@@ -1902,8 +1947,11 @@ output$karyoPlot <- renderPlot({
     bprowsdown <- bprowsdown()
     if(is.null(bprowsdown)){bprowsdown <- c(1:10)}
     gosBP <- go$down[go$down$Ont=="BP",]
-    plotGO(enrichdf = gosBP[bprowsdown, ], nrows = length(bprowsdown), ont="BP",
+    plt <- plotGO(enrichdf = gosBP[bprowsdown, ], nrows = length(bprowsdown), ont="BP",
            colors = c(input$downColor))
+    plt$height <- myHeightfunction( bprowsdown() )
+    plt$x$layout$height <- myHeightfunction(bprowsdown() )
+    plt
   })
   # GO BP dotplot down ################### 
   output$BPDotDown <- renderPlot({
@@ -1913,7 +1961,7 @@ output$karyoPlot <- renderPlot({
     if(is.null(bprowsdown)){bprowsdown <- c(1:20)}
     gosBP <- go$down[go$down$Ont=="BP",]
     dotPlotGO(gosBP[bprowsdown,], n = length(bprowsdown))
-  })
+  }, height = reactive( myHeightfunction(bprowsdown() ) ) )
   # GO gobarplot BP down #######################
   output$gobarplotDownBP <- renderPlot({
     validate(need(go$down, "Load file to render dotPlot"))
@@ -1963,8 +2011,11 @@ output$karyoPlot <- renderPlot({
     mfrowsdown <- mfrowsdown()
     if(is.null(mfrowsdown)){mfrowsdown <- c(1:10)}
     gosMF <- go$down[go$down$Ont=="MF",]
-    plotGO(enrichdf = gosMF[mfrowsdown, ], nrows = length(mfrowsdown), ont = "MF",
+    plt <- plotGO(enrichdf = gosMF[mfrowsdown, ], nrows = length(mfrowsdown), ont = "MF",
            colors = c(input$downColor) )
+    plt$height <- myHeightfunction( mfrowsdown() )
+    plt$x$layout$height <- myHeightfunction(mfrowsdown() )
+    plt
   })
   # GO MF dotplot down ################### 
   output$MFDotDown <- renderPlot({
@@ -1974,7 +2025,7 @@ output$karyoPlot <- renderPlot({
     if(is.null(mfrowsdown)){mfrowsdown <- c(1:20)}
     gosMF <- go$down[go$down$Ont=="MF",]
     dotPlotGO(gosMF[mfrowsdown,], n = length(mfrowsdown))
-  })
+  }, height = reactive( myHeightfunction(mfrowsdown() ) ) )
   # GO gobarplot MF down #######################
   output$gobarplotDownMF <- renderPlot({
     validate(need(go$down, "Load file to render dotPlot"))
@@ -2024,8 +2075,11 @@ output$karyoPlot <- renderPlot({
     ccrowsdown <- ccrowsdown()
     if(is.null(ccrowsdown)){ccrowsdown <- c(1:10)}
     gosCC <- go$down[go$down$Ont=="CC",]
-    plotGO(enrichdf = gosCC[ccrowsdown,], nrows = length(ccrowsdown), ont="CC",
+    plt <- plotGO(enrichdf = gosCC[ccrowsdown,], nrows = length(ccrowsdown), ont="CC",
            colors = c(input$downColor) )
+    plt$height <- myHeightfunction( ccrowsdown() )
+    plt$x$layout$height <- myHeightfunction(ccrowsdown() )
+    plt
   })
   # GO CC dotplot down ################### 
   output$CCDotDown <- renderPlot({
@@ -2035,7 +2089,8 @@ output$karyoPlot <- renderPlot({
     if(is.null(ccrowsdown)){ccrowsdown <- c(1:20)}
     gosCC <- go$down[go$down$Ont=="CC",]
     dotPlotGO(gosCC[ccrowsdown,], n = length(ccrowsdown))
-  })
+  }, height = reactive( myHeightfunction(ccrowsdown() ) ) )
+  
   # GO gobarplot CC down #######################
   output$gobarplotDownCC <- renderPlot({
     validate(need(go$down, "Load file to render dotPlot"))
