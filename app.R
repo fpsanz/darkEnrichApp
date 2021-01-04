@@ -42,6 +42,9 @@ options(shiny.maxRequestSize = 3000*1024^2)
 header <- dashboardHeader(title = "RNAseq viewer and report App", 
                           titleWidth = 300, 
                           dropdownMenuOutput("messageMenu"),
+                          tags$li(class="dropdown", actionButton("moreinfo","Tutorial",
+                                                                 style = "background-color: #8ec4d9"),
+                                  style="margin-top:8px; margin-right: 5px"),
                           tags$li(class="dropdown", actionButton("notesButton","Notes"),
                                   style="margin-top:8px; margin-right: 5px"),
                           tags$li(class = "dropdown", actionButton("aboutButton", "About"),
@@ -228,6 +231,15 @@ server <- function(input, output, session) {
 
   observeEvent(input$resetbutton,{
     session$reload()
+  })
+  
+  observeEvent(input$moreinfo,{
+    showModal(
+      modalDialog(
+        size="l",
+        tags$iframe(src="pres1.html",  width="850px", height="700px")
+      )
+    )
   })
   
 # Definir reactiveVariables globales ##############
