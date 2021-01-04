@@ -34,6 +34,8 @@ library(shinybusy)
 library(visNetwork)
 library(ggrepel)
 library(mychordplot)
+library(tidytext)
+library(wordcloud)
 source("utils.R")
 source("updatepopModals.R")
 options(shiny.maxRequestSize = 3000*1024^2)
@@ -1586,6 +1588,22 @@ myHeightfunction <- function(filas) {
       circle(circ, label.size = 3, nsub = length(bprowsall), table.legend = FALSE)
     }
   })
+  # GO cloud BO all #######################
+  output$cloudBPAll <- renderPlot({
+    validate(need(go$all, "Load file to render dotPlot"))
+    df <- go$all
+    text_df <- tibble( text = paste0( df$Term, collapse = " "), line = 1)
+    unigrama <- text_df %>% unnest_tokens(input = text, output = bigram, token = "ngrams", n = 1 )
+    counter <- unigrama %>% dplyr::count(bigram, sort = TRUE)
+    bigram_filter <- counter %>% filter(!bigram %in% stop_words$word)
+    
+    wordcloud(words = bigram_filter$bigram, freq = bigram_filter$n, 
+              min.freq = 2, max.words = 200, random.order = FALSE,
+              rot.per = 0.50,
+              colors = colorRampPalette( 
+                RColorBrewer::brewer.pal(8, "Dark2"))( length(unique(bigram_filter$n)) ) )
+  })
+  
   # ............ ###############################
   # GO table MF all #####################
   output$tableMFall <- DT::renderDataTable({

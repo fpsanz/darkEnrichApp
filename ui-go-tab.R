@@ -64,7 +64,9 @@ fluidPage(
                                      ),
                             tabPanel(title = "GoCirclePlot",
                                      plotOutput("goCircleAllBP")
-                                     )
+                                     ),
+                            tabPanel(title = "GO term cloud", 
+                                     plotOutput("cloudBPAll") )
                         )
                     )
             )),
