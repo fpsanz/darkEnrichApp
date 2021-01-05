@@ -543,8 +543,10 @@ cat("## Chorplot All genes")
 ```
 
 ```{r chorkgaplot, eval = params$chorkgaObj}
-chordPlotReport(params$kggall[params$nrowsall, ], nRows = length(params$nrowsall), orderby = "P.DE")
+#chordPlotReport(params$kggall[params$nrowsall, ], nRows = length(params$nrowsall), orderby = "P.DE")
+mychordplot(params$kggall[params$nrowsall,  c("Pathway","genes")], div = "chordplotall", elementId = "chordplotall")
 ```
+
 ```{r eval = params$chorkgaObj, fig.height=3}
 legendChorplotReport(params$kggall[params$nrowsall, ] )
 ```
@@ -629,7 +631,8 @@ cat("## Chorplot Up genes")
 ```
 
 ```{r chorkguplot, eval = params$chorkguObj}
-chordPlotReport(params$kggup[params$nrowsup, ], nRows = length(params$nrowsup), orderby = "P.DE")
+#chordPlotReport(params$kggup[params$nrowsup, ], nRows = length(params$nrowsup), orderby = "P.DE")
+mychordplot(params$kggup[params$nrowsup,  c("Pathway","genes")], div = "chordplotup", elementId = "chordplotup")
 legendChorplotReport(params$kggup[params$nrowsup, ] )
 ```
 
@@ -714,7 +717,8 @@ cat("## Chorplot Down genes")
 ```
 
 ```{r chorkgdownlot, eval = params$chorkgdObj}
-chordPlotReport(params$kggdown[params$nrowsdown, ], nRows = length(params$nrowsdown), orderby = "P.DE")
+#chordPlotReport(params$kggdown[params$nrowsdown, ], nRows = length(params$nrowsdown), orderby = "P.DE")
+mychordplot(params$kggdown[params$nrowsdown,  c("Pathway","genes")], div = "chordplotdown", elementId =  "chordplotdown")
 legendChorplotReport(params$kggdown[params$nrowsdown, ] )
 ```
 
