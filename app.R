@@ -1594,10 +1594,17 @@ myHeightfunction <- function(filas) {
   output$cloudBPAll <- renderPlot({
     validate(need(go$all, "Load file to render dotPlot"))
     goall <- go$all[go$all$Ont=="BP", ]
-     p <- myggwordcloud(goall)
-     p 
-  }, height = 600)
+    myggwordcloud(goall, bg = "#343e48")
+  })
   
+  output$cloudbpall <- downloadHandler(
+    filename = "cloudbpall.svg",
+    content = function(file){
+      svg(file, width = 8, height = 6)
+      myggwordcloud(go$all[go$all$Ont=="BP", ])
+      dev.off()
+    }
+  )
   # ............ ###############################
   # GO table MF all #####################
   output$tableMFall <- DT::renderDataTable({
@@ -1680,9 +1687,17 @@ myHeightfunction <- function(filas) {
   output$cloudMFAll <- renderPlot({
     validate(need(go$all, "Load file to render dotPlot"))
     goall <- go$all[go$all$Ont=="MF", ]
-     p <- myggwordcloud(goall)
-     p 
-  }, height = 600)
+    myggwordcloud(goall, bg = "#343e48")
+  })
+  
+  output$cloudmfall <- downloadHandler(
+    filename = "cloudmfall.svg",
+    content = function(file){
+      svg(file, width = 8, height = 6)
+      myggwordcloud(go$all[go$all$Ont=="MF", ])
+      dev.off()
+    }
+  )
   # ............ ###############################
   # GO table CC all #####################
   output$tableCCall <- DT::renderDataTable(server=FALSE,{
@@ -1762,9 +1777,17 @@ myHeightfunction <- function(filas) {
   output$cloudCCAll <- renderPlot({
     validate(need(go$all, "Load file to render dotPlot"))
     goall <- go$all[go$all$Ont=="CC", ]
-     p <- myggwordcloud(goall)
-     p 
-  }, height = 600)
+    myggwordcloud(goall, bg = "#343e48")
+  })
+  
+  output$cloudccall <- downloadHandler(
+    filename = "cloudccall.svg",
+    content = function(file){
+      svg(file, width = 8, height = 6)
+      myggwordcloud(go$all[go$all$Ont=="CC", ])
+      dev.off()
+    }
+  )
   # ............ ###############################
   # GO table BP UP#####################
   output$tableBP <- DT::renderDataTable(server=FALSE,{
@@ -1832,9 +1855,18 @@ myHeightfunction <- function(filas) {
   output$cloudBPUp <- renderPlot({
     validate(need(go$up, "Load file to render dotPlot"))
     goup <- go$up[go$up$Ont=="BP", ]
-     p <- myggwordcloud(goup)
-     p 
-  }, height = 600)
+    myggwordcloud(goup, bg = "#343e48")
+  })
+  
+  output$cloudbpup <- downloadHandler(
+    filename = "cloudbpup.svg",
+    content = function(file){
+      svg(file, width = 8, height = 6)
+      myggwordcloud(go$up[go$up$Ont=="BP", ])
+      dev.off()
+    }
+  )
+  
   # ............ ###############################
   # GO table MF UP #####################
   output$tableMF <- DT::renderDataTable({
@@ -1903,9 +1935,17 @@ myHeightfunction <- function(filas) {
   output$cloudMFUp <- renderPlot({
     validate(need(go$up, "Load file to render dotPlot"))
     goup <- go$up[go$up$Ont=="MF", ]
-     p <- myggwordcloud(goup)
-     p 
-  }, height = 600)
+    myggwordcloud(goup, bg = "#343e48")
+  })
+  
+  output$cloudmfup <- downloadHandler(
+    filename = "cloudmfup.svg",
+    content = function(file){
+      svg(file, width = 8, height = 6)
+      myggwordcloud(go$up[go$up$Ont=="MF", ])
+      dev.off()
+    }
+  )
   # ............ ###############################
   # GO table CC UP #####################
   output$tableCC <- DT::renderDataTable(server=FALSE,{
@@ -1974,9 +2014,17 @@ myHeightfunction <- function(filas) {
   output$cloudCCUp <- renderPlot({
     validate(need(go$up, "Load file to render dotPlot"))
     goup <- go$up[go$up$Ont=="CC", ]
-     p <- myggwordcloud(goup)
-     p 
-  }, height = 600)
+    myggwordcloud(goup, bg = "#343e48")
+  })
+  
+  output$cloudccup <- downloadHandler(
+    filename = "cloudccup.svg",
+    content = function(file){
+      svg(file, width = 8, height = 6)
+      myggwordcloud(go$up[go$up$Ont=="CC", ])
+      dev.off()
+    }
+  )
   # ............ ###############################
   # GO table BP DOWN #####################
   output$tableBPdown <- DT::renderDataTable(server=FALSE,{
@@ -2044,9 +2092,17 @@ myHeightfunction <- function(filas) {
   output$cloudBPDown <- renderPlot({
     validate(need(go$down, "Load file to render dotPlot"))
     godown <- go$down[go$down$Ont=="BP", ]
-     p <- myggwordcloud(godown)
-     p 
-  }, height = 600)
+    myggwordcloud(godown, bg = "#343e48")
+  })
+  
+  output$cloudbpdown <- downloadHandler(
+    filename = "cloudbpdown.svg",
+    content = function(file){
+      svg(file, width = 8, height = 6)
+      myggwordcloud(go$down[go$down$Ont=="BP", ])
+      dev.off()
+    }
+  )
   # ............ ###############################
   # GO table MF DOWN #####################
   output$tableMFdown <- DT::renderDataTable({
@@ -2115,9 +2171,17 @@ myHeightfunction <- function(filas) {
   output$cloudMFDown <- renderPlot({
     validate(need(go$down, "Load file to render dotPlot"))
     godown <- go$down[go$down$Ont=="MF", ]
-     p <- myggwordcloud(godown)
-     p 
-  }, height = 600)
+    myggwordcloud(godown, bg = "#343e48")
+  })
+  
+  output$cloudmfdown <- downloadHandler(
+    filename = "cloudmfdown.svg",
+    content = function(file){
+      svg(file, width = 8, height = 6)
+      myggwordcloud(go$down[go$down$Ont=="MF", ])
+      dev.off()
+    }
+  )
   # ............ ###############################
   # GO table CC DOWN #####################
   output$tableCCdown <- DT::renderDataTable(server=FALSE,{
@@ -2187,9 +2251,17 @@ myHeightfunction <- function(filas) {
   output$cloudCCDown <- renderPlot({
     validate(need(go$down, "Load file to render dotPlot"))
     godown <- go$down[go$down$Ont=="CC", ]
-     p <- myggwordcloud(godown)
-     p 
-  }, height = 600)
+    myggwordcloud(godown, bg = "#343e48")
+  })
+  
+  output$cloudccdown <- downloadHandler(
+    filename = "cloudccdown.svg",
+    content = function(file){
+      svg(file, width = 8, height = 6)
+      myggwordcloud(go$down[go$down$Ont=="CC"])
+      dev.off()
+    }
+  )
   # ............ ###############################
   # GSEA table ##########################
   output$gseaTable <- renderDataTable({
