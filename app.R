@@ -1182,7 +1182,7 @@ output$downKrpt <- downloadHandler(
   filename = "karyoplot.png",
   content = function(file){
     png(file)
-    krtp(data$df, specie = specie(), pval = padj(), fcdown = logfc()[1],
+    krtp(res$sh, specie = specie(), pval = padj(), fcdown = logfc()[1],
          fcup = logfc()[2], bg="#46505a", coldown="#4ADBFF" , colup="#f7665c")
     dev.off()
   }
