@@ -263,7 +263,8 @@ fluidPage(
                                           tagList(
                                             fluidRow(
                                               column(width=10, offset=1,
-                                                     plotOutput("karyoPlot", height = "800px") )))
+                                                     plotOutput("karyoPlot", height = "800px") )),
+                                            downloadButton("downKrpt","Download PNG"))
                                           )
                                  )
                              )
@@ -381,7 +382,12 @@ fluidPage(
                 ),
                 
                 plotOutput("volcano", click = "plot_click1" , width = "100%", height = "600px"),
-                tableOutput("texto1")
+                column(width=8,
+                       tableOutput("texto1")
+                ),
+                column(width = 4,
+                       downloadButton("downVolcano","Download SVG")
+                )
             ),
          tabPanel(
                 title = "MA plot",

@@ -264,6 +264,7 @@ server <- function(input, output, session) {
   validateCountData <- reactiveValues(ok=FALSE) #para validar count y sample ok
   vals <- reactiveValues()
   vsd <- reactiveValues()
+  svg <- reactiveValues()
   
   observeEvent(input$deseqFile, {
       datos$dds <- readRDS(input$deseqFile$datapath)
@@ -1026,7 +1027,7 @@ output$pca3d <- renderRglwidget({
     validate(need(res$sh, "Load file to render plot"))
     res <-  res$sh
     #res$`-log10padj` <- (-log10(res$padj)) 
-    CustomVolcano(res, lab = as.character(res$GeneName_Symbol),
+    svg$volcano <- CustomVolcano(res, lab = as.character(res$GeneName_Symbol),
                   selectLab = genesVolcano(),
                     x = 'log2FoldChange',
                     y = 'padj',
@@ -1036,10 +1037,16 @@ output$pca3d <- renderRglwidget({
                     drawConnectors=TRUE,
                     #xlim = c(-8, 8),
                     col = c("gray", "#7cccc3", "#d99c01", input$upColor, input$downColor))
+    svg$volcano
     })
     #volcany(res$sh, padj=padj(), fcdown=logfc()[1], fcup=logfc()[2],
     #        col=c(input$upColor, input$downColor), genes=genesVolcano() )
-  
+output$downVolcano <- downloadHandler(
+  filename = "volcano.svg",
+  content = function(file){
+    ggsave(file, svg$volcano, "svg")}
+)
+
 xy <- reactive({
   res <- res$sh
   res$`-log10padj` <- (-log10(res$padj)) 
@@ -1171,7 +1178,15 @@ output$karyoPlot <- renderPlot({
     krtp(res$sh, specie = specie(), pval = padj(), fcdown = logfc()[1],
          fcup = logfc()[2], bg="#46505a", coldown="#4ADBFF" , colup="#f7665c")
 })
-
+output$downKrpt <- downloadHandler(
+  filename = "karyoplot.png",
+  content = function(file){
+    png(file)
+    krtp(data$df, specie = specie(), pval = padj(), fcdown = logfc()[1],
+         fcup = logfc()[2], bg="#46505a", coldown="#4ADBFF" , colup="#f7665c")
+    dev.off()
+  }
+)
  # Boxviolin plot #################################
   output$boxviolin <- renderPlotly({
           validate(need(datos$dds, "Load file and condition to render Volcano"),
@@ -1229,16 +1244,23 @@ myHeightfunction <- function(filas) {
                 genesUp = data$genesUp, genesDown = data$genesDown,
                 colors = c(input$downColor, input$upColor))
     if (typeBarKeggAll() == "Dodge") {
-      plt <- p[[1]]
+      plt <- p[[1]]; svg$keggall <- p[[1]]
     } else if (typeBarKeggAll() == "Stack") {
-      plt <- p[[2]]
+      plt <- p[[2]]; svg$keggall <- p[[2]]
     } else {
-      plt <- p[[3]]
+      plt <- p[[3]]; svg$keggall <- p[[3]]
     }
+    plt <- plt %>% plotly::ggplotly(tooltip = "all" )
     plt$height <- myHeightfunction( rowsAll() )
     plt$x$layout$height <- myHeightfunction(rowsAll() )
     plt
   })
+
+output$barKeggAll <- downloadHandler(
+  filename = "barkeggall.svg",
+  content = function(file){
+    ggsave(file, svg$keggAll, "svg", width = 10, units = "in") }
+)
   # KEGG chordiag plot All ###############
   output$keggChordAll <- renderMychordplot({
     validate(need(kgg$all, "Load file to render ChordPlot"))

@@ -57,7 +57,9 @@ fluidPage(
                                                            lib = "glyphicon")
                                              )
                                          )
-                                     )), # fin fluidRow, column & radioGroupButtons
+                                     ),
+                                     column(width=2, offset = 3, downloadButton("barKeggAll","Download SVG")),
+                                     ), # fin fluidRow, column & radioGroupButtons
                                      fluidRow(class = "text-center",
                                               column(
                                                   align = "center",
