@@ -382,12 +382,8 @@ fluidPage(
                 ),
                 
                 plotOutput("volcano", click = "plot_click1" , width = "100%", height = "600px"),
-                column(width=8,
-                       tableOutput("texto1")
-                ),
-                column(width = 4,
-                       downloadButton("downVolcano","Download SVG")
-                )
+                column(width=8,tableOutput("texto1")),
+                column(width = 4,downloadButton("downVolcano","Download SVG"))
             ),
          tabPanel(
                 title = "MA plot",
@@ -407,7 +403,8 @@ fluidPage(
                 ),
                 
                   plotOutput("MA", click = "plot_click2" , width = "100%", height = "600px"),
-                  tableOutput("texto2")
+                  column(width=8,tableOutput("texto2")),
+                  column(width = 4, downloadButton("MAdownload","Download SVG"))
             )
  ))),
  fluidRow(column(width = 4, offset = 4,
