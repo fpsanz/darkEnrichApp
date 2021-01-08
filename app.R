@@ -1113,7 +1113,7 @@ output$texto2 <- renderTable( digits = -2, {
     p <- heat2(vsd$data, n=numheatmap(), intgroup = variables(), sampleName = samplename(),
          specie=specie(), customColor = coloresPCA$colores() )
     q <- heat2(vsd$data, n=numheatmap(), intgroup = variables(), sampleName = samplename(),
-               specie=specie(), customColor = coloresPCA$colores(), rppxpy=TRUE )
+               specie=specie(), customColor = coloresPCA$colores(), ggplt = TRUE )
     svg$heat <- q
     print(p)
   })
@@ -1121,19 +1121,7 @@ output$texto2 <- renderTable( digits = -2, {
 output$downHeat <- downloadHandler(
   filename = "heat.svg",
   content = function(file){
-    plots <- svg$heat
-    plots <- plots[!sapply(plots, is.null)]
-    plots <- lapply(plots, ggplotGrob)
-    plots$p$widths <- plots$px$widths <- plots$py$widths <- unit.pmax(
-      plots$p$widths, 
-      plots$px$widths, 
-      plots$py$widths)
-    plots$p$heights <- plots$px$heights <- plots$py$heights <- unit.pmax(
-      plots$p$heights, 
-      plots$px$heights, 
-      plots$py$heights)
-     p <- grid.arrange(plots$py, textGrob(""), plots$p, plots$px, nrow=2)
-    ggsave(file, p, "svg", units = "in", width = 10, height = 10)}
+    ggsave(file, svg$heat, "svg", units = "in", width = 10, height = 10)}
 )
   # view CLUSTER data ###################
   output$cluster <- renderPlotly( {
@@ -1143,8 +1131,18 @@ output$downHeat <- downloadHandler(
       need(variables(), "Load condition to render plot"),
       need(samplename(), "Load condition to render plot")
     )
-    cluster(vsd$data, intgroup = samplename())
+    p <- cluster(vsd$data, intgroup = samplename())
+    q <- cluster(vsd$data, intgroup = samplename(), ggplt=TRUE)
+    svg$cluster <- q
+    print(p)
   })
+
+output$downCluster <- downloadHandler(
+  filename = "cluster.svg",
+  content = function(file){
+    ggsave(file, svg$cluster, "svg", units = "in", width = 10, height = 10)}
+)
+
 # view TOP6 data ###################
   output$top6 <- renderPlotly( {
     validate(need(datos$dds, ""),
@@ -1167,8 +1165,15 @@ output$downHeat <- downloadHandler(
       geom_point(position = position_jitter(width = 0.1, height = 0), size = 2) +
       facet_wrap(~symbol) + scale_color_manual( values = coloresPCA$colores() ) +
       ggtitle("Expression of top 6 most significant genes")
+    svg$topsix <- p
     p %>% ggplotly(tooltip = c("x","y","text"))
     })
+
+output$downTopsix <- downloadHandler(
+  filename = "topsix.svg",
+  content = function(file){
+    ggsave(file, svg$topsix, "svg", units = "in", width = 10, height = 10)}
+)
 # view TOP1 data ###################  
   output$top1 <- renderPlotly( {
     validate(need(datos$dds, ""),
@@ -1209,8 +1214,15 @@ output$downHeat <- downloadHandler(
         txt <- gsub("\n","<br/>",txt)
         tags$h5(HTML(txt))
     })
+    svg$topone <- p
     p %>% ggplotly(tooltip = c("x","y","text"))
   })
+
+output$downTopone <- downloadHandler(
+  filename = "topone.svg",
+  content = function(file){
+    ggsave(file, svg$topone, "svg", units = "in", width = 10, height = 10)}
+)
 ## karyoplot ######################################
 output$karyoPlot <- renderPlot({
     validate(need(res$sh, "Load file to render plot"))

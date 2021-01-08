@@ -1990,7 +1990,7 @@ heat <- function (vsd, n = 40, intgroup = "AAV", sampleName = "condition",
 }
 ## New heatmap plotly
 heat2 <- function (vsd, n = 40, intgroup = NULL, sampleName = NULL,
-                      specie="Mm", customColor = NULL, rppxpy = FALSE ) 
+                      specie="Mm", customColor = NULL, ggplt = FALSE ) 
     {
       require("EnsDb.Mmusculus.v79")
       require("org.Mm.eg.db")
@@ -2051,14 +2051,19 @@ heat2 <- function (vsd, n = 40, intgroup = NULL, sampleName = NULL,
     ch <- sizesDf$ch[ nrow(mat) ]
     fsr <- sizesDf$fsr[ nrow(mat) ]
     if(nrow(mat)>80){labrow = rep(NA, nrow(mat))}else{labrow = as.character(consensus$Symbol)}
-    heatmaply(mat, labRow = labrow, col_side_colors = df,
+    if(!isTRUE(ggplt)){
+      heatmaply(mat, labRow = labrow, col_side_colors = df,
+                col_side_palette = ann, labCol = as.character(vsd[[sampleName]] ), fontsize_row = fsr,
+                margins = c(50,50,20,0))}
+    else{
+      ggheatmap(mat, labRow = labrow, col_side_colors = df,
               col_side_palette = ann, labCol = as.character(vsd[[sampleName]] ), fontsize_row = fsr,
-              margins = c(50,50,20,0), plot_method = "ggplot", return_ppxpy = rppxpy )
+              margins = c(50,50,20,0) )}
 }
 
 # cluster #############
 
-cluster <- function(vsd, intgroup = "condition")
+cluster <- function(vsd, intgroup = "condition", ggplt = FALSE)
   {
   #vsd <- vst(data)
   sampleDists_vsd <- dist(t(assay(vsd)))
@@ -2066,7 +2071,11 @@ cluster <- function(vsd, intgroup = "condition")
   rownames(sampleDistMatrix_vsd) <- vsd[[intgroup]]
   colnames(sampleDistMatrix_vsd) <- vsd[[intgroup]]
   colors <- colorRampPalette( rev(brewer.pal(9, "Blues")) )(255)
-  heatmaply(sampleDistMatrix_vsd, colors = colors, margins = c(50,50,50,0)  )
+  if(!isTRUE(ggplt)){
+    heatmaply(sampleDistMatrix_vsd, colors = colors, margins = c(50,50,50,0)  )
+  }else{
+    ggheatmap(sampleDistMatrix_vsd, colors = colors, margins = c(50,50,50,0)  )  
+    }
   # pheatmap(sampleDistMatrix_vsd,
   #          clustering_distance_rows = sampleDists_vsd,
   #          clustering_distance_cols = sampleDists_vsd,
