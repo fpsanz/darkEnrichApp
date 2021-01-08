@@ -37,6 +37,8 @@ library(mychordplot)
 library(tidytext)
 library(wordcloud)
 library(randomcoloR)
+library(grid)
+library(gridExtra)
 source("utils.R")
 source("updatepopModals.R")
 options(shiny.maxRequestSize = 3000*1024^2)
@@ -989,7 +991,7 @@ output$pca <- renderPlotly({
              need(variables(), "Select condition to render PCA"),
              need(samplename(), ""),
              need(coloresPCA$colores(), ""))
-    plotPCA(
+    p <- plotPCA(
         rlog$datos,
         intgroup = variables(),
         labels = samplename(),
@@ -998,7 +1000,15 @@ output$pca <- renderPlotly({
         theme(plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), "cm")) +
         scale_size_manual(values = 3) +
         theme(text = element_text(size = 16))
+    svg$pca <- p
+    print(p)
 })
+
+output$downPCA <- downloadHandler(
+  filename = "pca.svg",
+  content = function(file){
+    ggsave(file, svg$pca, "svg", units = "in", width = 10, height = 10)}
+)
 
 output$pca3d <- renderRglwidget({
     validate(need(datos$dds, ""),
@@ -1100,9 +1110,31 @@ output$texto2 <- renderTable( digits = -2, {
              need(vsd$data, "Load file to render plot"),
              need(variables(),"Load condition to render plot" ),
              need(samplename(),"Load condition to render plot" ) )
-    heat2(vsd$data, n=numheatmap(), intgroup = variables(), sampleName = samplename(),
+    p <- heat2(vsd$data, n=numheatmap(), intgroup = variables(), sampleName = samplename(),
          specie=specie(), customColor = coloresPCA$colores() )
+    q <- heat2(vsd$data, n=numheatmap(), intgroup = variables(), sampleName = samplename(),
+               specie=specie(), customColor = coloresPCA$colores(), rppxpy=TRUE )
+    svg$heat <- q
+    print(p)
   })
+
+output$downHeat <- downloadHandler(
+  filename = "heat.svg",
+  content = function(file){
+    plots <- svg$heat
+    plots <- plots[!sapply(plots, is.null)]
+    plots <- lapply(plots, ggplotGrob)
+    plots$p$widths <- plots$px$widths <- plots$py$widths <- unit.pmax(
+      plots$p$widths, 
+      plots$px$widths, 
+      plots$py$widths)
+    plots$p$heights <- plots$px$heights <- plots$py$heights <- unit.pmax(
+      plots$p$heights, 
+      plots$px$heights, 
+      plots$py$heights)
+     p <- grid.arrange(plots$py, textGrob(""), plots$p, plots$px, nrow=2)
+    ggsave(file, p, "svg", units = "in", width = 10, height = 10)}
+)
   # view CLUSTER data ###################
   output$cluster <- renderPlotly( {
     validate(
@@ -1202,10 +1234,16 @@ output$downKrpt <- downloadHandler(
                    need(variables(), ""),
                    need(samplename(),"" ),
                    need(coloresPCA$colores(), ""))
-          boxViolin( names = samplename() , vsd=vsd$data, boxplotswitch=boxplotswitch(),
+          p <- boxViolin( names = samplename() , vsd=vsd$data, boxplotswitch=boxplotswitch(),
                     intgroup=variables(), customColor = coloresPCA$colores() ) 
+          svg$boxviolin <- p
+          print(p)
   })
-
+output$downViolin <- downloadHandler(
+  filename = "box_violin.svg",
+  content = function(file){
+    ggsave(file, svg$boxviolin, "svg", units = "in", width = 10, height = 10)}
+)
 # ............ ###############################
 # Funcion tamaño plot ########################
 myHeightfunction <- function(filas) {

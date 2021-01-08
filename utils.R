@@ -1990,7 +1990,7 @@ heat <- function (vsd, n = 40, intgroup = "AAV", sampleName = "condition",
 }
 ## New heatmap plotly
 heat2 <- function (vsd, n = 40, intgroup = NULL, sampleName = NULL,
-                      specie="Mm", customColor = NULL ) 
+                      specie="Mm", customColor = NULL, rppxpy = FALSE ) 
     {
       require("EnsDb.Mmusculus.v79")
       require("org.Mm.eg.db")
@@ -2053,7 +2053,7 @@ heat2 <- function (vsd, n = 40, intgroup = NULL, sampleName = NULL,
     if(nrow(mat)>80){labrow = rep(NA, nrow(mat))}else{labrow = as.character(consensus$Symbol)}
     heatmaply(mat, labRow = labrow, col_side_colors = df,
               col_side_palette = ann, labCol = as.character(vsd[[sampleName]] ), fontsize_row = fsr,
-              margins = c(50,50,20,0)  )
+              margins = c(50,50,20,0), plot_method = "ggplot", return_ppxpy = rppxpy )
 }
 
 # cluster #############

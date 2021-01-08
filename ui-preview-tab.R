@@ -127,7 +127,8 @@ fluidPage(
                                      tagList(fluidRow(
                                      column(width=3,
                                         materialSwitch(inputId = "pca3d", label = "PCA 3D",
-                                                       status = "primary")
+                                                       status = "primary"),
+                                        downloadButton("downPCA","Download SVG")
                                             ),
                                      column(width=9,
                                         uiOutput("pca3", height = "800px")
@@ -153,7 +154,8 @@ fluidPage(
                                      tagList(fluidRow(
                                      column(width=3,
                                         materialSwitch(inputId = "boxplotswitch", label = "Violin plot",
-                                                       status = "primary")
+                                                       status = "primary"),
+                                        downloadButton("downViolin","Download SVG")
                                             ),
                                      column(width=9,
                                         plotlyOutput("boxviolin", width="100%", height = "800px")
@@ -186,7 +188,8 @@ fluidPage(
                                                 max = 120,
                                                 value = 20,
                                                 step = 1
-                                              )
+                                              ),
+                                              downloadButton("downHeat","Download SVG")
                                             ),
                                             column(width = 9,
                                                    plotlyOutput("heat", height = "800px"))
