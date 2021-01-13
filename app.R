@@ -32,6 +32,7 @@ library(shinydashboardPlus)
 library(shinyjs)
 library(shinythemes)
 library(shinyWidgets)
+library(shinymanager)
 library(stringr)
 library(tidyverse)
 library(tidytext)
@@ -213,9 +214,8 @@ server <- function(input, output, session) {
   
   res_auth <- secure_server(
     check_credentials = check_credentials(
-        "./www/users.sqlite",
-        passphrase = key_get("R-fpsanz-key", "obiwankenobi")
-        # passphrase = "passphrase_wihtout_keyring"
+        "users.sqlite",
+        passphrase = "fps379725"
     )
   )
   
