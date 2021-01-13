@@ -207,8 +207,17 @@ ui <- dashboardPage(title="Rnaseq viewer and report",
                     body
 ) # fin del UI
 
+ui <- secure_app(ui, enable_admin = TRUE)
 ########################################## SERVER #################################################
 server <- function(input, output, session) {
+  
+  res_auth <- secure_server(
+    check_credentials = check_credentials(
+        "./www/users.sqlite",
+        passphrase = key_get("R-fpsanz-key", "obiwankenobi")
+        # passphrase = "passphrase_wihtout_keyring"
+    )
+  )
   
   observeEvent(input$aboutButton, {
     shinyalert("Enrich app 2020", HTML("Authors:<br>
