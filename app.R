@@ -208,7 +208,26 @@ ui <- dashboardPage(title="Rnaseq viewer and report",
                     body
 ) # fin del UI
 
-ui <- secure_app(ui, enable_admin = TRUE)
+ui <- secure_app(ui, enable_admin = TRUE, theme = shinythemes::shinytheme("darkly"),
+                 head_auth = HTML("<style>
+                 .panel-auth{
+                                  background-color: #343e48 !important;
+                                  }
+                                  </style>"
+                                  ),
+                 
+                 tags_bottom = tagList(tags$div(style = "text-align: center;",
+                   tags$image(
+                     height = 40,
+                     src = "mircen.png",
+                     style = "padding-right: 10px; padding-top: 10px;"
+                   ),
+                   tags$image(
+                     height = 50,
+                     src = "imib.png"#,
+                   ))
+                  )
+)
 ########################################## SERVER #################################################
 server <- function(input, output, session) {
   
@@ -218,7 +237,16 @@ server <- function(input, output, session) {
         passphrase = "fps379725"
     )
   )
-  
+  # En kirk esto sustituye al de arriba
+  # la base de datos y la contraseña están almacenadas en ~/.users
+  #
+  #   res_auth <- secure_server(
+  #   check_credentials = check_credentials(
+  #       "/home/kirk/.users/users.sqlite",
+  #       passphrase = readRDS("/home/kirk/.users/dbpass.Rds")
+  #   )
+  # )
+
   observeEvent(input$aboutButton, {
     shinyalert("Enrich app 2020", HTML("Authors:<br>
     Miriam Riquelme Pérez 
