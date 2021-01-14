@@ -234,7 +234,7 @@ server <- function(input, output, session) {
   res_auth <- secure_server(
     check_credentials = check_credentials(
         "users.sqlite",
-        passphrase = "fps379725"
+        passphrase = "xxxxxxxx"
     )
   )
   # En kirk esto sustituye al de arriba
@@ -242,8 +242,8 @@ server <- function(input, output, session) {
   #
   #   res_auth <- secure_server(
   #   check_credentials = check_credentials(
-  #       "/home/kirk/.users/users.sqlite",
-  #       passphrase = readRDS("/home/kirk/.users/dbpass.Rds")
+  #       "xxxxxxxxxxxxxxxxxx",
+  #       passphrase = readRDS("xxxxxxxxxxxx")
   #   )
   # )
 
