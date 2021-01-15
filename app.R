@@ -231,21 +231,19 @@ ui <- secure_app(ui, enable_admin = TRUE, theme = shinythemes::shinytheme("darkl
 ########################################## SERVER #################################################
 server <- function(input, output, session) {
   
+   #es_auth <- secure_server(
+   # check_credentials = check_credentials(
+   #     "pathToUserDataBase",
+   #     passphrase = readRDS("pathToDataBasePass")
+   # )
+   #)
+	#
   res_auth <- secure_server(
     check_credentials = check_credentials(
-        "users.sqlite",
-        passphrase = "xxxxxxxx"
+        "/datos/repos/darkEnrichApp/users.sqlite",
+        passphrase = readRDS("/datos/repos/darkEnrichApp/pass.Rds")
     )
   )
-  # En kirk esto sustituye al de arriba
-  # la base de datos y la contraseña están almacenadas en ~/.users
-  #
-  #   res_auth <- secure_server(
-  #   check_credentials = check_credentials(
-  #       "xxxxxxxxxxxxxxxxxx",
-  #       passphrase = readRDS("xxxxxxxxxxxx")
-  #   )
-  # )
 
   observeEvent(input$aboutButton, {
     shinyalert("Enrich app 2020", HTML("Authors:<br>

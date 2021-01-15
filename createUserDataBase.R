@@ -1,13 +1,25 @@
 library(shinymanager)
+library(optparse)
+
+option_list <- list(
+  make_option(c("-a","--admin"), type="character", default =  NULL, help = "admin user name", metavar ="character" ),
+  make_option(c("-p","--pass"), type="character", default =  NULL, help = "admin user password", metavar ="character" ),
+  make_option(c("-d","--database"), type="character", default =  NULL, help = "database name", metavar ="character" ),
+  make_option(c("-b","--dbpass"), type="character", default =  NULL, help = "database pass", metavar ="character" )
+)
+
+opt_parser = OptionParser(option_list=option_list);
+opt = parse_args(opt_parser);
+
+
 ## para crear una tabla inicial de usuarios
 credentials <- data.frame(
-  user = c("fpsanz"),
-  password = c("fps379725"),
+  user = c(opt$admin),
+  password = c(opt$pass),
   # password will automatically be hashed
   admin = c(TRUE),
   start = NA,
   expire = NA,
-  applications = c("darkEnrichApp;enrichapp_listable"),
   stringsAsFactors = FALSE
 )
 
@@ -16,6 +28,8 @@ credentials <- data.frame(
 # para crear la base de datos de usuarios
 create_db(
   credentials_data = credentials,
-  sqlite_path = "users.sqlite",
-  passphrase = "fps379725"
+  sqlite_path = opt$database,
+  passphrase = opt$pass
 )
+
+saveRDS(opt$pass, opt$dbpass )
