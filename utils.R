@@ -1187,24 +1187,30 @@ geneIdConverter <- function(genes, specie="Mm"){ # genes = vector of ensembl gen
         orgdb <- org.Hs.eg.db
     }
   annot <- NULL
-  annot$ENSEMBL <- genes
-  annot$SYMBOL <-  mapIds(ensdb, keys=genes, column="SYMBOL",keytype="GENEID")
-  annot$SYMBOL1 <- mapIds(orgdb, keys = genes, column = 'SYMBOL', keytype = 'ENSEMBL', multiVals = 'first') 
-  annot$description <- mapIds(orgdb, keys = genes, column = 'GENENAME', keytype = 'ENSEMBL', multiVals = 'first')
-  annot <- as.data.frame(annot)
-  consensus <- data.frame('Symbol'= ifelse(!is.na(annot$SYMBOL), as.vector(annot$SYMBOL),
-                                           ifelse(!is.na(annot$SYMBOL1),as.vector(annot$SYMBOL1),
-                                                  as.vector(annot$ENSEMBL))), stringsAsFactors = F)
-  annot$consensus <- consensus$Symbol
-  entrez1 <- mapIds(orgdb, keys = annot$consensus, column = "ENTREZID", keytype = "SYMBOL")
-  entrez2 <- mapIds(orgdb, keys = as.character(annot$ENSEMBL),
-                    column = "ENTREZID", keytype = "ENSEMBL")
-  entrez1 <- ifelse(entrez1=="NULL", NA, entrez1)
-  entrez2 <- ifelse(entrez2=="NULL", NA, entrez2)
-  annot$entrez1 <- as.vector(unlist(entrez1))
-  annot$entrez2 <- as.vector(unlist(entrez2))
-  ENTREZID <- ifelse(!is.na(annot$entrez1), annot$entrez1, annot$entrez2)
-  annot$ENTREZID <- ENTREZID
+    annot$genes <- genes #
+    annot$ENSEMBL <- genes
+    annot$SYMBOL <-  mapIds(ensdb, keys=genes, column="SYMBOL",keytype="GENEID")
+    annot$SYMBOL1 <- mapIds(orgdb, keys = genes, column = 'SYMBOL', keytype = 'ENSEMBL',
+                            multiVals = 'first') 
+    annot$description <- mapIds(orgdb, keys = genes, column = 'GENENAME', 
+                                keytype = 'ENSEMBL', multiVals = 'first')
+    annot <- as.data.frame(annot)
+    consensus <- data.frame('Symbol'= ifelse(!is.na(annot$SYMBOL), 
+                                             as.vector(annot$SYMBOL),
+                                             ifelse(!is.na(annot$SYMBOL1),as.vector(annot$SYMBOL1),
+                                                    as.vector(annot$ENSEMBL))), stringsAsFactors = F)
+    annot$consensus <- consensus$Symbol
+    entrez1 <- mapIds(orgdb, keys = annot$consensus, column = "ENTREZID", keytype = "SYMBOL")
+    entrez2 <- mapIds(orgdb, keys = as.character(annot$ENSEMBL),
+                      column = "ENTREZID", keytype = "ENSEMBL")
+    entrez1 <- ifelse(entrez1=="NULL", NA, entrez1)
+    entrez2 <- ifelse(entrez2=="NULL", NA, entrez2)
+    annot$entrez1 <- as.vector(unlist(entrez1))
+    annot$entrez2 <- as.vector(unlist(entrez2))
+    ENTREZID <- ifelse(!is.na(annot$entrez1), annot$entrez1, annot$entrez2)
+    annot$ENTREZID <- ENTREZID
+
+
   return(annot)
 }
 
