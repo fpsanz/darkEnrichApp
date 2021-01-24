@@ -240,8 +240,8 @@ server <- function(input, output, session) {
 	#
   res_auth <- secure_server(
     check_credentials = check_credentials(
-        "/datos/repos/darkEnrichApp/users.sqlite",
-        passphrase = readRDS("/datos/repos/darkEnrichApp/pass.Rds")
+        "~/.users/users.sqlite",
+        passphrase = readRDS("~/.users/pass.Rds")
     )
   )
 
