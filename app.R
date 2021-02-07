@@ -208,42 +208,34 @@ ui <- dashboardPage(title="Rnaseq viewer and report",
                     body
 ) # fin del UI
 
-ui <- secure_app(ui, enable_admin = TRUE, theme = shinythemes::shinytheme("darkly"),
-                 head_auth = HTML("<style>
-                 .panel-auth{
-                                  background-color: #343e48 !important;
-                                  }
-                                  </style>"
-                                  ),
-                 
-                 tags_bottom = tagList(tags$div(style = "text-align: center;",
-                   tags$image(
-                     height = 40,
-                     src = "mircen.png",
-                     style = "padding-right: 10px; padding-top: 10px;"
-                   ),
-                   tags$image(
-                     height = 50,
-                     src = "imib.png"#,
-                   ))
-                  )
-)
+# ui <- secure_app(ui, enable_admin = TRUE, theme = shinythemes::shinytheme("darkly"),
+#                  head_auth = HTML("<style>
+#                  .panel-auth{
+#                                   background-color: #343e48 !important;
+#                                   }
+#                                   </style>"
+#                                   ),
+#                  tags_bottom = tagList(tags$div(style = "text-align: center;",
+#                    tags$image(
+#                      height = 40,
+#                      src = "mircen.png",
+#                      style = "padding-right: 10px; padding-top: 10px;"
+#                    ),
+#                    tags$image(
+#                      height = 50,
+#                      src = "imib.png"#,
+#                    ))
+#                   )
+#                  )
 ########################################## SERVER #################################################
 server <- function(input, output, session) {
   
-   #es_auth <- secure_server(
-   # check_credentials = check_credentials(
-   #     "pathToUserDataBase",
-   #     passphrase = readRDS("pathToDataBasePass")
-   # )
-   #)
-	#
-  res_auth <- secure_server(
-    check_credentials = check_credentials(
-        "~/.users/users.sqlite",
-        passphrase = readRDS("~/.users/pass.Rds")
-    )
-  )
+  # res_auth <- secure_server(
+  #   check_credentials = check_credentials(
+  #       "~/.users/users.sqlite",
+  #       passphrase = readRDS("~/.users/pass.Rds")
+  #   )
+  # )
 
   observeEvent(input$aboutButton, {
     shinyalert("Enrich app 2020", HTML("Authors:<br>
@@ -292,6 +284,8 @@ server <- function(input, output, session) {
   vals <- reactiveValues()
   vsd <- reactiveValues()
   svg <- reactiveValues()
+  padjNA <- reactiveValues()
+  conversion <- reactiveValues()
   
   observeEvent(input$deseqFile, {
       datos$dds <- readRDS(input$deseqFile$datapath)
@@ -334,21 +328,28 @@ server <- function(input, output, session) {
               as.data.frame() %>% mutate_at(vars(-sizeFactor, contains('replaceable')), as.character) %>% ##aqui##
               mutate_at(vars(-sizeFactor, contains('replaceable')), as.factor) %>% as.list()
         res$sh <- as.data.frame(lfcShrink(datos$dds, coef=(as.numeric(design())+1), type="apeglm", parallel = TRUE))
-        res$sh <- res$sh[!is.na(res$sh$padj),]
-        conversion <- geneIdConverter(rownames(res$sh), specie() )
+        conversion$ids <- geneIdConverter2(rownames(res$sh), specie() )
+        padjNA$true <- which(is.na(res$sh$padj)) 
+        if(length(padjNA$true)!=0 ){
+          conversionRes <- conversion$ids[-padjNA$true,]
+          res$sh <- res$sh[-padjNA$true,]
+        }else{
+          conversionRes <- conversion$ids
+        }
         res$sh$baseMean <- round(res$sh$baseMean,4)
         res$sh$lfcSE <- round(res$sh$lfcSE,4)
         res$sh$log2FoldChange <- round(res$sh$log2FoldChange,4)
-        res$sh <- cbind(`Description`=conversion$description, res$sh)
-        res$sh <- cbind(`ENTREZ`=conversion$ENTREZID, res$sh)
-        res$sh <- cbind(`GeneName_Symbol`=conversion$consensus, res$sh)
-        #res$sh$padj <- res$sh$pvalue  ##
+        res$sh <- cbind(`Description`=conversionRes$description, res$sh)
+        res$sh <- cbind(`ENTREZ`=conversionRes$ENTREZID, res$sh)
+        res$sh <- cbind(`ENSEMBL` = conversionRes$ENSEMBL, res$sh)
+        #res$sh <- cbind(`GeneName_Symbol`=conversion$consensus, res$sh)
+        res$sh <- cbind(`GeneName_Symbol`=conversionRes$SYMBOL, res$sh) #
         res$sh <-  res$sh %>% dplyr::select(-c(pvalue))
         if(specie() == "Mm" ){spc = "Mus_musculus"}
         else {spc = "Homo_sapiens"}
         links = paste0("<a href='http://www.ensembl.org/",spc,"/Gene/Summary?db=core;g=",
                        rownames(res$sh),"' target='_blank'>",rownames(res$sh),"</a>")
-        res$sh <- cbind(`GeneName_Ensembl`= links, res$sh)
+        res$sh <- cbind(`User_GeneId`= links, res$sh)
         res$lostgene <- length(which(is.na(res$sh$ENTREZ)))
         vsd$data <- vst(datos$dds)
         rlog$datos <- rlog(datos$dds)
@@ -1101,9 +1102,9 @@ output$texto2 <- renderTable( digits = -2, {
              need(variables(),"Load condition to render plot" ),
              need(samplename(),"Load condition to render plot" ) )
     p <- heat2(vsd$data, n=numheatmap(), intgroup = variables(), sampleName = samplename(),
-         specie=specie(), customColor = coloresPCA$colores() )
+         specie=specie(), customColor = coloresPCA$colores(), annot=conversion$ids )
     q <- heat2(vsd$data, n=numheatmap(), intgroup = variables(), sampleName = samplename(),
-               specie=specie(), customColor = coloresPCA$colores(), ggplt = TRUE )
+               specie=specie(), customColor = coloresPCA$colores(), ggplt = TRUE, annot=conversion$ids )
     svg$heat <- q
     print(p)
   })
@@ -1140,7 +1141,7 @@ output$downCluster <- downloadHandler(
              need(variables(),"Load condition to render plot" ),
              need(coloresPCA$colores(), ""))
     topGenes <- rownames(res$sh)[order(res$sh$padj)][1:6]
-    topSymbol <- as.character(res$sh$GeneName_Symbol)[order(res$sh$padj)][1:6]
+    topSymbol <- as.character(res$sh$User_GeneId)[order(res$sh$padj)][1:6]
     z <- lapply(topGenes, function(x) plotCounts(dds=datos$dds, gene=x,
                                                  res=res$sh, intgroup = variables(),
                                                  returnData = TRUE))
@@ -1172,22 +1173,27 @@ output$downTopsix <- downloadHandler(
              need(coloresPCA$colores(), ""),
              need(gene(), "Enter a gene of interest in Ensembl or symbol name"))
     gene <- gene()
-    if (grepl("^ENS", gene, ignore.case = TRUE)) {
-        gene <- toupper(gene)
-        z <- plotCounts(dds = datos$dds,gene = gene, returnData = TRUE,
-                        intgroup = variables()[1])
-        symbol = as.character(res$sh$GeneName_Symbol[rownames(res$sh) == gene])
-    } else{
-        if (specie() == "Mm") {
-            gene <- stringr::str_to_title(gene)
-        }
-        else{
-            gene = toupper(gene)
-        }
-        z <- plotCountsSymbol(dds = datos$dds, gene = gene, returnData = TRUE,
-                              intgroup = variables()[1], specie=specie())
-        symbol <- gene
-    }
+    generow <- which(conversion$ids == gene, arr.ind = TRUE)[1,1] #07/02/2021
+    gene <- conversion$ids[generow,1] #07/02/2021
+    z <- plotCounts(dds = datos$dds,gene = gene, returnData = TRUE,
+                    intgroup = variables()[1]) #07/02/2021
+    symbol <- conversion$ids$SYMBOL[generow] #07/02/2021
+    # if (grepl("^ENS", gene, ignore.case = TRUE)) {
+    #     gene <- toupper(gene)
+    #     z <- plotCounts(dds = datos$dds,gene = gene, returnData = TRUE,
+    #                     intgroup = variables()[1])
+    #     symbol = as.character(res$sh$User_GeneId[rownames(res$sh) == gene])
+    # } else{
+    #     if (specie() == "Mm") {
+    #         gene <- stringr::str_to_title(gene)
+    #     }
+    #     else{
+    #         gene = toupper(gene)
+    #     }
+    #     z <- plotCountsSymbol(dds = datos$dds, gene = gene, returnData = TRUE,
+    #                           intgroup = variables()[1], specie=specie())
+    #     symbol <- gene
+    # }
     z <- z %>% group_by(!!as.name(variables()[1])) %>%
         mutate(mean = round(mean(count),2), sem = round(sd(count)/sqrt(n()),3 ), n = n() ) %>% 
         mutate(text = paste0("Mean: ",mean,"\n","SEM: ",sem))

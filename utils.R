@@ -1153,8 +1153,10 @@ getSigUpregulated <- function(dds, pval=0.05, logfc=0, specie="Mm"){
   rk <- as.data.frame(dds)
   rk <- rk[rk$log2FoldChange >logfc & rk$padj<=pval,]
   rk <- rk[ order(rk$padj, decreasing = TRUE), ]
-  annot <- geneIdConverter(rownames(rk), specie)
-  return(data.frame(SYMBOL = annot$consensus, ENTREZID = annot$ENTREZID, stringsAsFactors = F) )
+  # annot <- geneIdConverter(rownames(rk), specie)
+  annot <- data.frame(SYMBOL = rk$GeneName_Symbol, ENTREZID = rk$ENTREZ)# 07/02/2021
+  # return(data.frame(SYMBOL = annot$consensus, ENTREZID = annot$ENTREZID, stringsAsFactors = F) )
+  return(annot) #07/02/2021
 }
 
 # Función para recuperar los genes down de un objeto DEseq #############
@@ -1164,8 +1166,10 @@ getSigDownregulated <- function(dds, pval=0.05, logfc=0, specie="Mm"){
   rk <- as.data.frame(dds)
   rk <- rk[rk$log2FoldChange <logfc & rk$padj<=pval,]
   rk <- rk[ order(rk$padj, decreasing = TRUE), ]
-  annot <- geneIdConverter(rownames(rk), specie)
-  return(data.frame(SYMBOL = annot$consensus, ENTREZID = annot$ENTREZID, stringsAsFactors = F) )
+  #annot <- geneIdConverter(rownames(rk), specie)
+  annot <- data.frame(SYMBOL = rk$GeneName_Symbol, ENTREZID = rk$ENTREZ)# 07/02/2021
+  #return(data.frame(SYMBOL = annot$consensus, ENTREZID = annot$ENTREZID, stringsAsFactors = F) )
+  return(annot) #07/02/2021
 }
 
 # Convertidor de nombres de genes ###################
@@ -1213,7 +1217,53 @@ geneIdConverter <- function(genes, specie="Mm"){ # genes = vector of ensembl gen
 
   return(annot)
 }
-
+geneIdConverter2 <- function(genes, specie="Mm"){
+  require("EnsDb.Mmusculus.v79")
+  require("org.Mm.eg.db")
+  require("EnsDb.Hsapiens.v86")
+  require("org.Hs.eg.db")
+  
+  if(specie=="Mm"){
+    ensdb <- EnsDb.Mmusculus.v79
+    orgdb <- org.Mm.eg.db
+  }else{
+    ensdb <- EnsDb.Hsapiens.v86
+    orgdb <- org.Hs.eg.db
+  }
+  annot <- NULL
+  annot$genes <- genes #
+  annot <- as.data.frame(annot)
+  ensrows <- grep("^(ENS|ens)", genes, perl=TRUE)
+  annot$ENSEMBL <- NA
+  annot$ENSEMBL[ensrows] <- annot$genes[ensrows]
+  sym2ens <- mapIds(ensdb, keys=genes[-ensrows], column="GENEID",keytype="SYMBOL")
+  annot$ENSEMBL[-ensrows] <- sym2ens
+  annot$SYMBOL <- NA
+  annot$SYMBOL[!is.na(annot$ENSEMBL)] <- mapIds(ensdb, keys = annot$ENSEMBL[!is.na(annot$ENSEMBL)], column = "SYMBOL", keytype = "GENEID" )
+  result_trycatch <- tryCatch( 
+    { mapIds(orgdb, keys = annot$genes[-ensrows], column = "SYMBOL", keytype = "ALIAS" , multiVals = "first")} ,
+    error = function(e){return(NA)}
+    )
+  annot$SYMBOL[-ensrows] <- result_trycatch
+  annot <- annot %>% mutate(SYMBOL = map_chr(SYMBOL, paste0, collapse = "") )
+  annot$SYMBOL[!is.na(annot$ENSEMBL)] <- mapIds(orgdb, keys = annot$ENSEMBL[!is.na(annot$ENSEMBL)], column = "SYMBOL", keytype = "ENSEMBL" )
+  annot$ENTREZID <- NA
+  annot$ENTREZID[!is.na(annot$ENSEMBL)] <- mapIds(ensdb, keys = annot$ENSEMBL[!is.na(annot$ENSEMBL)] , column = "ENTREZID", keytype = "GENEID" )
+  annot$ENTREZID[!is.na(annot$SYMBOL)] <- mapIds(ensdb, keys = annot$SYMBOL[!is.na(annot$SYMBOL)], column = "ENTREZID", keytype = "SYMBOL" )
+  annot$ENTREZID[!is.na(annot$ENSEMBL)] <- mapIds(orgdb, keys = annot$ENSEMBL[!is.na(annot$ENSEMBL)] , column = "ENTREZID", keytype = "ENSEMBL" )
+  annot$ENTREZID[!is.na(annot$SYMBOL)] <- mapIds(orgdb, keys = annot$SYMBOL[!is.na(annot$SYMBOL)], column = "ENTREZID", keytype = "SYMBOL" )
+  annot$description <- NA
+  annot$description[!is.na(annot$ENSEMBL)] <- mapIds(orgdb,
+                                                     keys = annot$ENSEMBL[!is.na(annot$ENSEMBL)],
+                                                     column = 'GENENAME', 
+                                                     keytype = 'ENSEMBL', multiVals = 'first')
+  
+  annot$description[!is.na(annot$SYMBOL)] <- mapIds(orgdb,
+                                                    keys = annot$SYMBOL[!is.na(annot$SYMBOL)],
+                                                    column = 'GENENAME', 
+                                                    keytype = 'SYMBOL', multiVals = 'first')
+  return(annot)
+}
 # Dotplot de objeto enrich kegg ##########################
 dotPlotkegg <- function(data, n = 20){
   names(data) <- gsub("P.DE", "p-val", names(data) )
@@ -1328,12 +1378,13 @@ gseaKegg <- function(res, specie){
   res.sh <- res
   #res.sh <- as.data.frame(lfcShrink(dds, coef=2, type="apeglm", res = results(dds)))
   res.sh <- res.sh[order(res.sh$log2FoldChange, decreasing = TRUE), ]
-  res.sh$ENSEMBL <- rownames(res.sh)
-  geneRank <- geneIdConverter( res.sh$ENSEMBL)
-  resRank <- left_join(res.sh, geneRank, by=c("ENSEMBL"="ENSEMBL"))
-  resRank <- resRank[!is.na(resRank$ENTREZID), c("ENTREZID","log2FoldChange") ]
+  #res.sh$ENSEMBL <- rownames(res.sh)
+  #geneRank <- geneIdConverter( res.sh$ENSEMBL)
+  #resRank <- left_join(res.sh, geneRank, by=c("ENSEMBL"="ENSEMBL"))
+  #resRank <- res.shRank[!is.na(resRank$ENTREZID), c("ENTREZID","log2FoldChange") ]
+  resRank <- res.sh[!is.na(res.sh$ENTREZ), c("ENTREZ","log2FoldChange") ] # 07/02/2021
   vectRank <- resRank$log2FoldChange
-  attr(vectRank, "names") <- as.character(resRank$ENTREZID)
+  attr(vectRank, "names") <- as.character(resRank$ENTREZ)
   mygsea <- clusterProfiler::GSEA(vectRank, 
                                   TERM2GENE = pathwayDataSet, 
                                   by="fgsea", pvalueCutoff = 0.1)
@@ -1996,7 +2047,7 @@ heat <- function (vsd, n = 40, intgroup = "AAV", sampleName = "condition",
 }
 ## New heatmap plotly
 heat2 <- function (vsd, n = 40, intgroup = NULL, sampleName = NULL,
-                      specie="Mm", customColor = NULL, ggplt = FALSE ) 
+                      specie="Mm", customColor = NULL, ggplt = FALSE, annot ) 
     {
       require("EnsDb.Mmusculus.v79")
       require("org.Mm.eg.db")
@@ -2026,19 +2077,20 @@ heat2 <- function (vsd, n = 40, intgroup = NULL, sampleName = NULL,
       df <- as.data.frame(colData(vsd)[, intgroup, drop = FALSE])
     }
     
-    annot <- NULL
-    annot$ENSEMBL <- rownames(mat)
-    annot$SYMBOL <-  mapIds(ensdb, keys=rownames(mat),
-                            column="SYMBOL",keytype="GENEID")
-    annot$SYMBOL1 <- mapIds(orgdb, keys = rownames(mat),
-                            column = 'SYMBOL', keytype = 'ENSEMBL', multiVals = 'first') 
-    annot$description <- mapIds(orgdb, keys = rownames(mat),
-                                column = 'GENENAME', keytype = 'ENSEMBL', multiVals = 'first')
-    annot <- as.data.frame(annot)
-    consensus <- data.frame('Symbol'= ifelse(!is.na(annot$SYMBOL), as.vector(annot$SYMBOL),
-                                             ifelse(!is.na(annot$SYMBOL1),as.vector(annot$SYMBOL1),
-                                                    as.vector(annot$ENSEMBL))), stringsAsFactors = F)
+    # annot <- NULL
+    # annot$ENSEMBL <- rownames(mat)
+    # annot$SYMBOL <-  mapIds(ensdb, keys=rownames(mat),
+    #                         column="SYMBOL",keytype="GENEID")
+    # annot$SYMBOL1 <- mapIds(orgdb, keys = rownames(mat),
+    #                         column = 'SYMBOL', keytype = 'ENSEMBL', multiVals = 'first') 
+    # annot$description <- mapIds(orgdb, keys = rownames(mat),
+    #                             column = 'GENENAME', keytype = 'ENSEMBL', multiVals = 'first')
+    # annot <- as.data.frame(annot)
+    # consensus <- data.frame('Symbol'= ifelse(!is.na(annot$SYMBOL), as.vector(annot$SYMBOL),
+    #                                          ifelse(!is.na(annot$SYMBOL1),as.vector(annot$SYMBOL1),
+    #                                                 as.vector(annot$ENSEMBL))), stringsAsFactors = F)
     #colores definidos por el usuario para primera variable
+    consensus <- annot[annot$genes %in% rownames(mat),]
     ann_colors<-list()
     ann_colors[[intgroup[1]]] <- customColor
     names(ann_colors[[intgroup[1]]]) <- c(levels(df[[intgroup[1]]]))
@@ -2056,7 +2108,7 @@ heat2 <- function (vsd, n = 40, intgroup = NULL, sampleName = NULL,
                            fsr = c(rep(10,50), rep(8,10), rep(7,10), rep(6,10), rep(1, 40) ))
     ch <- sizesDf$ch[ nrow(mat) ]
     fsr <- sizesDf$fsr[ nrow(mat) ]
-    if(nrow(mat)>80){labrow = rep(NA, nrow(mat))}else{labrow = as.character(consensus$Symbol)}
+    if(nrow(mat)>80){labrow = rep(NA, nrow(mat))}else{labrow = as.character(consensus$gene)} #consensus$Symbol
     if(!isTRUE(ggplt)){
       heatmaply(mat, labRow = labrow, col_side_colors = df,
                 col_side_palette = ann, labCol = as.character(vsd[[sampleName]] ), fontsize_row = fsr,
@@ -2412,7 +2464,7 @@ krtp <- function(res, specie="Mm", pval, fcdown,
   res2 <- res[ res$padj <pval & (res$log2FoldChange<(fcdown) | res$log2FoldChange>fcup),]
   res3 <- as.data.frame(res2)
   res3$genes <- rownames(res3)
-  genes <- left_join(annot, res3, by = c("V1"="genes"))
+  genes <- left_join(annot, res3, by = c("V1"="ENSEMBL"))
   sig <- which( !is.na(genes$padj) )
   genes <- genes[sig,]
   A <- data.frame(chr = paste0("chr",genes$V2), start = genes$V3,
