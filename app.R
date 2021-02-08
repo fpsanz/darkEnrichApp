@@ -208,34 +208,35 @@ ui <- dashboardPage(title="Rnaseq viewer and report",
                     body
 ) # fin del UI
 
-# ui <- secure_app(ui, enable_admin = TRUE, theme = shinythemes::shinytheme("darkly"),
-#                  head_auth = HTML("<style>
-#                  .panel-auth{
-#                                   background-color: #343e48 !important;
-#                                   }
-#                                   </style>"
-#                                   ),
-#                  tags_bottom = tagList(tags$div(style = "text-align: center;",
-#                    tags$image(
-#                      height = 40,
-#                      src = "mircen.png",
-#                      style = "padding-right: 10px; padding-top: 10px;"
-#                    ),
-#                    tags$image(
-#                      height = 50,
-#                      src = "imib.png"#,
-#                    ))
-#                   )
-#                  )
+ui <- secure_app(ui, enable_admin = TRUE, theme = shinythemes::shinytheme("darkly"),
+                 head_auth = HTML("<style>
+                 .panel-auth{
+                                  background-color: #343e48 !important;
+                                  }
+                                  </style>"
+                                  ),
+                 tags_bottom = tagList(tags$div(style = "text-align: center;",
+                   tags$image(
+                     height = 40,
+                     src = "mircen.png",
+                     style = "padding-right: 10px; padding-top: 10px;"
+                   ),
+                   tags$image(
+                     height = 50,
+                     src = "imib.png"#,
+                   ))
+                  )
+                 )
 ########################################## SERVER #################################################
 server <- function(input, output, session) {
   
-  # res_auth <- secure_server(
-  #   check_credentials = check_credentials(
-  #       "~/.users/users.sqlite",
-  #       passphrase = readRDS("~/.users/pass.Rds")
-  #   )
-  # )
+  res_auth <- secure_server(
+    timeout = 0,
+    check_credentials = check_credentials(
+        "~/.users/users.sqlite",
+        passphrase = readRDS("~/.users/dbpass.Rds")
+    )
+  )
 
   observeEvent(input$aboutButton, {
     shinyalert("Enrich app 2020", HTML("Authors:<br>
@@ -920,7 +921,7 @@ server <- function(input, output, session) {
     datatable( res.sh, extensions = "Buttons", escape = FALSE,
                rownames = FALSE,
                filter = list(position="top", clear=FALSE),
-               options = list(order = list(list(7, 'asc')),
+               options = list(order = list(list(8, 'asc')),
                  lengthMenu = list(c(10,25,50,100,-1), c(10,25,50,100,"All")),
                  columnDefs = list(list(orderable = TRUE,
                                         className = "details-control",
@@ -929,7 +930,7 @@ server <- function(input, output, session) {
                  ),
                  rowCallback = JS(
                    "function(row, data) {",
-                   "for (i = 6; i < 8; i++) {",
+                   "for (i = 6; i < 9; i++) {",
                    "if (data[i]>1000 | data[i]<1){",
                    "$('td:eq('+i+')', row).html(data[i].toExponential(3));",
                    "}",

@@ -1233,27 +1233,39 @@ geneIdConverter2 <- function(genes, specie="Mm"){
   annot <- NULL
   annot$genes <- genes #
   annot <- as.data.frame(annot)
-  ensrows <- grep("^(ENS|ens)", genes, perl=TRUE)
+  ensrows <- grep("^(ENS|ens)", genes, perl=TRUE) # filas ensembl
+  noensrow <- grep("^(?!ENS|ens)", genes, perl=TRUE) # filas no ensembl
   annot$ENSEMBL <- NA
-  annot$ENSEMBL[ensrows] <- as.character(annot$genes[ensrows])
-  if(length(ensrows) < length(genes)){
-    sym2ens <- mapIds(ensdb, keys=genes[-ensrows], column="GENEID",keytype="SYMBOL")
-    annot$ENSEMBL[-ensrows] <- sym2ens
-  }
   annot$SYMBOL <- NA
-  annot$SYMBOL[!is.na(annot$ENSEMBL)] <- mapIds(ensdb, keys = annot$ENSEMBL[!is.na(annot$ENSEMBL)], column = "SYMBOL", keytype = "GENEID" )
-  result_trycatch <- tryCatch( 
-    { mapIds(orgdb, keys = annot$genes[-ensrows], column = "SYMBOL", keytype = "ALIAS" , multiVals = "first")} ,
-    error = function(e){annot$SYMBOL[-ensrows] <- NA}
-    )
-  annot <- annot %>% mutate(SYMBOL = map_chr(SYMBOL, paste0, collapse = "") )
-  annot$SYMBOL[!is.na(annot$ENSEMBL)] <- mapIds(orgdb, keys = annot$ENSEMBL[!is.na(annot$ENSEMBL)], column = "SYMBOL", keytype = "ENSEMBL" )
   annot$ENTREZID <- NA
+  annot$description <- NA
+  
+  if(length(ensrows) != 0){
+    annot$ENSEMBL[ensrows] <- as.character(annot$genes[ensrows])
+    annot$SYMBOL[ensrows] <- mapIds(ensdb, keys = annot$gene[ensrows], column = "SYMBOL", keytype = "GENEID" )
+    annot$SYMBOL[ensrows] <- mapIds(orgdb, keys = annot$genes[ensrows], column = "SYMBOL", keytype = "ENSEMBL" )
+  }
+  
+  if(length(noensrow)!=0){
+    annot$ENSEMBL[noensrow] <- mapIds(ensdb, keys = annot$gene[noensrow], column = "GENEID", keytype = "SYMBOL" )
+    result_trycatch <- tryCatch( 
+      { mapIds(orgdb, keys = annot$genes[noensrow], column = "ENSEMBL", keytype = "SYMBOL" ) } ,
+      error = function(e){return(NA)}
+    )
+    annot$ENSEMBL[noensrow] <- result_trycatch
+    result2_trycatch <- tryCatch(
+      {mapIds(orgdb, keys = annot$genes[which(grepl("^(?!ENS|ens)", genes, perl=TRUE) & is.na(annot$SYMBOL)) ],
+              column = "SYMBOL", keytype = "ALIAS" )},
+      error = function(e){return(NA)}
+    )
+    annot$SYMBOL[which(grepl("^(?!ENS|ens)", genes, perl=TRUE) & is.na(annot$SYMBOL)) ] <- result2_trycatch
+  }
+  annot <- annot %>%  mutate(SYMBOL =  map_chr(SYMBOL, paste0, collapse = "") )
+  annot <- annot %>%  mutate(ENSEMBL =  map_chr(ENSEMBL, paste0, collapse = "") )
   annot$ENTREZID[!is.na(annot$ENSEMBL)] <- mapIds(ensdb, keys = annot$ENSEMBL[!is.na(annot$ENSEMBL)] , column = "ENTREZID", keytype = "GENEID" )
   annot$ENTREZID[!is.na(annot$SYMBOL)] <- mapIds(ensdb, keys = annot$SYMBOL[!is.na(annot$SYMBOL)], column = "ENTREZID", keytype = "SYMBOL" )
   annot$ENTREZID[!is.na(annot$ENSEMBL)] <- mapIds(orgdb, keys = annot$ENSEMBL[!is.na(annot$ENSEMBL)] , column = "ENTREZID", keytype = "ENSEMBL" )
   annot$ENTREZID[!is.na(annot$SYMBOL)] <- mapIds(orgdb, keys = annot$SYMBOL[!is.na(annot$SYMBOL)], column = "ENTREZID", keytype = "SYMBOL" )
-  annot$description <- NA
   annot$description[!is.na(annot$ENSEMBL)] <- mapIds(orgdb,
                                                      keys = annot$ENSEMBL[!is.na(annot$ENSEMBL)],
                                                      column = 'GENENAME', 
@@ -1263,6 +1275,11 @@ geneIdConverter2 <- function(genes, specie="Mm"){
                                                     keys = annot$SYMBOL[!is.na(annot$SYMBOL)],
                                                     column = 'GENENAME', 
                                                     keytype = 'SYMBOL', multiVals = 'first')
+  
+  
+  annot <- annot %>%  mutate(ENTREZID = map_chr(ENTREZID, paste0, collapse = "") )
+  annot <- annot %>%  mutate(description = map_chr(description, paste0, collapse = "") )
+  annot[annot=="NA"]<-NA
   return(annot)
 }
 # Dotplot de objeto enrich kegg ##########################
