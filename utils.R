@@ -1235,16 +1235,17 @@ geneIdConverter2 <- function(genes, specie="Mm"){
   annot <- as.data.frame(annot)
   ensrows <- grep("^(ENS|ens)", genes, perl=TRUE)
   annot$ENSEMBL <- NA
-  annot$ENSEMBL[ensrows] <- annot$genes[ensrows]
-  sym2ens <- mapIds(ensdb, keys=genes[-ensrows], column="GENEID",keytype="SYMBOL")
-  annot$ENSEMBL[-ensrows] <- sym2ens
+  annot$ENSEMBL[ensrows] <- as.character(annot$genes[ensrows])
+  if(length(ensrows) < length(genes)){
+    sym2ens <- mapIds(ensdb, keys=genes[-ensrows], column="GENEID",keytype="SYMBOL")
+    annot$ENSEMBL[-ensrows] <- sym2ens
+  }
   annot$SYMBOL <- NA
   annot$SYMBOL[!is.na(annot$ENSEMBL)] <- mapIds(ensdb, keys = annot$ENSEMBL[!is.na(annot$ENSEMBL)], column = "SYMBOL", keytype = "GENEID" )
   result_trycatch <- tryCatch( 
     { mapIds(orgdb, keys = annot$genes[-ensrows], column = "SYMBOL", keytype = "ALIAS" , multiVals = "first")} ,
-    error = function(e){return(NA)}
+    error = function(e){annot$SYMBOL[-ensrows] <- NA}
     )
-  annot$SYMBOL[-ensrows] <- result_trycatch
   annot <- annot %>% mutate(SYMBOL = map_chr(SYMBOL, paste0, collapse = "") )
   annot$SYMBOL[!is.na(annot$ENSEMBL)] <- mapIds(orgdb, keys = annot$ENSEMBL[!is.na(annot$ENSEMBL)], column = "SYMBOL", keytype = "ENSEMBL" )
   annot$ENTREZID <- NA
