@@ -1231,7 +1231,7 @@ geneIdConverter2 <- function(genes, specie="Mm"){
     orgdb <- org.Hs.eg.db
   }
   annot <- NULL
-  annot$genes <- genes #
+  annot$genes <- as.character(genes) #
   annot <- as.data.frame(annot)
   ensrows <- grep("^(ENS|ens)", genes, perl=TRUE) # filas ensembl
   noensrow <- grep("^(?!ENS|ens)", genes, perl=TRUE) # filas no ensembl
