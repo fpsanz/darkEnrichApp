@@ -1217,6 +1217,7 @@ geneIdConverter <- function(genes, specie="Mm"){ # genes = vector of ensembl gen
 
   return(annot)
 }
+
 geneIdConverter2 <- function(genes, specie="Mm"){
   require("EnsDb.Mmusculus.v79")
   require("org.Mm.eg.db")
