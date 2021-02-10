@@ -1232,7 +1232,7 @@ geneIdConverter2 <- function(genes, specie="Mm"){
   }
   annot <- NULL
   annot$genes <- as.character(genes) #
-  annot <- as.data.frame(annot)
+  annot <- data.frame(annot, stringsAsFactors = F)
   ensrows <- grep("^(ENS|ens)", genes, perl=TRUE) # filas ensembl
   noensrow <- grep("^(?!ENS|ens)", genes, perl=TRUE) # filas no ensembl
   annot$ENSEMBL <- NA
