@@ -330,6 +330,7 @@ server <- function(input, output, session) {
               mutate_at(vars(-sizeFactor, contains('replaceable')), as.factor) %>% as.list()
         #res$sh <- as.data.frame(lfcShrink(datos$dds, coef=(as.numeric(design())+1), type="apeglm", parallel = TRUE))
         res$sh <- as.data.frame(results(datos$dds, contrast = list(resultsNames(datos$dds)[as.numeric(design())+1] ))) #09/02/2020
+        res$sh <- res$sh %>% select(-stat) #09/02/2020
         conversion$ids <- geneIdConverter2(rownames(res$sh), specie() )
         padjNA$true <- which(is.na(res$sh$padj)) 
         if(length(padjNA$true)!=0 ){
