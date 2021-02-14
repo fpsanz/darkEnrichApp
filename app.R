@@ -330,7 +330,7 @@ server <- function(input, output, session) {
               mutate_at(vars(-sizeFactor, contains('replaceable')), as.factor) %>% as.list()
         #res$sh <- as.data.frame(lfcShrink(datos$dds, coef=(as.numeric(design())+1), type="apeglm", parallel = TRUE))
         res$sh <- as.data.frame(results(datos$dds, contrast = list(resultsNames(datos$dds)[as.numeric(design())+1] ))) #09/02/2020
-        res$sh <- res$sh %>% select(-stat) #09/02/2020
+        res$sh <- res$sh %>% dplyr::select(-stat) #09/02/2020
         conversion$ids <- geneIdConverter2(rownames(res$sh), specie() )
         padjNA$true <- which(is.na(res$sh$padj)) 
         if(length(padjNA$true)!=0 ){
@@ -379,13 +379,13 @@ server <- function(input, output, session) {
     kgg$down <- customKegg(data$genesDown, species = specie() ) 
     kggDT$down <- kegg2DT(kgg$down, data$genesDown)
     
-    go$all <- customGO(data$genesall, species = "Mm")
+    go$all <- customGO(data$genesall, species = specie() )
     goDT$all <- go2DT(enrichdf = go$all, data = data$genesall )
     
-    go$up <- customGO(data$genesUp, species = "Mm")
+    go$up <- customGO(data$genesUp, species = specie() )
     goDT$up <- go2DT(enrichdf = go$up, data = data$genesUp )
     
-    go$down <- customGO(data$genesDown, species = "Mm")
+    go$down <- customGO(data$genesDown, species = specie() )
     goDT$down <- go2DT(enrichdf = go$down, data = data$genesDown )
     updateTabItems(session, "previewMenu", "preview")
   })

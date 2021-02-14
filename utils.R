@@ -772,8 +772,8 @@ getGOlevel <- function(specie){
             id = c("GO:0008150","GO:0003674","GO:0005575"),
             level= 0))
     GOlevel <- aggregate(level~id, GOlevel, function(x)x[which.min(abs(x))])
-    filePath <- paste0("./resources/",specie,"/GO/GOlevel.Rds")
-    saveRDS(GOlevel, filePath = paste0("./resources/",specie,"/GO/GOlevels.Rds"))
+    filePath <- paste0("./resources/",specie,"/GO/GOlevels.Rds")
+    saveRDS(GOlevel, filePath)
 }
 
 # funcion que preparar los datos de enrich kegg para pasárlos a datatable2 ###############
@@ -2259,21 +2259,21 @@ boxViolin <- function(datos=NULL, vsd=NULL, names=NULL, boxplotswitch=NULL,
 
 
 choices_brewer <- list(
-  "Blues" = brewer_pal(palette = "Blues")(9),
-  "Greens" = brewer_pal(palette = "Greens")(9),
-  "Reds" = brewer_pal(palette = "Reds")(9),
-  "Oranges" = brewer_pal(palette = "Oranges")(9),
-  "Purples" = brewer_pal(palette = "Purples")(9),
-  "Greys" = brewer_pal(palette = "Greys")(9)
+  "Blues" = scales::brewer_pal(palette = "Blues")(9),
+  "Greens" = scales::brewer_pal(palette = "Greens")(9),
+  "Reds" = scales::brewer_pal(palette = "Reds")(9),
+  "Oranges" = scales::brewer_pal(palette = "Oranges")(9),
+  "Purples" = scales::brewer_pal(palette = "Purples")(9),
+  "Greys" = scales::brewer_pal(palette = "Greys")(9)
 )
 
 choices_brewer2 <- list(
-  as.list(rev(brewer_pal(palette = "Blues")(9))),
-  as.list(rev(brewer_pal(palette = "Greens")(9))),
-  as.list(rev(brewer_pal(palette = "Reds")(9))),
-  as.list(rev(brewer_pal(palette = "Oranges")(9))),
-  as.list(rev(brewer_pal(palette = "Purples")(9))),
-  as.list(rev(brewer_pal(palette = "Greys")(9)))
+  as.list(rev(scales::brewer_pal(palette = "Blues")(9))),
+  as.list(rev(scales::brewer_pal(palette = "Greens")(9))),
+  as.list(rev(scales::brewer_pal(palette = "Reds")(9))),
+  as.list(rev(scales::brewer_pal(palette = "Oranges")(9))),
+  as.list(rev(scales::brewer_pal(palette = "Purples")(9))),
+  as.list(rev(scales::brewer_pal(palette = "Greys")(9)))
 )
 
 
