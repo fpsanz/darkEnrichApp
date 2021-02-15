@@ -208,35 +208,35 @@ ui <- dashboardPage(title="Rnaseq viewer and report",
                     body
 ) # fin del UI
 
-ui <- secure_app(ui, enable_admin = TRUE, theme = shinythemes::shinytheme("darkly"),
-                 head_auth = HTML("<style>
-                 .panel-auth{
-                                  background-color: #343e48 !important;
-                                  }
-                                  </style>"
-                                  ),
-                 tags_bottom = tagList(tags$div(style = "text-align: center;",
-                   tags$image(
-                     height = 40,
-                     src = "mircen.png",
-                     style = "padding-right: 10px; padding-top: 10px;"
-                   ),
-                   tags$image(
-                     height = 50,
-                     src = "imib.png"#,
-                   ))
-                  )
-                 )
+# ui <- secure_app(ui, enable_admin = TRUE, theme = shinythemes::shinytheme("darkly"),
+#                  head_auth = HTML("<style>
+#                  .panel-auth{
+#                                   background-color: #343e48 !important;
+#                                   }
+#                                   </style>"
+#                                   ),
+#                  tags_bottom = tagList(tags$div(style = "text-align: center;",
+#                    tags$image(
+#                      height = 40,
+#                      src = "mircen.png",
+#                      style = "padding-right: 10px; padding-top: 10px;"
+#                    ),
+#                    tags$image(
+#                      height = 50,
+#                      src = "imib.png"#,
+#                    ))
+#                   )
+#                  )
 ########################################## SERVER #################################################
 server <- function(input, output, session) {
   
-  res_auth <- secure_server(
-    timeout = 0,
-    check_credentials = check_credentials(
-        "~/.users/users.sqlite",
-        passphrase = readRDS("~/.users/dbpass.Rds")
-    )
-  )
+  # res_auth <- secure_server(
+  #   timeout = 0,
+  #   check_credentials = check_credentials(
+  #       "~/.users/users.sqlite",
+  #       passphrase = readRDS("~/.users/dbpass.Rds")
+  #   )
+  # )
 
   observeEvent(input$aboutButton, {
     shinyalert("Enrich app 2020", HTML("Authors:<br>
@@ -2783,11 +2783,162 @@ output$barKeggAll <- downloadHandler(
   output$report <- renderUI({
     actionButton("report2", "html report")
   })
-  
-  observeEvent(input$report2, {
-    showModal(popupModal())
-  })
 
+  observeEvent(input$report2, {
+     showModal( modalDialog(
+       title = "Report configuration",
+       size = "l",
+       fluidRow(column(width=11,
+                       tabsetPanel(
+                         tabPanel("Preview",
+                                  checkboxGroupButtons(
+                                    size="sm",
+                                    individual = TRUE,
+                                    inputId = "modalPreview",
+                                    label = "Select preview elements to report",
+                                    choices = c("PCA", "BoxPlot", "Heatmap", "Cluster","Top6",
+                                                "Top1", "Karyoplot","Volcano","MA"),
+                                    selected = c("PCA", "BoxPlot", "Heatmap", "Cluster","Top6",
+                                                 "Top1", "Karyoplot","Volcano","MA"),
+                                    status = "primary",
+                                    checkIcon = list(
+                                      yes = icon("ok",
+                                                 lib = "glyphicon"),
+                                      no = icon("remove",
+                                                lib = "glyphicon")
+                                    )
+                                  )
+                         ),
+                         tabPanel("Kegg",
+                                  checkboxGroupButtons(
+                                    size = "sm",
+                                    individual = TRUE,
+                                    inputId = "modalkeggAll",
+                                    label = "Select elements to report Kegg All",
+                                    choices = c("Table", "Barplot", "Chorplot", "Dotplot",
+                                                "Heatmap", "Netplot"),
+                                    selected = c("Table", "Barplot", "Chorplot", "Dotplot",
+                                                 "Heatmap", "Netplot"),
+                                    status = "primary",
+                                    checkIcon = list(
+                                      yes = icon("ok",
+                                                 lib = "glyphicon"),
+                                      no = icon("remove",
+                                                lib = "glyphicon")
+                                    )
+                                  ),
+                                  checkboxGroupButtons(
+                                    size = "sm",
+                                    individual = TRUE,
+                                    inputId = "modalkeggUp",
+                                    label = "Select elements to report Kegg Up",
+                                    choices = c("Table", "Barplot", "Chorplot", "Dotplot",
+                                                "Heatmap", "Netplot"),
+                                    selected = c("Table", "Barplot", "Chorplot", "Dotplot",
+                                                 "Heatmap", "Netplot"),
+                                    status = "primary",
+                                    checkIcon = list(
+                                      yes = icon("ok",
+                                                 lib = "glyphicon"),
+                                      no = icon("remove",
+                                                lib = "glyphicon")
+                                    )
+                                  ),
+                                  checkboxGroupButtons(
+                                    size = "sm",
+                                    individual = TRUE,
+                                    inputId = "modalkeggDown",
+                                    label = "Select elements to report Kegg Down",
+                                    choices = c("Table", "Barplot", "Chorplot", "Dotplot",
+                                                "Heatmap", "Netplot"),
+                                    selected = c("Table", "Barplot", "Chorplot", "Dotplot",
+                                                 "Heatmap", "Netplot"),
+                                    status = "primary",
+                                    checkIcon = list(
+                                      yes = icon("ok",
+                                                 lib = "glyphicon"),
+                                      no = icon("remove",
+                                                lib = "glyphicon")
+                                    )
+                                  )
+                         ), # fin tabpanel KEGG
+                         tabPanel("GO",
+                                  checkboxGroupButtons(
+                                    size = "sm",
+                                    individual = TRUE,
+                                    inputId = "modalGOAll",
+                                    label = "Select elements to report GO All",
+                                    choices = c("Table", "Barplot", "Dotplot", "GObarplot", "GOcircleplot"),
+                                    selected = c("Table", "Barplot", "Dotplot", "GObarplot", "GOcircleplot"),
+                                    status = "primary",
+                                    checkIcon = list(
+                                      yes = icon("ok",
+                                                 lib = "glyphicon"),
+                                      no = icon("remove",
+                                                lib = "glyphicon")
+                                    )
+                                  ),
+                                  checkboxGroupButtons(
+                                    size = "sm",
+                                    individual = TRUE,
+                                    inputId = "modalGOUp",
+                                    label = "Select elements to report GO Up",
+                                    choices = c("Table", "Barplot", "Dotplot", "GObarplot", "GOcircleplot"),
+                                    selected = c("Table", "Barplot", "Dotplot", "GObarplot", "GOcircleplot"),
+                                    status = "primary",
+                                    checkIcon = list(
+                                      yes = icon("ok",
+                                                 lib = "glyphicon"),
+                                      no = icon("remove",
+                                                lib = "glyphicon")
+                                    )
+                                  ),
+                                  checkboxGroupButtons(
+                                    size = "sm",
+                                    individual = TRUE,
+                                    inputId = "modalGODown",
+                                    label = "Select elements to report GO Down",
+                                    choices = c("Table", "Barplot", "Dotplot", "GObarplot", "GOcircleplot"),
+                                    selected = c("Table", "Barplot", "Dotplot", "GObarplot", "GOcircleplot"),
+                                    status = "primary",
+                                    checkIcon = list(
+                                      yes = icon("ok",
+                                                 lib = "glyphicon"),
+                                      no = icon("remove",
+                                                lib = "glyphicon")
+                                    )
+                                  )
+                         ), #fin tabpanel GO
+                         tabPanel("GSEA",
+                                  checkboxGroupButtons(
+                                    size = "sm",
+                                    individual = TRUE,
+                                    inputId = "modalGSEA",
+                                    label = "Select elements to report GSEA",
+                                    choices = c("Table", "GSEA plot"),
+                                    selected = c("Table", "GSEA plot"),
+                                    status = "primary",
+                                    checkIcon = list(
+                                      yes = icon("ok",
+                                                 lib = "glyphicon"),
+                                      no = icon("remove",
+                                                lib = "glyphicon")
+                                    )
+                                  )
+                         ) #fin de tabpanel GSEA
+                       ) # fin tabsetpanel
+       )
+       ),
+       footer = tagList(
+         actionButton("unselect","Select/Unselect all"),
+         modalButton("Cancel"),
+         actionButton("ok", "Apply"),
+         uiOutput("downloadhtml")
+       )
+     ) )
+   })
+
+  
   observeEvent(input$unselect, {
     if (input$unselect > 0) {
       if (input$unselect %% 2 == 0) {
@@ -2797,6 +2948,7 @@ output$barKeggAll <- downloadHandler(
       }
     }
   })
+  
   
   applyPress <- reactiveValues(ok = FALSE)
   observeEvent(input$ok, {
@@ -2819,8 +2971,6 @@ output$barKeggAll <- downloadHandler(
     output$download <- downloadHandler(
     filename = "report.html",
     content = function(file) {
-      removeModal()
-      applyPress$ok <- FALSE
       tempReport <- file.path(tempdir(), "report.Rmd")
       file.copy("report.Rmd", tempReport, overwrite = TRUE)
       file.copy("report.css", file.path(tempdir(), "report.css"), overwrite = TRUE)
@@ -2837,9 +2987,9 @@ output$barKeggAll <- downloadHandler(
       tablekguObj <- barkguObj <- chorkguObj <- dotkguObj <- heatkguObj <- netkguObj <- FALSE
       tablekgdObj <- barkgdObj <- chorkgdObj <- dotkgdObj <- heatkgdObj <- netkgdObj <- FALSE
       ## inicializar variables Go
-      tablegoaObj <- bargoaObj <- dotgoaObj <- gobargoaObj <- gocirclegoaObj <- FALSE
-      tablegouObj <- bargouObj <- dotgouObj <- gobargouObj <- gocirclegouObj <- FALSE
-      tablegodObj <- bargodObj <- dotgodObj <- gobargodObj <- gocirclegodObj <- FALSE
+      tablegoaObj <- bargoaObj <- dotgoaObj <- gobargoaObj <- gocirclegoaObj <- cloudgoaObj <- FALSE
+      tablegouObj <- bargouObj <- dotgouObj <- gobargouObj <- gocirclegouObj <- cloudgouObj <- FALSE
+      tablegodObj <- bargodObj <- dotgodObj <- gobargodObj <- gocirclegodObj <- cloudgodObj <- FALSE
       ## inicializar variables GSEA
       tablegseaObj <- plotgseaObj <- FALSE 
       ## Asigna variables
@@ -2920,6 +3070,7 @@ output$barKeggAll <- downloadHandler(
         if("Barplot" %in% vals$GOAll){ bargoaObj <- TRUE }
         if("Dotplot" %in% vals$GOAll){ dotgoaObj <- TRUE }
         if("GObarplot" %in% vals$GOAll){ gobargoaObj <- TRUE }
+        if("WordCloud" %in% vals$GOAll){ cloudgoaObj <- TRUE}
         if("GOcircleplot" %in% vals$GOAll){ gocirclegoaObj <- TRUE }
       }
       if(!is.null(vals$GOUp)){#para GoUp
@@ -2927,6 +3078,7 @@ output$barKeggAll <- downloadHandler(
         if("Barplot" %in% vals$GOUp){ bargouObj <- TRUE }
         if("Dotplot" %in% vals$GOUp){ dotgouObj <- TRUE }
         if("GObarplot" %in% vals$GOUp){ gobargouObj <- TRUE }
+        if("WordCloud" %in% vals$GOUp){ cloudgouObj <- TRUE}
         if("GOcircleplot" %in% vals$GOUp){ gocirclegouObj <- TRUE }
       }
       if(!is.null(vals$GODown)){#para GoDown
@@ -2934,6 +3086,7 @@ output$barKeggAll <- downloadHandler(
         if("Barplot" %in% vals$GODown){ bargodObj <- TRUE }
         if("Dotplot" %in% vals$GODown){ dotgodObj <- TRUE }
         if("GObarplot" %in% vals$GODown){ gobargodObj <- TRUE }
+        if("WordCloud" %in% vals$GODown){ cloudgodObj <- TRUE}
         if("GOcircleplot" %in% vals$GODown){ gocirclegodObj <- TRUE }
       }
       if(!is.null(vals$GSEA)){#para GSEA
@@ -2970,6 +3123,7 @@ output$barKeggAll <- downloadHandler(
                      bargouObj=bargouObj, dotgouObj=dotgouObj, gobargouObj=gobargouObj,
                      gocirclegouObj=gocirclegouObj, tablegodObj = tablegodObj, bargodObj=bargodObj,
                      dotgodObj=dotgodObj, gobargodObj=gobargodObj, gocirclegodObj=gocirclegodObj,
+                     cloudgoaObj=cloudgoaObj, cloudgouObj=cloudgouObj, cloudgodObj=cloudgodObj,
                      goall = goall, godtall=godtall, goup = goup, godtup=godtup,
                      godown = godown, godtdown=godtdown,
                      bprowsall=bprowsall, mfrowsall=mfrowsall, ccrowsall=ccrowsall,
@@ -2979,6 +3133,8 @@ output$barKeggAll <- downloadHandler(
                      plotgseaObj = plotgseaObj, textnotes = textnotes)
       
       params <- c(params, list(tempdir=tempdir() ))
+      removeModal()
+      applyPress$ok <- FALSE
       rmarkdown::render(
         tempReport,
         output_file = file,

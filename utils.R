@@ -2926,6 +2926,7 @@ visnetLegend <- function(kggDT = NULL, rows = NULL){
         )
       )
     }
+
 ## myggwordcloud ############################
 myggwordcloud <- function(data, bg="white"){
   df <- data
