@@ -1281,6 +1281,7 @@ geneIdConverter2 <- function(genes, specie="Mm"){
   annot <- annot %>%  mutate(ENTREZID = map_chr(ENTREZID, paste0, collapse = "") )
   annot <- annot %>%  mutate(description = map_chr(description, paste0, collapse = "") )
   annot[annot=="NA"]<-NA
+  annot <- annot %>% mutate(SYMBOL = if_else(is.na(SYMBOL), genes, SYMBOL ) ) 
   return(annot)
 }
 # Dotplot de objeto enrich kegg ##########################
