@@ -1144,7 +1144,7 @@ output$downCluster <- downloadHandler(
              need(variables(),"Load condition to render plot" ),
              need(coloresPCA$colores(), ""))
     topGenes <- rownames(res$sh)[order(res$sh$padj)][1:6]
-    topSymbol <- as.character(res$sh$User_GeneId)[order(res$sh$padj)][1:6]
+    topSymbol <- as.character(res$sh$GeneName_Symbol)[order(res$sh$padj)][1:6]
     z <- lapply(topGenes, function(x) plotCounts(dds=datos$dds, gene=x,
                                                  res=res$sh, intgroup = variables(),
                                                  returnData = TRUE))

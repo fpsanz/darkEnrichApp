@@ -843,7 +843,7 @@ plotGO <- function(enrichdf, nrows = 30, orderby="p-val", ont, colors=NULL){
     #            title=dataTitle[[ont]][1], xaxis = list(tickvals = c(1:max(enrichdf$DEG) ) ))
     p <- enrichdf[1:nrows,] %>% 
       ggplot( aes( y = DEG, x = go_id, 
-                   text = paste0("p-val: ",format(`p-val`, scientific = T, digits = 4)) )) +
+                   text = paste0("p-val: ",format(`p-val`, scientific = T, digits = 4),"<br />Term: ",Term) )) +
               geom_bar(position = "stack", stat = "identity", fill = colors) + coord_flip() +
         theme(axis.text.y = element_text(angle = 0, hjust = 1)) + theme_bw() +
         scale_fill_manual(values = "red") +
@@ -880,9 +880,10 @@ plotGOAll <- function(enrichdf, nrows = 30, orderby="p-val",
         mutate(numUp = length(which(strsplit(genes,", ")[[1]] %in% genesUp$ENTREZID ))) %>% 
         mutate(numDown = length(which(strsplit(genes,", ")[[1]] %in% genesDown$ENTREZID ))) %>% 
         mutate(numDownNeg = -length(which(strsplit(genes,", ")[[1]] %in% genesDown$ENTREZID )))
-    enrichAll <- enrichAll %>% dplyr::select(go_id, numUp, numDown, numDownNeg, `p-val`)
+    enrichAll <- enrichAll %>% dplyr::select(Term, go_id, numUp, numDown, numDownNeg, `p-val`)
     df <- data.frame(
         Regulation = rep(c("Up", "Down"), each = nrows),
+        term = enrichAll$Term,
         goId = enrichAll$go_id,
         x = rep(1:nrows, 2),
         DEG = c(enrichAll$numUp, enrichAll$numDown),
@@ -891,7 +892,7 @@ plotGOAll <- function(enrichdf, nrows = 30, orderby="p-val",
     )
     colorfill <- c(dataTitle[[ont]][2:3])
     r <- ggplot(df, aes(x = goId, y = DENeg, fill = Regulation,
-                        text =paste0("p-val: ",format(p_val, scientific = T, digits = 4)) )) +
+                        text =paste0("p-val: ",format(p_val, scientific = T, digits = 4),"<br />Path: ",term)  )) +
         geom_bar(stat = "identity", position = "identity") + coord_flip() +
         theme(axis.text.y = element_text(angle = 0, hjust = 1)) + theme_bw() +
         scale_fill_manual(values = colorfill) +
@@ -899,7 +900,7 @@ plotGOAll <- function(enrichdf, nrows = 30, orderby="p-val",
               axis.title.y = element_blank())
     #r <- r %>% plotly::ggplotly(tooltip = "all")
     p <- ggplot(df, aes(fill = Regulation, y = DEG, x = goId,
-                        text =paste0("p-val: ",format(p_val, scientific = T, digits = 4)) )) +
+                        text =paste0("p-val: ",format(p_val, scientific = T, digits = 4),"<br />Path: ",term) )) +
         geom_bar(position = "dodge", stat = "identity") + coord_flip() +
         theme(axis.text.y = element_text(angle = 0, hjust = 1)) + theme_bw() +
         scale_fill_manual(values = colorfill) +
@@ -907,7 +908,7 @@ plotGOAll <- function(enrichdf, nrows = 30, orderby="p-val",
               axis.title.y = element_blank())
     #p <- p %>% ggplotly(tooltip = "all")
     q <- ggplot(df, aes(fill = Regulation, y = DEG, x = goId,
-                        text =paste0("p-val: ",format(p_val, scientific = T, digits = 4)) )) +
+                        text =paste0("p-val: ",format(p_val, scientific = T, digits = 4),"<br />Path: ",term) )) +
         geom_bar(position = "stack", stat = "identity") + coord_flip() +
         theme(axis.text.y = element_text(angle = 0, hjust = 1)) + theme_bw() +
         scale_fill_manual(values = colorfill) +
@@ -973,11 +974,12 @@ plotKeggAll <- function(enrichdf, nrows = 10, orderby = "p-val",
         mutate(numUp = length(which(strsplit(genes,",")[[1]] %in% genesUp$ENTREZID ))) %>% 
         mutate(numDown = length(which(strsplit(genes,",")[[1]] %in% genesDown$ENTREZID ))) %>% 
         mutate(numDownNeg = -length(which(strsplit(genes,",")[[1]] %in% genesDown$ENTREZID )))
-    enrichAll <- enrichAll %>% dplyr::select(pathID, numUp, numDown, numDownNeg, `p-val`)
+    enrichAll <- enrichAll %>% dplyr::select(Pathway, pathID, numUp, numDown, numDownNeg, `p-val`)
     enrichAll$pathID <- sub(  "path:", "", enrichAll$pathID )
     df <- data.frame(
         Regulation = rep(c("Up", "Down"), each = nrows),
         pathId = enrichAll$pathID,
+        path = enrichAll$Pathway,
         x = rep(1:nrows, 2),
         DEG = c(enrichAll$numUp, enrichAll$numDown),
         DENeg = c(enrichAll$numUp, enrichAll$numDownNeg),
@@ -985,7 +987,7 @@ plotKeggAll <- function(enrichdf, nrows = 10, orderby = "p-val",
     )
     colorfill <- colors #c("#eb3f3f","#3e90bd")
     r <- ggplot(df, aes(x = pathId, y = DENeg, fill = Regulation,
-                        text =paste0("p-val: ",format(p_val, scientific = T, digits = 4)) )) +
+                        text =paste0("p-val: ",format(p_val, scientific = T, digits = 4),"<br />Path: ",path ) )) +
         geom_bar(stat = "identity", position = "identity") + coord_flip() +
         theme(axis.text.y = element_text(angle = 0, hjust = 1)) + theme_bw() +
         scale_fill_manual(values = colorfill) +
@@ -993,7 +995,7 @@ plotKeggAll <- function(enrichdf, nrows = 10, orderby = "p-val",
               axis.title.y = element_blank())
     #r <- r %>% plotly::ggplotly(tooltip = "all" )
     p <- ggplot(df, aes(fill = Regulation, y = DEG, x = pathId,
-                        text =paste0("p-val: ",format(p_val, scientific = T, digits = 4)) )) +
+                        text =paste0("p-val: ",format(p_val, scientific = T, digits = 4),"<br />Path: ",path ) )) +
         geom_bar(position = "dodge", stat = "identity") + coord_flip() +
         theme(axis.text.y = element_text(angle = 0, hjust = 1)) + theme_bw() +
         scale_fill_manual(values = colorfill) +
@@ -1001,7 +1003,7 @@ plotKeggAll <- function(enrichdf, nrows = 10, orderby = "p-val",
               axis.title.y = element_blank())
     #p <- p %>% ggplotly(tooltip = "all")
     q <- ggplot(df, aes(fill = Regulation, y = DEG, x = pathId, 
-                        text =paste0("p-val: ",format(p_val, scientific = T, digits = 4)) )) +
+                        text =paste0("p-val: ",format(p_val, scientific = T, digits = 4),"<br />Path: ",path ) )) +
         geom_bar(position = "stack", stat = "identity") + coord_flip() +
         theme(axis.text.y = element_text(angle = 0, hjust = 1)) + theme_bw() +
         scale_fill_manual(values = colorfill) +
@@ -2128,7 +2130,7 @@ heat2 <- function (vsd, n = 40, intgroup = NULL, sampleName = NULL,
                            fsr = c(rep(10,50), rep(8,10), rep(7,10), rep(6,10), rep(1, 40) ))
     ch <- sizesDf$ch[ nrow(mat) ]
     fsr <- sizesDf$fsr[ nrow(mat) ]
-    if(nrow(mat)>80){labrow = rep(NA, nrow(mat))}else{labrow = as.character(consensus$gene)} #consensus$Symbol
+    if(nrow(mat)>80){labrow = rep(NA, nrow(mat))}else{labrow = as.character(consensus$SYMBOL)} #consensus$Symbol
     if(!isTRUE(ggplt)){
       heatmaply(mat, labRow = labrow, col_side_colors = df,
                 col_side_palette = ann, labCol = as.character(vsd[[sampleName]] ), fontsize_row = fsr,
