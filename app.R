@@ -927,6 +927,7 @@ server <- function(input, output, session) {
                                         targets = 1),
                                    list(className = "dt-right", targets = 1:(ncol(res.sh)-1))
                  ),
+                 scrollY = "400px",
                  rowCallback = JS(
                    "function(row, data) {",
                    "for (i = 6; i < 9; i++) {",
