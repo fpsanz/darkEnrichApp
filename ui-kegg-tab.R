@@ -5,7 +5,7 @@ fluidPage(
             fluidRow(  # primera fila
                 column( width = 3,
                     box(title = h3("Every breath you take. The Police"),
-                        width = "100%",
+                        width = NULL,
                         status = "info",
                         p("Every breath you take"),
                         p("Every move you make"),
@@ -118,7 +118,7 @@ fluidPage(
             fluidRow(  # primera fila
                 column( width = 3,
                     box(title = h3("Shiny happy people. REM"),
-                        width = "100%",
+                        width = NULL,
                         status = "info",
                         p("Meet me in the crowd, people, people"),
                         p("Throw your love around, love me, love me"),
@@ -207,12 +207,12 @@ fluidPage(
             fluidRow(  # primera fila
                 column( width = 3,
                     box(title = h3("Walk of life. Dire Straits"),
-                        width = "100%",
+                        width=NULL,
                         status = "info",
                         p("Here comes Johnny singing oldies, goldies"),
                         p("Be-Bop-A-Lula, Baby What I Say"),
                         p("Here comes Johnny singing, I Gotta Woman"),
-                        p("Down in the tunnels, trying to make it pay..."),
+                        p("Down in the tunnels, trying to make it pay...")
                     )
                 ),
                 column( width = 9,

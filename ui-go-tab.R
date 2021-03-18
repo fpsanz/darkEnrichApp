@@ -10,7 +10,7 @@ fluidPage(
                              column(
                                  width = 3,
                                   box(title = h3("Masters of war. Bob Dylan"),
-                                      width = "100%",
+                                      width = 12,
                                       status = "info",
                                       p("Masters of war"),
                                       p("Build to destroy"),
@@ -88,7 +88,7 @@ fluidPage(
                 column( width = 3,
                         box(
                           title = h3("Masters of war. Bob Dylan"),
-                          width = "100%",
+                          width = 12,
                           status = "info",
                           p("Masters of war"),
                           p("Build to destroy"),
@@ -162,7 +162,7 @@ fluidPage(
                     column( width = 3,
                             box(
                               title = h3("Masters of war. Bob Dylan"),
-                              width = "100%",
+                              width = 12,
                               status = "info",
                               p("Masters of war"),
                               p("Build to destroy"),
@@ -245,7 +245,7 @@ fluidPage(
                 column( width = 3,
                         box(
                           title = h3("The final countdown. Europe"),
-                          width = "100%",
+                          width = 12,
                           status = "info",
                           p("We're leavin' together"),
                           p("But still it's farewell"),
@@ -299,7 +299,7 @@ fluidRow(  # primera fila
                 column( width = 3,
                         box(
                           title = h3("The final countdown. Europe"),
-                          width = "100%",
+                          width = 12,
                           status = "info",
                           p("We're leavin' together"),
                           p("But still it's farewell"),
@@ -353,7 +353,7 @@ fluidRow(  # primera fila
                         column( width = 3,
                                 box(
                                   title = h3("The final countdown. Europe"),
-                                  width = "100%",
+                                  width = 12,
                                   status = "info",
                                   p("We're leavin' together"),
                                   p("But still it's farewell"),
@@ -411,7 +411,7 @@ fluidRow(  # primera fila
                 column( width = 3,
                         box(
                           title = h3("All that she wants. Ace of base"),
-                          width = "100%",
+                          width = 12,
                           status = "info",
                           p("When she woke up late in the morning light"),
                           p("And the day had just begun"),
@@ -465,7 +465,7 @@ fluidRow(  # primera fila
                 column( width = 3,
                         box(
                           title = h3("All that she wants. Ace of base"),
-                          width = "100%",
+                          width = 12,
                           status = "info",
                           p("When she woke up late in the morning light"),
                           p("And the day had just begun"),
@@ -519,7 +519,7 @@ fluidRow(  # primera fila
                 column( width = 3,
                         box(
                           title = h3("All that she wants. Ace of base"),
-                          width = "100%",
+                          width = 12,
                           status = "info",
                           p("When she woke up late in the morning light"),
                           p("And the day had just begun"),

@@ -4,7 +4,7 @@ fluidPage(
       column(width = 3,
              box(
                title = h3("Always. Bon Jovi"),
-               width = "100%",
+               width = 12,
                status = "info",
                p("...And I will love you, baby, always"),
                p("And I'll be there forever and a day, always"),
