@@ -19,7 +19,8 @@ fluidPage(
                         solidHeader = FALSE,
                         status = "primary",
                         width = NULL,
-                        DTOutput("tableAll")
+                        DTOutput("tableAll"),
+                        actionButton("resettableall", "Clear selection")
                     ) # caja para la tabla
                     )
                 ),
@@ -132,7 +133,8 @@ fluidPage(
                         solidHeader = FALSE,
                         status = "primary",
                         width = NULL,
-                        DTOutput("table")
+                        DTOutput("table"),
+                        actionButton("resettable", "Clear selection")
                     ) # caja para la tabla
                     )
                 ),
@@ -220,7 +222,8 @@ fluidPage(
                         solidHeader = FALSE,
                         status = "primary",
                         width = NULL,
-                        DTOutput("tableDown")
+                        DTOutput("tableDown"),
+                        actionButton("resettableDown", "Clear selection")
                     ) # caja para la tabla
                     )
                 ),

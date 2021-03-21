@@ -758,7 +758,7 @@ server <- function(input, output, session) {
   # ui selector padj #################################
   output$padj <- renderUI({
     validate(need(datos$dds,""))
-    sliderInput("padj", label = "Select p-adjusted threshold", min = 0, max=0.2,
+    sliderInput("padj", label = "Select p-adjusted threshold", min = 0, max=0.5,
                 value=0.05, step = 0.005 )
   })
   # ui selector Colores para PCA y demás #######################
@@ -916,11 +916,11 @@ server <- function(input, output, session) {
       list(extend = "copy", title=tituloTabla),
       list(extend="collection", buttons = c("csv", "excel"),
            text="Download", filename="expressionValues", title=tituloTabla ) )
-
+    res.sh <- res.sh %>% select(-lfcSE) # 210/03/2021 eliminar columna lfcSE
     datatable( res.sh, extensions = "Buttons", escape = FALSE,
                rownames = FALSE,
                filter = list(position="top", clear=FALSE),
-               options = list(order = list(list(8, 'asc')),
+               options = list(order = list(list(7, 'asc')),
                  lengthMenu = list(c(10,25,50,100,-1), c(10,25,50,100,"All")),
                  columnDefs = list(list(orderable = TRUE,
                                         className = "details-control",
@@ -945,6 +945,11 @@ server <- function(input, output, session) {
   
   output$lostgenes <- renderText({
     print( paste0(res$lostgene," out of ", dim(res$sh)[1], " have no ENTREZ ID. These genes will be missing in enrichment analysis"))
+  })
+  
+  tableProxy <- dataTableProxy("preview")
+  observeEvent(input$resetrow, {
+    tableProxy %>% selectRows(NULL)
   })
   
 # preview samples ###################
@@ -1209,6 +1214,11 @@ output$downTopsix <- downloadHandler(
         texto <- as.data.frame(unique(z[ ,c(variables()[1],"text") ] ))
         txt <- paste0(apply(texto, 1, function(x){x} ), collapse = "<br/><br/>")
         txt <- gsub("\n","<br/>",txt)
+        gene_fc_padj <- res$sh[which(res$sh==gene, arr.ind = TRUE)[1], c("log2FoldChange","padj")]
+        txt <- paste0("Log2FC: ",round(gene_fc_padj[1],2),
+                      "<br/>","Padj: ", 
+                      format(gene_fc_padj[2], digits=3, scientific=TRUE),
+                      "<br/><br/>",txt)
         tags$h5(HTML(txt))
     })
     svg$topone <- p
@@ -1283,9 +1293,15 @@ myHeightfunction <- function(filas) {
       escape = FALSE,
       opts = list(order = list(list(5, 'asc')),
         pageLength = 10, white_space = "normal",
+        scrollY = "400px",
         buttons = customButtons
         ) )
   }) 
+
+  tableallProxy <- dataTableProxy("tableAll")
+  observeEvent(input$resettableall, {
+    tableallProxy %>% selectRows(NULL)
+  })
 # KEGG barplot All ################
   output$keggPlotAll <- renderPlotly({
     validate(need(kgg$all, "Load file to render BarPlot"))
@@ -1433,8 +1449,14 @@ output$barKeggAll <- downloadHandler(
       escape = FALSE,
       opts = list(order = list(list(5, 'asc')),
         pageLength = 10, white_space = "normal",
+        scrollY = "400px",
         buttons = customButtons))
   }) 
+  
+  tableProxy <- dataTableProxy("table")
+  observeEvent(input$resettable, {
+    tableProxy %>% selectRows(NULL)
+  })
   # KEGG barplot up################
   output$keggPlot <- renderPlotly ({
     validate(need(kgg$up, "Load file to render BarPlot"))
@@ -1564,8 +1586,15 @@ output$barKeggAll <- downloadHandler(
       escape = FALSE,
       opts = list(order = list(list(5, 'asc')),
         pageLength = 10, white_space = "normal",
+        scrollY = "400px",
         buttons = customButtons))
   }) 
+  
+  tableDownProxy <- dataTableProxy("tableDown")
+  observeEvent(input$resettableDown, {
+    tableDownProxy %>% selectRows(NULL)
+  })
+  
   # KEGG barplot down ################
   output$keggPlotDown <- renderPlotly ({
     validate(need(kgg$down, "Load file to render BarPlot"))
@@ -1696,7 +1725,12 @@ output$barKeggAll <- downloadHandler(
                escape = FALSE,
                opts = list(order = list(list(6, 'asc')),
                  pageLength = 10, white_space = "normal",
+                 scrollY = "400px",
                  buttons = customButtons))
+  })
+  tableBPallProxy <- dataTableProxy("tableBPall")
+  observeEvent(input$resettableBPall, {
+    tableBPallProxy %>% selectRows(NULL)
   })
   # GO plots BP all #####################
   output$plotBPall <- renderPlotly({
@@ -1812,8 +1846,13 @@ output$barKeggAll <- downloadHandler(
                opts = list(order = list(list(6, 'asc')),
                            pageLength = 10, white_space = "normal",
                            buttons = customButtons,
+                           scrollY = "400px",
                            ajax = list(serverSide = TRUE, processing = TRUE))
     )
+  })
+  tableMFallProxy <- dataTableProxy("tableMFall")
+  observeEvent(input$resettableMFall, {
+    tableMFallProxy %>% selectRows(NULL)
   })
   # GO plots MF all  #####################
   output$plotMFall <- renderPlotly({
@@ -1930,8 +1969,13 @@ output$barKeggAll <- downloadHandler(
                opts = list(order = list(list(6, 'asc')),
                            pageLength = 10, white_space = "normal",
                            buttons = customButtons,
+                           scrollY = "400px",
                            ajax = list(serverSide = TRUE, processing = TRUE))
     )
+  })
+  tableCCallProxy <- dataTableProxy("tableCCall")
+  observeEvent(input$resettableCCall, {
+    tableCCallProxy %>% selectRows(NULL)
   })
   # GO plots CC all #####################
   output$plotCCall <- renderPlotly({
@@ -2047,7 +2091,12 @@ output$barKeggAll <- downloadHandler(
                escape = FALSE,
                opts = list(order = list(list(6, 'asc')),
                            pageLength = 10, white_space = "normal",
+                           scrollY = "400px",
                            buttons = customButtons))
+  })
+  tableBPProxy <- dataTableProxy("tableBP")
+  observeEvent(input$resettableBP, {
+    tableBPProxy %>% selectRows(NULL)
   })
   # GO plots BP UP #####################
   output$plotBP <- renderPlotly({
@@ -2162,8 +2211,13 @@ output$barKeggAll <- downloadHandler(
                opts = list(order = list(list(6, 'asc')),
                            pageLength = 10, white_space = "normal",
                            buttons = customButtons,
+                           scrollY = "400px",
                            ajax = list(serverSide = TRUE, processing = TRUE))
     )
+  })
+  tableMFProxy <- dataTableProxy("tableMF")
+  observeEvent(input$resettableMF, {
+    tableMFProxy %>% selectRows(NULL)
   })
   # GO plots MF UP #####################
   output$plotMF <- renderPlotly({
@@ -2278,8 +2332,13 @@ output$barKeggAll <- downloadHandler(
                opts = list(order = list(list(6, 'asc')),
                            pageLength = 10, white_space = "normal",
                            buttons = customButtons,
+                           scrollY = "400px",
                            ajax = list(serverSide = TRUE, processing = TRUE))
     )
+  })
+  tableCCProxy <- dataTableProxy("tableCC")
+  observeEvent(input$resettableCC, {
+    tableCCProxy %>% selectRows(NULL)
   })
   # GO plots CC UP #####################
   output$plotCC <- renderPlotly({
@@ -2398,8 +2457,13 @@ output$barKeggAll <- downloadHandler(
                escape = FALSE,
                opts = list(order = list(list(6, 'asc')),
                            buttons = customButtons,
+                           scrollY = "400px",
                            pageLength = 10, white_space = "normal")
     )
+  })
+  tableBPdownProxy <- dataTableProxy("tableBPdown")
+  observeEvent(input$resettableBPdown, {
+    tableBPdownProxy %>% selectRows(NULL)
   })
   # GO plots BP DOWN #####################
   output$plotBPdown <- renderPlotly({
@@ -2512,8 +2576,13 @@ output$barKeggAll <- downloadHandler(
                opts = list(order = list(list(6, 'asc')),
                            pageLength = 10, white_space = "normal",
                            buttons = customButtons,
+                           scrollY = "400px",
                            ajax = list(serverSide = TRUE, processing = TRUE))
     )
+  })
+  tableMFdownProxy <- dataTableProxy("tableMFdown")
+  observeEvent(input$resettableMFdown, {
+    tableMFdownProxy %>% selectRows(NULL)
   })
   # GO plots MF DOWN #####################
   output$plotMFdown <- renderPlotly({
@@ -2625,8 +2694,13 @@ output$barKeggAll <- downloadHandler(
                opts = list(order = list(list(6, 'asc')),
                            pageLength = 10, white_space = "normal",
                            buttons = customButtons,
+                           scrollY = "400px",
                            ajax = list(serverSide = TRUE, processing = TRUE))
     )
+  })
+  tableCCdownProxy <- dataTableProxy("tableCCdown")
+  observeEvent(input$resettableCCdown, {
+    tableCCdownProxy %>% selectRows(NULL)
   })
   # GO plots CC DOWN #####################
   output$plotCCdown <- renderPlotly({
@@ -2748,10 +2822,16 @@ output$barKeggAll <- downloadHandler(
                      ),
                      dom = "Bfrtipl",
                      buttons = customButtons,
+                     scrollY = "400px",
                      list(pageLength = 10, white_space = "normal")
                    )
     )
     }
+  })
+  
+  gseaTableProxy <- dataTableProxy("gseaTable")
+  observeEvent(input$resetgseaTable, {
+    gseaTableProxy %>% selectRows(NULL)
   })
   # GSEA plot ##########################
   output$gseaPlot <- renderPlot({

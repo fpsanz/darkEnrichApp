@@ -19,7 +19,8 @@ fluidPage(
                  status = "primary",
                  width = NULL,
                  bsAlert("gsea"),
-                 DTOutput("gseaTable")
+                 DTOutput("gseaTable"),
+                 actionButton("resetgseaTable","Clear selection")
                  )
         )
       ),

@@ -26,7 +26,8 @@ fluidPage(
                                      solidHeader = FALSE,
                                      status = "primary",
                                      width = NULL,
-                                     DTOutput("tableBPall")
+                                     DTOutput("tableBPall"),
+                                     actionButton("resettableBPall","Clear selection")
                                  ) # caja para la tabla
                              )), 
             fluidRow( # 2 fila
@@ -102,7 +103,8 @@ fluidPage(
                         solidHeader = FALSE,
                         status = "primary",
                         width = NULL,
-                        DTOutput("tableMFall")
+                        DTOutput("tableMFall"),
+                        actionButton("resettableMFall","Clear selection")
                     ) # caja para la tabla
                     )
                 ),
@@ -176,7 +178,8 @@ fluidPage(
                         solidHeader = FALSE,
                         status = "primary",
                         width = NULL,
-                        DTOutput("tableCCall")
+                        DTOutput("tableCCall"),
+                        actionButton("resettableCCall","Clear selection")
                     ) # caja para la tabla
                     )
                 ),
@@ -259,7 +262,8 @@ fluidPage(
                         solidHeader = FALSE,
                         status = "primary",
                         width = NULL,
-                        DTOutput("tableBP")
+                        DTOutput("tableBP"),
+                        actionButton("resettableBP","Clear selection")
                     ) # caja para la tabla
                     )
                 ),
@@ -313,7 +317,8 @@ fluidRow(  # primera fila
                         solidHeader = FALSE,
                         status = "primary",
                         width = NULL,
-                        DTOutput("tableMF")
+                        DTOutput("tableMF"),
+                        actionButton("resettableMF","Clear selection")
                     ) # caja para la tabla
                     )
                 ),
@@ -367,7 +372,8 @@ fluidRow(  # primera fila
                                 solidHeader = FALSE,
                                 status = "primary",
                                 width = NULL,
-                                DTOutput("tableCC")
+                                DTOutput("tableCC"),
+                                actionButton("resettableCC","Clear selection")
                             ) # caja para la tabla
                             )
                         ),
@@ -425,7 +431,8 @@ fluidRow(  # primera fila
                         solidHeader = FALSE,
                         status = "primary",
                         width = NULL,
-                        DTOutput("tableBPdown")
+                        DTOutput("tableBPdown"),
+                        actionButton("resettableBPdown","Clear selection")
                     ) # caja para la tabla
                     )
                 ),
@@ -479,7 +486,8 @@ fluidRow(  # primera fila
                         solidHeader = FALSE,
                         status = "primary",
                         width = NULL,
-                        DTOutput("tableMFdown")
+                        DTOutput("tableMFdown"),
+                        actionButton("resettableMFdown","Clear selection")
                     ) # caja para la tabla
                     )
                 ),
@@ -533,7 +541,8 @@ fluidRow(  # primera fila
                         solidHeader = FALSE,
                         status = "primary",
                         width = NULL,
-                        DTOutput("tableCCdown")
+                        DTOutput("tableCCdown"),
+                        actionButton("resettableCCdown","Clear selection")
                     ) # caja para la tabla
                     )
                 ),

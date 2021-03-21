@@ -1053,8 +1053,9 @@ loadGenes <- function(filegenes){
         group = colgroup,
         shape = shapegroup,
         intgroup.df,
-        name = colnames(object),
-        labels = colData(object)[[labels]]
+        #name = colnames(object),
+        name = as.character(colData(object)[[labels]]),
+        labels = as.character(colData(object)[[labels]])
       )
   } else{
     colgroup <- factor(intgroup.df[ ,intgroup[1] ] )
@@ -1064,8 +1065,9 @@ loadGenes <- function(filegenes){
         PC2 = pca$x[, 2],
         group = colgroup,
         intgroup.df,
-        name = colnames(object),
-        labels = colData(object)[[labels]]
+        #name = colnames(object),
+        name = as.character(colData(object)[[labels]]),
+        labels = as.character(colData(object)[[labels]])
       )
   }
   d$group <- as.factor(d$group)
@@ -1082,7 +1084,7 @@ loadGenes <- function(filegenes){
   }
  if(length(intgroup)>1){
     p <- ggplot(data = d,
-                aes_string(x = "PC1", y = "PC2", color = "group", shape = "shape")) +
+                aes_string(x = "PC1", y = "PC2", color = "group", shape = "shape", text="labels")) +
       geom_point(size = 3) +
       ggtitle("PCA for top 500 genes on normalized data") +
       xlab(paste0("PC1: ", round(percentVar[1] * 100), "% variance")) +
@@ -1098,7 +1100,7 @@ loadGenes <- function(filegenes){
     }
   else{
     p <- ggplot(data = d,
-                aes_string(x = "PC1", y = "PC2", color = "group")) +
+                aes_string(x = "PC1", y = "PC2", color = "group", text = "labels")) +
       geom_point(size = 3) +
       ggtitle("PCA for top 500 genes on normalized data") +
       xlab(paste0("PC1: ", round(percentVar[1] * 100), "% variance")) +
@@ -2088,7 +2090,7 @@ heat2 <- function (vsd, n = 40, intgroup = NULL, sampleName = NULL,
     #vsd <- vst(data)
     topVarGenes <- head(order(rowVars(assay(vsd)), decreasing = TRUE), n)
     mat  <- assay(vsd)[ topVarGenes, ]
-    mat  <- mat - rowMeans(mat)
+    #mat  <- mat - rowMeans(mat) #eliminado 18/03/2021
     if (!all(intgroup %in% names(colData(vsd)))) {
       stop("the argument 'intgroup' should specify columns of colData(dds)")
     }
@@ -2113,6 +2115,7 @@ heat2 <- function (vsd, n = 40, intgroup = NULL, sampleName = NULL,
     #                                                 as.vector(annot$ENSEMBL))), stringsAsFactors = F)
     #colores definidos por el usuario para primera variable
     consensus <- annot[annot$genes %in% rownames(mat),]
+    consensus <- consensus %>% arrange(match(genes, rownames(mat)))
     ann_colors<-list()
     ann_colors[[intgroup[1]]] <- customColor
     names(ann_colors[[intgroup[1]]]) <- c(levels(df[[intgroup[1]]]))
@@ -2133,8 +2136,9 @@ heat2 <- function (vsd, n = 40, intgroup = NULL, sampleName = NULL,
     if(nrow(mat)>80){labrow = rep(NA, nrow(mat))}else{labrow = as.character(consensus$SYMBOL)} #consensus$Symbol
     if(!isTRUE(ggplt)){
       heatmaply(mat, labRow = labrow, col_side_colors = df,
+                colors = viridis(n=256, alpha = 1, begin = 0, end = 1, option = "magma"),
                 col_side_palette = ann, labCol = as.character(vsd[[sampleName]] ), fontsize_row = fsr,
-                margins = c(50,50,20,0))}
+                margins = c(50,50,20,0)) }
     else{
       ggheatmap(mat, labRow = labrow, col_side_colors = df,
               col_side_palette = ann, labCol = as.character(vsd[[sampleName]] ), fontsize_row = fsr,
