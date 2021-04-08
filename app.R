@@ -988,17 +988,30 @@ output$pca3 <- renderUI({
       }
   })
 
+output$dimensions <- renderUI({
+    #validate(need(ndmax(),""))
+    if( ncol(assay(rlog$datos) ) < 5 ){
+      ndmax=ncol(assay(rlog$datos))
+    }else{
+      ndmax <- 5
+    }
+    selectizeInput("ndmax", "Select dimensions to plot", choices = seq_len(ndmax),
+                   multiple = TRUE, selected = c(1,2), options = list(maxItems=2))
+  })
+  
 output$pca <- renderPlotly({
     validate(need(!isTRUE(pca3d()), ""),
              need(datos$dds, ""),
              need(variables(), "Select condition to render PCA"),
              need(samplename(), ""),
-             need(coloresPCA$colores(), ""))
+             need(coloresPCA$colores(), ""),
+             need(length(input$ndmax)==2, ""))
     p <- plotPCA(
         rlog$datos,
         intgroup = variables(),
         labels = samplename(),
-        customColor = coloresPCA$colores()
+        customColor = coloresPCA$colores(),
+        axes = as.numeric(input$ndmax)
     ) +
         theme(plot.margin = unit(c(0.5, 0.5, 0.5, 0.5), "cm")) +
         scale_size_manual(values = 3) +
@@ -1013,26 +1026,26 @@ output$downPCA <- downloadHandler(
     ggsave(file, svg$pca, "svg", units = "in", width = 10, height = 10)}
 )
 
-output$pca3d <- renderRglwidget({
-    validate(need(datos$dds, ""),
-             need(variables(),"Select condition to render PCA" ),
-             need(coloresPCA$colores(), "" ))
-    d <- pca3dplot(rlog$datos, intgroup = variables(), ntop = 500,
-                   returnData = TRUE )
-    levels(d$labels) <- coloresPCA$colores()
-    try(rgl.close(), silent = TRUE)
-    rgl.open(useNULL = TRUE) 
-    x = d$PC1; y = d$PC2; z = d$PC3
-    plot3d(x,y,x, size = 2, type="s", col = (d$labels),
-           box=FALSE, axes=FALSE, xlab = names(d)[1],
-           ylab=names(d)[2], names(d)[3])
-    bg3d(sphere = FALSE, fogtype = "none", color = "#46505a")
-    rgl.lines(c(min(x), max(x)), c(0, 0), c(0, 0), color = "white")
-    rgl.lines(c(0, 0), c(min(y),max(y)), c(0, 0), color = "white")
-    rgl.lines(c(0, 0), c(0, 0), c(min(z),max(z)), color = "white")
-    rglwidget()
-  })
-  
+# output$pca3d <- renderRglwidget({
+#     validate(need(datos$dds, ""),
+#              need(variables(),"Select condition to render PCA" ),
+#              need(coloresPCA$colores(), "" ))
+#     d <- pca3dplot(rlog$datos, intgroup = variables(), ntop = 500,
+#                    returnData = TRUE )
+#     levels(d$labels) <- coloresPCA$colores()
+#     try(rgl.close(), silent = TRUE)
+#     rgl.open(useNULL = TRUE) 
+#     x = d$PC1; y = d$PC2; z = d$PC3
+#     plot3d(x,y,x, size = 2, type="s", col = (d$labels),
+#            box=FALSE, axes=FALSE, xlab = names(d)[1],
+#            ylab=names(d)[2], names(d)[3])
+#     bg3d(sphere = FALSE, fogtype = "none", color = "#46505a")
+#     rgl.lines(c(min(x), max(x)), c(0, 0), c(0, 0), color = "white")
+#     rgl.lines(c(0, 0), c(min(y),max(y)), c(0, 0), color = "white")
+#     rgl.lines(c(0, 0), c(0, 0), c(min(z),max(z)), color = "white")
+#     rglwidget()
+#   })
+#   
   # view Volcano plot data ###################
    output$volcano <- renderPlot( {
     validate(need(res$sh, "Load file to render plot"))

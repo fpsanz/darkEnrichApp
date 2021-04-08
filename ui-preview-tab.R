@@ -127,8 +127,9 @@ fluidPage(
                                      ),
                                      tagList(fluidRow(
                                      column(width=3,
-                                        materialSwitch(inputId = "pca3d", label = "PCA 3D",
-                                                       status = "primary"),
+                                        uiOutput("dimensions"),
+                                        # materialSwitch(inputId = "pca3d", label = "PCA 3D",
+                                        #                status = "primary"),
                                         downloadButton("downPCA","Download SVG")
                                             ),
                                      column(width=9,

@@ -1023,7 +1023,7 @@ loadGenes <- function(filegenes){
 # PCA de un objeto DESeq #####################
 
     plotPCA = function(object, intgroup = "condition", ntop = 500,
-                   returnData = TRUE, labels = NULL, customColor = NULL){
+                   returnData = TRUE, labels = NULL, customColor = NULL, axes=c(1,2)){
   # calculate the variance for each gene
   rv <- rowVars(assay(object))
   # select the ntop genes by variance
@@ -1048,8 +1048,8 @@ loadGenes <- function(filegenes){
     shapegroup <- factor(intgroup.df[ ,intgroup[2] ] )
     d <-
       data.frame(
-        PC1 = pca$x[, 1],
-        PC2 = pca$x[, 2],
+        PC1 = pca$x[, axes[1]],
+        PC2 = pca$x[, axes[2]],
         group = colgroup,
         shape = shapegroup,
         intgroup.df,
@@ -1061,8 +1061,8 @@ loadGenes <- function(filegenes){
     colgroup <- factor(intgroup.df[ ,intgroup[1] ] )
     d <-
       data.frame(
-        PC1 = pca$x[, 1],
-        PC2 = pca$x[, 2],
+        PC1 = pca$x[, axes[1]],
+        PC2 = pca$x[, axes[2]],
         group = colgroup,
         intgroup.df,
         #name = colnames(object),
@@ -1079,7 +1079,7 @@ loadGenes <- function(filegenes){
         colours <- customColor
     }
   if (returnData) {
-    attr(d, "percentVar") <- percentVar[1:2]
+    attr(d, "percentVar") <- percentVar[c(axes[1],axes[2])]
     #return(d)
   }
  if(length(intgroup)>1){
@@ -1087,8 +1087,8 @@ loadGenes <- function(filegenes){
                 aes_string(x = "PC1", y = "PC2", color = "group", shape = "shape", text="labels")) +
       geom_point(size = 3) +
       ggtitle("PCA for top 500 genes on normalized data") +
-      xlab(paste0("PC1: ", round(percentVar[1] * 100), "% variance")) +
-      ylab(paste0("PC2: ", round(percentVar[2] * 100), "% variance")) +
+      xlab(paste0("PC",axes[1],": ", round(percentVar[axes[1]] * 100), "% variance")) +
+      ylab(paste0("PC",axes[1],": ", round(percentVar[axes[2]] * 100), "% variance")) +
       scale_color_manual(values = colours, name = intgroup[1]) +
       scale_shape_manual(values = seq_len(length(d$shape)), name=intgroup[2] )+
       #coord_fixed() +
@@ -1103,8 +1103,8 @@ loadGenes <- function(filegenes){
                 aes_string(x = "PC1", y = "PC2", color = "group", text = "labels")) +
       geom_point(size = 3) +
       ggtitle("PCA for top 500 genes on normalized data") +
-      xlab(paste0("PC1: ", round(percentVar[1] * 100), "% variance")) +
-      ylab(paste0("PC2: ", round(percentVar[2] * 100), "% variance")) +
+      xlab(paste0("PC",axes[1],": ", round(percentVar[axes[1]] * 100), "% variance")) +
+      ylab(paste0("PC",axes[1],": ", round(percentVar[axes[2]] * 100), "% variance")) +
       scale_color_manual(values = colours, name = intgroup[1]) +
       #coord_fixed() +
       ggrepel::geom_text_repel(aes(label = labels,# paste("",d$name, sep = ""),
@@ -1116,39 +1116,39 @@ loadGenes <- function(filegenes){
     return(p)
 }
 
-pca3dplot <- function(object, intgroup = "condition", ntop = 500,
-                   returnData = TRUE){
-    rv <- rowVars(assay(object))
-   select <- order(rv, decreasing = TRUE)[seq_len(min(ntop, length(rv)))]
-  pca <- prcomp(t(assay(object)[select, ]))
-  percentVar <- pca$sdev ^ 2 / sum(pca$sdev ^ 2)
-  if (!all(intgroup %in% names(colData(object)))) {
-    stop("the argument 'intgroup' should specify columns of colData(dds)")
-  }
-  intgroup.df <- as.data.frame(colData(object)[, intgroup, drop = FALSE])
-  
-    colgroup <- factor(intgroup.df[ ,intgroup[1] ] )
-    d <-data.frame(
-        PC1 = pca$x[, 1],
-        PC2 = pca$x[, 2],
-        PC3 = pca$x[, 3],
-        group = colgroup,
-        intgroup.df,
-        name = colnames(object),
-        labels = colData(object)[[intgroup[1]]]
-      )
-
-  # assembly the data for the plot
-  
-  getPalette <- colorRampPalette(c("#f7837b","#1cc3c8"))
-  colours <- getPalette(length(levels(d$group)))
-  if (returnData) {
-    attr(d, "percentVar") <- percentVar[1:2]
-    #return(d)
-  }
-    return(d)
-  }
-
+# pca3dplot <- function(object, intgroup = "condition", ntop = 500,
+#                    returnData = TRUE){
+#     rv <- rowVars(assay(object))
+#    select <- order(rv, decreasing = TRUE)[seq_len(min(ntop, length(rv)))]
+#   pca <- prcomp(t(assay(object)[select, ]))
+#   percentVar <- pca$sdev ^ 2 / sum(pca$sdev ^ 2)
+#   if (!all(intgroup %in% names(colData(object)))) {
+#     stop("the argument 'intgroup' should specify columns of colData(dds)")
+#   }
+#   intgroup.df <- as.data.frame(colData(object)[, intgroup, drop = FALSE])
+#   
+#     colgroup <- factor(intgroup.df[ ,intgroup[1] ] )
+#     d <-data.frame(
+#         PC1 = pca$x[, 1],
+#         PC2 = pca$x[, 2],
+#         PC3 = pca$x[, 3],
+#         group = colgroup,
+#         intgroup.df,
+#         name = colnames(object),
+#         labels = colData(object)[[intgroup[1]]]
+#       )
+# 
+#   # assembly the data for the plot
+#   
+#   getPalette <- colorRampPalette(c("#f7837b","#1cc3c8"))
+#   colours <- getPalette(length(levels(d$group)))
+#   if (returnData) {
+#     attr(d, "percentVar") <- percentVar[1:2]
+#     #return(d)
+#   }
+#     return(d)
+#   }
+# 
 
 # Función para recuperar los genes up de un objeto DEseq #############
 # actualmente para p-val <= 0.05 fijo.
