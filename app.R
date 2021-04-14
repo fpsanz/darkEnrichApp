@@ -940,7 +940,10 @@ server <- function(input, output, session) {
                  buttons = customButtons,
                  list(pageLength = 10, white_space = "normal")
                )
-    )
+    )   %>% 
+      formatStyle('log2FoldChange',
+                      backgroundColor = styleInterval(0,  c("steelblue","red") ) ) %>% 
+      formatStyle('baseMean', background = styleColorBar(res.sh$baseMean, "#357E43") )
   })
   
   output$lostgenes <- renderText({
