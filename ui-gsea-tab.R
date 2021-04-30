@@ -3,14 +3,10 @@ fluidPage(
     fluidRow(
       column(width = 3,
              box(
-               title = h3("Always. Bon Jovi"),
+               title = "",
                width = 12,
                status = "info",
-               p("...And I will love you, baby, always"),
-               p("And I'll be there forever and a day, always"),
-               p("I'll be there 'til the stars don't shine"),
-               p("Till the heavens burst and the words don't rhyme"),
-               p("I know when I die, you'll be on my mind...")
+               uiOutput("gseaSelectize")
              )
              ),
       column(width = 9,

@@ -1397,8 +1397,14 @@ buildKeggDataset <- function(specie="Mm"){
   }
 
 # Función para hacer GSEA pathway #################################
-gseaKegg <- function(res, specie){
-  pathwayDataSet <- readRDS(paste0("./resources/",specie,"/GSEA/keggDataGSEA.Rds"))
+gseaKegg <- function(res, specie, gseadb){
+  if(gseadb == "keggDataGSEA.Rds"){
+    pathwayDataSet <- readRDS(paste0("./resources/",specie,"/GSEA/keggDataGSEA.Rds"))
+  }else{
+    pathwayDataSet <- readRDS(paste0("./resources/",specie,"/GSEA/",gseadb))
+    pathwayDataSet <- enframe(pathwayDataSet) %>% unnest(c("name","value"))
+    names(pathwayDataSet) <- c("Id","GeneID")
+  }
   res.sh <- res
   #res.sh <- as.data.frame(lfcShrink(dds, coef=2, type="apeglm", res = results(dds)))
   res.sh <- res.sh[order(res.sh$log2FoldChange, decreasing = TRUE), ]

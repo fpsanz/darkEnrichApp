@@ -2807,11 +2807,23 @@ output$barKeggAll <- downloadHandler(
       dev.off()
     }
   )
-  # ............ ###############################
+  # GSEA......... ###############################
+  output$gseaSelectize <- renderUI({
+    if(specie()=="Mm"){
+      datasets <- list.files("./resources/Mm/GSEA/")
+    }else if(specie()=="Hs"){
+      datasets <- list.files("./resources/Hs/GSEA/")
+    }
+    pickerInput(inputId = "gseadb", label = "Select GSEA dataset",
+                   choices = datasets, 
+                options = list(title = "dataset"),
+                selected = NULL )
+  })
   # GSEA table ##########################
-  output$gseaTable <- renderDataTable({
+  output$gseaTable <- renderDT({
     validate(need(res$sh, "Load file to render table"))
-    gsea$gsea <- gseaKegg(res$sh, specie() )
+    validate(need(input$gseadb!="","Select dataset"))
+    gsea$gsea <- gseaKegg(res$sh, specie(), gseadb = input$gseadb )
     mygsea <- gsea$gsea
     if( length(which(mygsea@result$p.adjust<=0.05)) == 0 ){
         createAlert(session, anchorId = "gsea", title = "Oops!!", 
