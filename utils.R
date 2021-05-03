@@ -2608,7 +2608,7 @@ goBarplot <- function(enrichGO=NULL, resGO=NULL, genes=NULL,
     require(GOplot)
     go <- enrichGO
     go <- go[ go$Ont==category, ]
-    if(is.null(nrows) | length(nrows)<2 ){
+    if(is.null(nrows) | length(nrows)<1 ){
         totalRows <- min(90, dim(go)[1] )
         go <- go[ seq_len(totalRows), ]
     } else{
