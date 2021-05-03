@@ -3,7 +3,7 @@ legendChorplot <- function(enrichdf){
     labels <- enrichdf$Pathway
     colours = colorRampPalette(RColorBrewer::brewer.pal(11, "Spectral"))(length(labels))
     par(bg="#37414b", mar=c(0.5,0.5,0.5,0.5))
-    plot(NULL, xaxt='n',yaxt='n',bty='n',ylab='',xlab='', xlim=0:1, ylim=0:1)
+    plot(NULL, xaxt='n',yaxt='n',bty='n',ylab='',xlab='', xlim=0:1, ylim=0:1, bg="#37414b")
     legend("topleft", legend = labels, pch=16, pt.cex = 1.8,
            cex = 1, bty="n", col = colours, bg="#37414b",
            text.col="white", border = "#37414b")

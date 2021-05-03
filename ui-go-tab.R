@@ -8,19 +8,7 @@ fluidPage(
                 tabPanel("Biological Proccess",
                          fluidRow(# primera fila all
                              column(
-                                 width = 3,
-                                  box(title = h3("Masters of war. Bob Dylan"),
-                                      width = 12,
-                                      status = "info",
-                                      p("Masters of war"),
-                                      p("Build to destroy"),
-                                      p("You play with my world"),
-                                      p("Like it's your little toy"),
-                                      p("All the money you made will never buy back your soul...")
-                                  )
-                             ),
-                             column(
-                                 width = 9,
+                                 width = 9, offset = 2,
                                  box(
                                      title = "Biological proccess terms",
                                      solidHeader = FALSE,
@@ -31,7 +19,7 @@ fluidPage(
                                  ) # caja para la tabla
                              )), 
             fluidRow( # 2 fila
-                column( width = 9, offset = 3,
+                column( width = 9, offset = 2,
                     tabBox( width = 12,  height = "650px",# caja con pestañas para los plots
                             tabPanel(title = "GO term cloud", height = "600px", width = "100%",
                                      fluidRow(column(width=12, downloadButton("cloudbpall","Download SVG"))),
@@ -86,19 +74,7 @@ fluidPage(
             #tags$br(),
             tabPanel("Molecular function",  # MF all
              fluidRow(  # primera fila mf all 
-                column( width = 3,
-                        box(
-                          title = h3("Masters of war. Bob Dylan"),
-                          width = 12,
-                          status = "info",
-                          p("Masters of war"),
-                          p("Build to destroy"),
-                          p("You play with my world"),
-                          p("Like it's your little toy"),
-                          p("All the money you made will never buy back your soul...")
-                        )
-                ),
-                column( width = 9,
+                column( width = 9, offset = 2,
                     box(title = "Molecular function terms",
                         solidHeader = FALSE,
                         status = "primary",
@@ -109,7 +85,7 @@ fluidPage(
                     )
                 ),
             fluidRow( # 2 fila
-                column( width = 9, offset = 3,
+                column( width = 9, offset = 2,
                     tabBox( width = 12,  height = "650px",# caja con pestañas para los plots
                             tabPanel(title = "GO term cloud",width = "100%", height = "600px",
                                      fluidRow(downloadButton("cloudmfall","Download SVG")),
@@ -161,19 +137,7 @@ fluidPage(
                 ### CC all #############################
                 tabPanel("Cellular component",   ##tab CC all
                 fluidRow(  # primera fila all CC
-                    column( width = 3,
-                            box(
-                              title = h3("Masters of war. Bob Dylan"),
-                              width = 12,
-                              status = "info",
-                              p("Masters of war"),
-                              p("Build to destroy"),
-                              p("You play with my world"),
-                              p("Like it's your little toy"),
-                              p("All the money you made will never buy back your soul...")
-                            )
-                    ),
-                column( width = 9,
+                column( width = 9, offset = 2,
                     box(title = "Cellular component terms",
                         solidHeader = FALSE,
                         status = "primary",
@@ -184,7 +148,7 @@ fluidPage(
                     )
                 ),
             fluidRow( # 2 fila
-                column( width = 9, offset = 3,
+                column( width = 9, offset = 2,
                     tabBox( width = 12,  height = "650px",# caja con pestañas para los plots
                             tabPanel(title = "GO term cloud", width = "100%", height = "600px",
                                     fluidRow(downloadButton("cloudccall","Download SVG")),
@@ -245,19 +209,7 @@ fluidPage(
             tabsetPanel(  # tabsetpanel up
              tabPanel("Biological Proccess",
             fluidRow(  # primera fila
-                column( width = 3,
-                        box(
-                          title = h3("The final countdown. Europe"),
-                          width = 12,
-                          status = "info",
-                          p("We're leavin' together"),
-                          p("But still it's farewell"),
-                          p("And maybe we'll come back"),
-                          p("To Earth, who can tell?"),
-                          p("I guess there is no one to blame...")
-                        )
-                ),
-                column( width = 9,
+              column( width = 9, offset = 2,
                     box(title = "Biological proccess terms",
                         solidHeader = FALSE,
                         status = "primary",
@@ -268,7 +220,7 @@ fluidPage(
                     )
                 ),
             fluidRow( # 2 fila
-                column( width = 9, offset = 3,
+                column( width = 9, offset = 2,
                     tabBox( width = 12, height = "650px", # caja con pestañas para los plots
                         tabPanel(title = "GO term cloud",  height = "600px",
                                  fluidRow(downloadButton("cloudbpup","Download SVG")),
@@ -300,19 +252,7 @@ fluidPage(
 ## MF up #############################
 tabPanel("Molecular function",
 fluidRow(  # primera fila
-                column( width = 3,
-                        box(
-                          title = h3("The final countdown. Europe"),
-                          width = 12,
-                          status = "info",
-                          p("We're leavin' together"),
-                          p("But still it's farewell"),
-                          p("And maybe we'll come back"),
-                          p("To Earth, who can tell?"),
-                          p("I guess there is no one to blame...")
-                        )
-                ),
-                column( width = 9,
+                column( width = 9, offset = 2,
                     box(title = "Molecular function terms",
                         solidHeader = FALSE,
                         status = "primary",
@@ -323,7 +263,7 @@ fluidRow(  # primera fila
                     )
                 ),
             fluidRow( # 2 fila
-                column( width = 9, offset = 3,
+                column( width = 9, offset = 2,
                     tabBox( width = 12,  height = "650px",# caja con pestañas para los plots
                         tabPanel(title = "GO term cloud",  height = "600px", width = "100%",
                                  fluidRow(downloadButton("cloudmfup","Download SVG")),
@@ -355,19 +295,7 @@ fluidRow(  # primera fila
 ## CC up ###################################
         tabPanel("Cellular component",
             fluidRow(  # primera fila
-                        column( width = 3,
-                                box(
-                                  title = h3("The final countdown. Europe"),
-                                  width = 12,
-                                  status = "info",
-                                  p("We're leavin' together"),
-                                  p("But still it's farewell"),
-                                  p("And maybe we'll come back"),
-                                  p("To Earth, who can tell?"),
-                                  p("I guess there is no one to blame...")
-                                )
-                        ),
-                        column( width = 9,
+                        column( width = 9, offset = 2,
                             box(title = "Cellular component terms",
                                 solidHeader = FALSE,
                                 status = "primary",
@@ -378,7 +306,7 @@ fluidRow(  # primera fila
                             )
                         ),
             fluidRow( # 2 fila
-                column( width = 9, offset = 3,
+                column( width = 9, offset = 2,
                     tabBox( width = 12, height = "650px", # caja con pestañas para los plots
                         tabPanel(title = "GO term cloud",  height = "600px", width = "100%" ,
                                  fluidRow(downloadButton("cloudccup","Download SVG")),
@@ -414,19 +342,7 @@ fluidRow(  # primera fila
             tabsetPanel(
                 tabPanel( "Biological proccess",
             fluidRow(  # primera fila
-                column( width = 3,
-                        box(
-                          title = h3("All that she wants. Ace of base"),
-                          width = 12,
-                          status = "info",
-                          p("When she woke up late in the morning light"),
-                          p("And the day had just begun"),
-                          p("She opened up her eyes and thought"),
-                          p("Oh, what a morning"),
-                          p("It's not a day for work...")
-                        )
-                ),
-                column( width = 9,
+                column( width = 9, offset = 2,
                     box(title = "Biological proccess terms",
                         solidHeader = FALSE,
                         status = "primary",
@@ -437,7 +353,7 @@ fluidRow(  # primera fila
                     )
                 ),
             fluidRow( # 2 fila
-                column( width = 9, offset = 3,
+                column( width = 9, offset = 2,
                     tabBox( width = 12,  height = "650px",# caja con pestañas para los plots
                         tabPanel(title = "GO term cloud",  height = "600px", width = "100%",
                                  fluidRow(downloadButton("cloudbpdown","Download SVG")),
@@ -469,19 +385,7 @@ fluidRow(  # primera fila
 ## MF down ###################################
         tabPanel( "Molecular function",
             fluidRow(  # primera fila
-                column( width = 3,
-                        box(
-                          title = h3("All that she wants. Ace of base"),
-                          width = 12,
-                          status = "info",
-                          p("When she woke up late in the morning light"),
-                          p("And the day had just begun"),
-                          p("She opened up her eyes and thought"),
-                          p("Oh, what a morning"),
-                          p("It's not a day for work...")
-                        )
-                ),
-                column( width = 9,
+                column( width = 9, offset = 2,
                     box(title = "Molecular functions terms",
                         solidHeader = FALSE,
                         status = "primary",
@@ -492,7 +396,7 @@ fluidRow(  # primera fila
                     )
                 ),
             fluidRow( # 2 fila
-                column( width = 9, offset = 3,
+                column( width = 9, offset = 2,
                     tabBox( width = 12, height = "650px", # caja con pestañas para los plots
                         tabPanel(title = "GO term cloud",  height = "600px",width = "100%",
                                  fluidRow(downloadButton("cloudmfdown","Download SVG")),
@@ -524,19 +428,7 @@ fluidRow(  # primera fila
 ## CC down ###################################
                 tabPanel("Cellular component",
                 fluidRow(  # primera fila
-                column( width = 3,
-                        box(
-                          title = h3("All that she wants. Ace of base"),
-                          width = 12,
-                          status = "info",
-                          p("When she woke up late in the morning light"),
-                          p("And the day had just begun"),
-                          p("She opened up her eyes and thought"),
-                          p("Oh, what a morning"),
-                          p("It's not a day for work...")
-                        )
-                ),
-                column( width = 9,
+                  column( width = 9, offset = 2,
                     box(title = "Cellular component terms",
                         solidHeader = FALSE,
                         status = "primary",
@@ -547,7 +439,7 @@ fluidRow(  # primera fila
                     )
                 ),
             fluidRow( # 2 fila
-                column( width = 9, offset = 3,
+                column( width = 9, offset = 2,
                     tabBox( width = 12, height = "650px",# caja con pestañas para los plots
                         tabPanel(title = "GO term cloud",  height = "600px",width = "100%",
                                  fluidRow( downloadButton("cloudccdown","Download SVG")),

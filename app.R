@@ -1321,7 +1321,8 @@ myHeightfunction <- function(filas) {
   })
 # KEGG barplot All ################
   output$keggPlotAll <- renderPlotly({
-    validate(need(kgg$all, "Load file to render BarPlot"))
+    validate(need(kgg$all, "Load file to render BarPlot"),
+             need(rowsAll(), "Select the paths of interest to render BarPlot") )
     rowsAll <- rowsAll()
     if(is.null(rowsAll)){
         if( dim(kgg$all)[1]<10 ){rowsAll <-  seq_len(nrow(kgg$all)) }
@@ -1350,7 +1351,8 @@ output$barKeggAll <- downloadHandler(
 )
   # KEGG chordiag plot All ###############
   output$keggChordAll <- renderMychordplot({
-    validate(need(kgg$all, "Load file to render ChordPlot"))
+    validate(need(kgg$all, "Load file to render ChordPlot"),
+             need(length(rowsAll())>2, "Select the paths of interest to render ChordPlot"))
     rowsAll <- rowsAll()
     if(is.null(rowsAll)){
         if( dim(kgg$all)[1]<10 ){rowsAll <-  seq_len(nrow(kgg$all)) }
@@ -1360,8 +1362,9 @@ output$barKeggAll <- downloadHandler(
     #chordPlot(kgg$all[rowsAll, ], nRows = length(rowsAll), orderby = "P.DE")
   })
 
-  output$legendChorAll <- renderPlot({
-    validate(need(kgg$all, "Load file to render ChordPlot"))
+  output$legendChorAll <- renderPlot(bg = "#37414b",{
+    validate(need(kgg$all, "Load file to render ChordPlot"),
+             need(length(rowsAll())>2, "Select the paths of interest to render ChordPlot") )
     rowsAll <- rowsAll()
     if(is.null(rowsAll)){
         if( dim(kgg$all)[1]<10 ){rowsAll <-  seq_len(nrow(kgg$all)) }
@@ -1476,7 +1479,8 @@ output$barKeggAll <- downloadHandler(
   })
   # KEGG barplot up################
   output$keggPlot <- renderPlotly ({
-    validate(need(kgg$up, "Load file to render BarPlot"))
+    validate(need(kgg$up, "Load file to render BarPlot"), 
+             need(rowsUp(), "Select the paths of interest to render BarPlot"))
     rowsUp <- rowsUp()
     if(is.null(rowsUp)){
         if( dim(kgg$up)[1]<10 ){rowsUp <-  seq_len(nrow(kgg$up)) }
@@ -1498,17 +1502,18 @@ output$barKeggAll <- downloadHandler(
   )
   # KEGG chordiag plot up ###############
   output$keggChord <- renderMychordplot({
-    validate(need(kgg$up, "Load file to render ChordPlot"))
+    validate(need(kgg$up, "Load file to render ChordPlot"),
+             need(length(rowsUp())>2, "Select the paths of interest to render ChordPlot"))
     rowsUp<- rowsUp()
     if(is.null(rowsUp)){
         if( dim(kgg$up)[1]<10 ){rowsUp <-  seq_len(nrow(kgg$up)) }
         else{ rowsUp <-  seq_len(10)  }
     }
     mychordplot(kgg$up[rowsUp, c("Pathway","genes") ], div="keggChord" )
-    #chordPlot(kgg$up[rowsUp, ], nRows = length(rowsUp), orderby = "P.DE")
   })
- output$legendChorUp <- renderPlot({
-    validate(need(kgg$up, "Load file to render ChordPlot"))
+ output$legendChorUp <- renderPlot(bg = "#37414b",{
+    validate(need(kgg$up, "Load file to render ChordPlot"),
+             need(length(rowsUp())>2, "Select the paths of interest to render ChordPlot"))
     rowsUp <- rowsUp()
     if(is.null(rowsUp)){
         if (dim(kgg$up)[1] < 10) {rowsUp <-  seq_len(nrow(kgg$up))}
@@ -1614,7 +1619,8 @@ output$barKeggAll <- downloadHandler(
   
   # KEGG barplot down ################
   output$keggPlotDown <- renderPlotly ({
-    validate(need(kgg$down, "Load file to render BarPlot"))
+    validate(need(kgg$down, "Load file to render BarPlot"),
+             need(rowsdown(), "Select the paths of interest to render BarPlot"))
       rowsdown <- rowsdown()
     if(is.null(rowsdown)){
         if( dim(kgg$down)[1]<10 ){rowsdown <-  seq_len(nrow(kgg$down)) }
@@ -1637,7 +1643,8 @@ output$barKeggAll <- downloadHandler(
   )
   # KEGG chordiag plot down ###############
   output$keggChordDown <- renderMychordplot({
-    validate(need(kgg$down, "Load file to render ChordPlot"))
+    validate(need(kgg$down, "Load file to render ChordPlot"),
+             need(length(rowsdown())>2, "Select the paths of interest to render ChordPlot"))
     rowsdown <- rowsdown()
     if(is.null(rowsdown)){
         if( dim(kgg$down)[1]<10 ){rowsdown <-  seq_len(nrow(kgg$down)) }
@@ -1646,8 +1653,9 @@ output$barKeggAll <- downloadHandler(
     mychordplot(kgg$down[rowsdown, c("Pathway","genes") ], div="keggChordDown" )
     #chordPlot(kgg$down[rowsdown, ], nRows = length(rowsdown), orderby = "P.DE")
   })
-  output$legendChorDown <- renderPlot({
-    validate(need(kgg$down, "Load file to render ChordPlot"))
+  output$legendChorDown <- renderPlot(bg = "#37414b",{
+    validate(need(kgg$down, "Load file to render ChordPlot"),
+             need(length(rowsdown())>2, "Select the paths of interest to render ChordPlot"))
     rowsdown <- rowsdown()
     if(is.null(rowsdown)){
         if( dim(kgg$down)[1]<10 ){rowsdown <-  seq_len(nrow(kgg$down)) }

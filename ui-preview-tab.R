@@ -57,12 +57,8 @@ fluidPage(
         offset = 1,
         box(
             width = 12,
-            status = "info",
-            h3("Hooked on a feeling. Blue Swede"),
-            p("I can't stop this feeling"),
-            p("Deep inside of me"),
-            p("Girl, you just don't realize"),
-            p("What you do to me...")
+            title = "Up/Down color selector",
+            status = "info"
         ) #tabbox
     ) #column
     ), 
