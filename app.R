@@ -1759,7 +1759,8 @@ output$barKeggAll <- downloadHandler(
   })
   # GO plots BP all #####################
   output$plotBPall <- renderPlotly({
-    validate(need(go$all, "Load file to render plot"))
+    validate(need(go$all, "Load file to render plot"),
+             need(bprowsall(), "Select at least one row to plot") )
     bprowsall <- bprowsall()
     if(is.null(bprowsall)){bprowsall <- c(1:10)}
     gosBP <- go$all[go$all$Ont=="BP",]
@@ -1803,7 +1804,8 @@ output$barKeggAll <- downloadHandler(
   )
   # GO gobarplot BP all #######################
   output$gobarplotAllBP <- renderPlot({
-    validate(need(go$all, "Load file to render dotPlot"))
+    validate(need(go$all, "Load file to render dotPlot"), 
+             need(bprowsall(), "Select at least 1 row" ) )
     bprowsall <- bprowsall()
     p <- goBarplot(enrichGO = go$all, resGO = res$sh, genes= data$genesall,
               category = "BP", nrows = bprowsall)
@@ -1881,7 +1883,8 @@ output$barKeggAll <- downloadHandler(
   })
   # GO plots MF all  #####################
   output$plotMFall <- renderPlotly({
-    validate(need(go$all, "Load file to render plot"))
+    validate(need(go$all, "Load file to render plot"),
+             need(mfrowsall(), "Select at least one row to plot") )
     mfrowsall <- mfrowsall()
     if(is.null(mfrowsall)){mfrowsall <- c(1:10)}
     gosMF <- go$all[go$all$Ont=="MF",]
@@ -1926,7 +1929,8 @@ output$barKeggAll <- downloadHandler(
   )
   # GO gobarplot MF all ####################
   output$gobarplotAllMF <- renderPlot({
-    validate(need(go$all, "Load file to render dotPlot"))
+    validate(need(go$all, "Load file to render dotPlot"),
+             need(mfrowsall(), "Select at least 1 row" ))
     mfrowsall <- mfrowsall()
     p <- goBarplot(enrichGO = go$all, resGO = res$sh, genes= data$genesall,
               category = "MF", nrows = mfrowsall)
@@ -2004,7 +2008,8 @@ output$barKeggAll <- downloadHandler(
   })
   # GO plots CC all #####################
   output$plotCCall <- renderPlotly({
-    validate(need(go$all, "Load file to render plot"))
+    validate(need(go$all, "Load file to render plot"),
+             need(ccrowsall(), "Select at least one row to plot") )
     ccrowsall <- ccrowsall()
     if(is.null(ccrowsall)){ccrowsall <- c(1:10)}
     gosCC <- go$all[go$all$Ont=="CC",]
@@ -2049,7 +2054,8 @@ output$barKeggAll <- downloadHandler(
   )
   # GO gobarplot CC all #######################
   output$gobarplotAllCC <- renderPlot({
-    validate(need(go$all, "Load file to render dotPlot"))
+    validate(need(go$all, "Load file to render dotPlot"),
+             need(ccrowsall(), "Select at least 1 row" ))
     ccrowsall <- ccrowsall()
     p <- goBarplot(enrichGO = go$all, resGO = res$sh, genes= data$genesall,
               category = "CC", nrows = ccrowsall)
@@ -2125,7 +2131,8 @@ output$barKeggAll <- downloadHandler(
   })
   # GO plots BP UP #####################
   output$plotBP <- renderPlotly({
-    validate(need(go$up, "Load file to render plot"))
+    validate(need(go$up, "Load file to render plot"),
+             need(bprowsup(), "Select at least one row to plot"))
       bprowsup <- bprowsup()
     if(is.null(bprowsup)){bprowsup <- c(1:10)}
     gosBP <- go$up[go$up$Ont=="BP",]
@@ -2165,7 +2172,8 @@ output$barKeggAll <- downloadHandler(
   
   # GO gobarplot BP Up #######################
   output$gobarplotUpBP <- renderPlot({
-    validate(need(go$up, "Load file to render dotPlot"))
+    validate(need(go$up, "Load file to render dotPlot"),
+             need(bprowsup(), "Select at least 1 row" ))
     bprowsup <- bprowsup()
     p <- goBarplot(enrichGO = go$up, resGO = res$sh, genes= data$genesUp,
               category = "BP", nrows = bprowsup)
@@ -2246,7 +2254,8 @@ output$barKeggAll <- downloadHandler(
   })
   # GO plots MF UP #####################
   output$plotMF <- renderPlotly({
-    validate(need(go$up, "Load file to render plot"))
+    validate(need(go$up, "Load file to render plot"),
+             need(mfrowsup(), "Select at least one row to plot"))
     mfrowsup <- mfrowsup()
     if(is.null(mfrowsup)){mfrowsup <- c(1:10)}
     gosMF <- go$up[go$up$Ont=="MF",]
@@ -2287,7 +2296,8 @@ output$barKeggAll <- downloadHandler(
   
   # GO gobarplot MF Up #######################
   output$gobarplotUpMF <- renderPlot({
-    validate(need(go$up, "Load file to render dotPlot"))
+    validate(need(go$up, "Load file to render dotPlot"),
+             need(mfrowsup(), "Select at least 1 row" ) )
       mfrowsup <- mfrowsup()
     p <- goBarplot(enrichGO = go$up, resGO = res$sh, genes= data$genesUp,
               category = "MF", nrows = mfrowsup)
@@ -2367,7 +2377,8 @@ output$barKeggAll <- downloadHandler(
   })
   # GO plots CC UP #####################
   output$plotCC <- renderPlotly({
-    validate(need(go$up, "Load file to render plot"))
+    validate(need(go$up, "Load file to render plot"),
+             need(ccrowsup(), "Select at least one row to plot"))
     ccrowsup <- ccrowsup()
     if(is.null(ccrowsup)){ccrowsup <- c(1:10)}
     gosCC <- go$up[go$up$Ont=="CC",]
@@ -2408,7 +2419,8 @@ output$barKeggAll <- downloadHandler(
   
   # GO gobarplot CC Up #######################
   output$gobarplotUpCC <- renderPlot({
-    validate(need(go$up, "Load file to render dotPlot"))
+    validate(need(go$up, "Load file to render dotPlot"),
+             need(ccrowsup(), "Select at least 1 row" ))
     ccrowsup <- ccrowsup()
     goBarplot(enrichGO = go$up, resGO = res$sh, genes= data$genesUp,
               category = "CC", nrows = ccrowsup)
@@ -2492,7 +2504,8 @@ output$barKeggAll <- downloadHandler(
   })
   # GO plots BP DOWN #####################
   output$plotBPdown <- renderPlotly({
-    validate(need(go$down, "Load file to render plot"))
+    validate(need(go$down, "Load file to render plot"),
+             need(bprowsdown(), "Select at least one row to plot"))
     bprowsdown <- bprowsdown()
     if(is.null(bprowsdown)){bprowsdown <- c(1:10)}
     gosBP <- go$down[go$down$Ont=="BP",]
@@ -2533,7 +2546,8 @@ output$barKeggAll <- downloadHandler(
   )
   # GO gobarplot BP down #######################
   output$gobarplotDownBP <- renderPlot({
-    validate(need(go$down, "Load file to render dotPlot"))
+    validate(need(go$down, "Load file to render dotPlot"),
+             need(bprowsdown(), "Select at least 1 row" ))
     bprowsdown <- bprowsdown()
     p <- goBarplot(enrichGO = go$down, resGO = res$sh, genes= data$genesDown,
               category = "BP", nrows = bprowsdown)
@@ -2611,7 +2625,8 @@ output$barKeggAll <- downloadHandler(
   })
   # GO plots MF DOWN #####################
   output$plotMFdown <- renderPlotly({
-    validate(need(go$down, "Load file to render plot"))
+    validate(need(go$down, "Load file to render plot"),
+             need(mfrowsdown(), "Select at least one row to plot"))
     mfrowsdown <- mfrowsdown()
     if(is.null(mfrowsdown)){mfrowsdown <- c(1:10)}
     gosMF <- go$down[go$down$Ont=="MF",]
@@ -2651,7 +2666,8 @@ output$barKeggAll <- downloadHandler(
   )
   # GO gobarplot MF down #######################
   output$gobarplotDownMF <- renderPlot({
-    validate(need(go$down, "Load file to render dotPlot"))
+    validate(need(go$down, "Load file to render dotPlot"),
+             need(mfrowsdown(), "Select at least 1 row" ))
     mfrowsdown <- mfrowsdown()
     p <- goBarplot(enrichGO = go$down, resGO = res$sh, genes= data$genesDown,
               category = "MF", nrows = mfrowsdown)
@@ -2729,7 +2745,8 @@ output$barKeggAll <- downloadHandler(
   })
   # GO plots CC DOWN #####################
   output$plotCCdown <- renderPlotly({
-    validate(need(go$down, "Load file to render plot"))
+    validate(need(go$down, "Load file to render plot"),
+    need(ccrowsdown(), "Select at least one row to plot"))
     ccrowsdown <- ccrowsdown()
     if(is.null(ccrowsdown)){ccrowsdown <- c(1:10)}
     gosCC <- go$down[go$down$Ont=="CC",]
@@ -2769,7 +2786,8 @@ output$barKeggAll <- downloadHandler(
   )
   # GO gobarplot CC down #######################
   output$gobarplotDownCC <- renderPlot({
-    validate(need(go$down, "Load file to render dotPlot"))
+    validate(need(go$down, "Load file to render dotPlot"),
+             need(ccrowsdown(), "Select at least 1 row" ))
     ccrowsdown <- ccrowsdown()
     goBarplot(enrichGO = go$down, resGO = res$sh, genes= data$genesDown,
               category = "CC", nrows = ccrowsdown)
