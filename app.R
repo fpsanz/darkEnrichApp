@@ -47,64 +47,59 @@ options(shiny.maxRequestSize = 3000*1024^2)
 header <- dashboardHeader(title = "RNAseq viewer and report App", 
                           titleWidth = 300, 
                           dropdownMenuOutput("messageMenu"),
-                          tags$li(class="dropdown", actionButton("moreinfo","Tutorial",
-                                                                 style = "background-color: #8ec4d9"),
+                          tags$li(class="dropdown", 
+                                  actionButton("notesButton","Report notes"),
                                   style="margin-top:8px; margin-right: 5px"),
-                          tags$li(class="dropdown", actionButton("notesButton","Notes"),
-                                  style="margin-top:8px; margin-right: 5px"),
-                          tags$li(class = "dropdown", actionButton("aboutButton", "About"),
-                                  style="margin-top:8px; margin-right: 15px"),
-                          tags$li(class = "dropdown", actionBttn(inputId = "resetbutton",
-                                             label = "Reset App", style="simple", size="sm",
-                                             color ="danger"),
+                          tags$li(class = "dropdown",
+                                  actionButton("report2", "HTML report"),
                                   style="margin-top:8px; margin-right: 10px"
-                                   )
+                                   ),
+                          tags$li(class="dropdown", 
+                                  actionButton("moreinfo","Credits",
+                                               style = "background-color: #8ec4d9"),
+                                  style="margin-top:8px; margin-right: 5px"),
+                          tags$li(class = "dropdown",
+                                  actionButton("aboutButton", "About",
+                                               style = "background-color: #8ec4d9"),
+                                  style="margin-top:8px; margin-right: 15px")
 )
 ### SIDEBAR ##########
 sidebar <- dashboardSidebar(useShinyalert(),
                             useShinyjs(),
+                            tags$br(),
                             sidebarMenu(id="menupreview",
                               menuItem("App Information",
                                        tabName = "info",
                                        icon = icon("info"))),
-                            sidebarMenu(
-                                menuItem(
-                                    pickerInput(
-                                        inputId = "specie",
-                                        label = "1. Select species",
-                                        choices = list( "Human" = "Hs",
-                                                        "Mouse" = "Mm"),
-                                        options = list(title = "species"),
-                                        selected = NULL
-                                    ) 
-                                )
-                            ),
-                            sidebarMenu(menuItem(uiOutput("matrixDeseq"))),
-                            sidebarMenu(fluidRow(
-                                        column(width=1,menuItem(uiOutput("circleinfoDO"))),
-                                        column(width=11,menuItem(uiOutput("tooltipDO")),
-                                        menuItem(uiOutput("deseqFile"))))),
-                            sidebarMenu(fluidRow(
-                                        column(width=1,menuItem(uiOutput("circleinfoCM"))),
-                                        column(width=11,menuItem(uiOutput("tooltipCM")),
-                                        menuItem(uiOutput("countFile"))))),
-                            sidebarMenu(fluidRow(
-                                        column(width = 11,
-                                          menuItem(uiOutput("sampleFile"))))),
+                            # sidebarMenu(
+                            #     menuItem(
+                            #         pickerInput(
+                            #             inputId = "specie",
+                            #             label = "1. Select species",
+                            #             choices = list( "Human" = "Hs",
+                            #                             "Mouse" = "Mm"),
+                            #             options = list(title = "species"),
+                            #             selected = NULL
+                            #         ) 
+                            #     )
+                            # ),
+                            # sidebarMenu(menuItem(uiOutput("matrixDeseq"))),
+                            # sidebarMenu(fluidRow(
+                            #             column(width=1,menuItem(uiOutput("circleinfoDO"))),
+                            #             column(width=11,menuItem(uiOutput("tooltipDO")),
+                            #             menuItem(uiOutput("deseqFile"))))),
+                            # sidebarMenu(fluidRow(
+                            #             column(width=1,menuItem(uiOutput("circleinfoCM"))),
+                            #             column(width=11,menuItem(uiOutput("tooltipCM")),
+                            #             menuItem(uiOutput("countFile"))))),
+                            # sidebarMenu(fluidRow(
+                            #             column(width = 11,
+                            #               menuItem(uiOutput("sampleFile"))))),
                             sidebarMenu(id="menuimport",sidebarMenuOutput("importvw")),
                             sidebarMenu(id = "previewMenu", sidebarMenuOutput("prevw")),
                             sidebarMenu("", sidebarMenuOutput("menu")),
-                            tags$br(),
-                            sidebarMenu(menuItem(uiOutput("design"))),
-                            box(width = 12,
-                            h5(strong("Generate report"), align = 'center'),
-                              sidebarMenu( 
-                                menuItem(
-                                  fluidRow(column(12, align = "center", offset=0, uiOutput("report"))))),
-                              sidebarMenu(
-                                menuItem(
-                                  fluidRow(column(12, align = "center", offset=0, uiOutput("pdf")))))
-                            ),
+                            # tags$br(),
+                            # sidebarMenu(menuItem(uiOutput("design"))),
                             tags$div(
                             tags$a(href='https://jacob.cea.fr/drf/ifrancoisjacob/Pages/Departements/MIRCen/themes/astrocytes-reactifs-biomarqueurs-imagerie-cibles-therapeutiques.aspx', target="_blank",
                                    tags$img(src='mircen.png',width='50%',
@@ -133,35 +128,10 @@ body <- dashboardBody(
     tabItems(
     # Initial INFO
       tabItem( tabName = "info",
-               br(),
-               fluidRow(column(offset = 2,width = 9,
-                               box(width=10,
-                                   status = "info",
-                                   title = h1(strong("Welcome to EnrichApp 2021!") ),
-                                   h3("Before starting using the app"),
-                                   p("The program will import either a counting matrix 
-                                   with a table of sample information 
-                (both in separated excel files) or a DeseqDataSet object, 
-                generated by the DESeq function of the", 
-                a("DESeq2", href="https://bioconductor.org/packages/release/bioc/vignettes/DESeq2/inst/doc/DESeq2.html"),
-                "library and compress as a RDS file. 
-              Make sure that your objects matched this and enjoy your enrichment analysis ;)"),
-              br(),
-              h3("Get the app ready to be used!"),
-              p("First of all, select the species of your experiment. 
-              Then the option to choose between entering your Count matrix / DESeq object  
-              containing your data will be unlocked. Make your choice and upload your files. 
-              Select your conditions and/or design and when the loading symbol stops moving, 
-              you will be moved to the next tab! "),
-              br(),
-              p("Take advantage of every symbol of info" , icon("info-circle"), "that you might find.
-              It can provide you with information that may be useful for 
-              the proper functioning of the app."),
-              br(),
-              h3("How to download the app"),
-              p("This app can be found on ",
-                a("GitHub.", href = "https://github.com/MiriamRiquelmeP/Full-EnrichApp") ) ),
-               ) ) ),
+               source(file = "ui-info-tab.R",
+                      local = TRUE,
+                      encoding = "UTF-8"
+                )$value),
       # import tab ######
       tabItem(tabName = "tabimport",
               source(file = "ui-import-tab.R",
@@ -250,9 +220,6 @@ server <- function(input, output, session) {
                imageUrl = "dna-svg-small-13.gif", 
                imageWidth = 200, imageHeight = 100, html=TRUE)})
 
-  observeEvent(input$resetbutton,{
-    session$reload()
-  })
   
   observeEvent(input$moreinfo,{
     showModal(
@@ -507,7 +474,7 @@ server <- function(input, output, session) {
       output$countFile <- renderUI({
       validate(need(input$matrixDeseq =="cm", ""))
       fileInput("countFile",
-          "3. Choose file with counts",
+          "3.1. Choose file with counts",
           placeholder = "Counts",
           accept = c(".txt", ".tsv", ".xlsx") )
   })
@@ -527,7 +494,7 @@ server <- function(input, output, session) {
       output$sampleFile <- renderUI({
       validate(need(input$matrixDeseq =="cm", ""))  
       fileInput("sampleFile",
-          "4. Choose file with sample data",
+          "3.2. Choose file with sample data",
           placeholder = "Sample",
           accept = c(".txt", ".tsv", ".xlsx") )
   })
@@ -593,7 +560,7 @@ server <- function(input, output, session) {
           names(opciones) <- resultsNames(datos$dds)[-1]
           pickerInput(
           inputId = "designPicker",
-          label = "Select design",
+          label = "4. Select design",
           choices = opciones,
           options = list(title = "Design"),
           selected = NULL
@@ -632,9 +599,10 @@ server <- function(input, output, session) {
   output$importvw <- renderMenu({
     validate(need(countdata$sample,""),
              need(countdata$count,""))
+    sidebarMenu(
     menuItem("5. Import view",
              tabName = "tabimport",
-             icon = icon("file-import"))
+             icon = icon("file-import")))
   })
   # ui selector sample groups ###################
   output$sampleGroup <- renderUI({
@@ -2911,12 +2879,7 @@ output$barKeggAll <- downloadHandler(
       ggsave(file, svg$gseaplot, device = "svg", width = 10, units = "in") }
   )
   # ............ ###############################
-  # author name ######################
-  #author <- reactive({input$author})
   # generate report #############################
-  output$report <- renderUI({
-    actionButton("report2", "html report")
-  })
 
   observeEvent(input$report2, {
      showModal( modalDialog(
