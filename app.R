@@ -920,6 +920,7 @@ server <- function(input, output, session) {
     res.sh <- res.sh %>% select(-lfcSE) # 210/03/2021 eliminar columna lfcSE
     datatable( res.sh, extensions = "Buttons", escape = FALSE,
                rownames = FALSE,
+               colnames = c("User GeneID","SYMBOL","ENSEMBL","ENTREZ","Description","baseMean","log2FoldChange","pAdj"),
                filter = list(position="top", clear=FALSE),
                options = list(order = list(list(7, 'asc')),
                  lengthMenu = list(c(10,25,50,100,-1), c(10,25,50,100,"All")),
@@ -1805,7 +1806,7 @@ output$barKeggAll <- downloadHandler(
   # GO gobarplot BP all #######################
   output$gobarplotAllBP <- renderPlot({
     validate(need(go$all, "Load file to render dotPlot"), 
-             need(bprowsall(), "Select at least 1 row" ) )
+             need(length(bprowsall())>=2, "Select at least 2 row" ) )
     bprowsall <- bprowsall()
     p <- goBarplot(enrichGO = go$all, resGO = res$sh, genes= data$genesall,
               category = "BP", nrows = bprowsall)
@@ -1822,7 +1823,7 @@ output$barKeggAll <- downloadHandler(
   output$goCircleAllBP <- renderPlot({
     validate(need(go$all, "Load file to render dotPlot"),
              need(res$sh,""),
-             need( bprowsall() , "Select at least 4 rows"))
+             need( length(bprowsall())>=4 , "Select at least 4 rows"))
     bprowsall <- bprowsall()
     if(length(bprowsall)>=4){
       circ <- data2circle(go=go$all[bprowsall, ], res=res$sh, genes=data$genesall)
@@ -1839,7 +1840,7 @@ output$barKeggAll <- downloadHandler(
   # GO cloud BP all #######################
   output$cloudBPAll <- renderPlot({
     validate(need(go$all, "Load file to render dotPlot"))
-    goall <- go$all[go$all$Ont=="BP", ]
+    goall <- go$all[go$all$Ont=="BP" & go$all$level>=input$bpallLevel, ]
     myggwordcloud(goall, bg = "#343e48")
   })
   
@@ -1847,7 +1848,7 @@ output$barKeggAll <- downloadHandler(
     filename = "cloudbpall.svg",
     content = function(file){
       svg(file, width = 8, height = 6)
-      myggwordcloud(go$all[go$all$Ont=="BP", ])
+      myggwordcloud(go$all[go$all$Ont=="BP" & go$all$level>=input$bpallLevel, ])
       dev.off()
     }
   )
@@ -1930,7 +1931,7 @@ output$barKeggAll <- downloadHandler(
   # GO gobarplot MF all ####################
   output$gobarplotAllMF <- renderPlot({
     validate(need(go$all, "Load file to render dotPlot"),
-             need(mfrowsall(), "Select at least 1 row" ))
+             need(length(mfrowsall())>=2, "Select at least 2 row"))
     mfrowsall <- mfrowsall()
     p <- goBarplot(enrichGO = go$all, resGO = res$sh, genes= data$genesall,
               category = "MF", nrows = mfrowsall)
@@ -1947,7 +1948,7 @@ output$barKeggAll <- downloadHandler(
   output$goCircleAllMF <- renderPlot({
     validate(need(go$all, "Load file to render dotPlot"),
              need(res$sh,""),
-             need( mfrowsall() , "Select at least 4 rows"))
+             need( length(mfrowsall())>=4 , "Select at least 4 rows"))
     mfrowsall <- mfrowsall()
     if(length(mfrowsall)>=4){
       circ <- data2circle(go=go$all[mfrowsall, ], res=res$sh, genes=data$genesall)
@@ -1964,7 +1965,7 @@ output$barKeggAll <- downloadHandler(
   # GO cloud MF all #######################
   output$cloudMFAll <- renderPlot({
     validate(need(go$all, "Load file to render dotPlot"))
-    goall <- go$all[go$all$Ont=="MF", ]
+    goall <- go$all[go$all$Ont=="MF" & go$all$level>=input$mfallLevel, ]
     myggwordcloud(goall, bg = "#343e48")
   })
   
@@ -1972,7 +1973,7 @@ output$barKeggAll <- downloadHandler(
     filename = "cloudmfall.svg",
     content = function(file){
       svg(file, width = 8, height = 6)
-      myggwordcloud(go$all[go$all$Ont=="MF", ])
+      myggwordcloud(go$all[go$all$Ont=="MF" & go$all$level>=input$mfallLevel, ])
       dev.off()
     }
   )
@@ -2055,7 +2056,7 @@ output$barKeggAll <- downloadHandler(
   # GO gobarplot CC all #######################
   output$gobarplotAllCC <- renderPlot({
     validate(need(go$all, "Load file to render dotPlot"),
-             need(ccrowsall(), "Select at least 1 row" ))
+             need(length(ccrowsall())>=2, "Select at least 2 row") )
     ccrowsall <- ccrowsall()
     p <- goBarplot(enrichGO = go$all, resGO = res$sh, genes= data$genesall,
               category = "CC", nrows = ccrowsall)
@@ -2072,7 +2073,7 @@ output$barKeggAll <- downloadHandler(
   output$goCircleAllCC <- renderPlot({
     validate(need(go$all, "Load file to render dotPlot"),
              need(res$sh,""),
-             need( ccrowsall() , "Select at least 4 rows"))
+             need( length(ccrowsall())>=4, "Select at least 4 rows"))
     ccrowsall <- ccrowsall()
     if(length(ccrowsall)>=4){
       circ <- data2circle(go=go$all[ccrowsall, ], res=res$sh, genes=data$genesall)
@@ -2089,7 +2090,7 @@ output$barKeggAll <- downloadHandler(
     # GO cloud CC all #######################
   output$cloudCCAll <- renderPlot({
     validate(need(go$all, "Load file to render dotPlot"))
-    goall <- go$all[go$all$Ont=="CC", ]
+    goall <- go$all[go$all$Ont=="CC" & go$all$level>=input$ccallLevel, ]
     myggwordcloud(goall, bg = "#343e48")
   })
   
@@ -2097,7 +2098,7 @@ output$barKeggAll <- downloadHandler(
     filename = "cloudccall.svg",
     content = function(file){
       svg(file, width = 8, height = 6)
-      myggwordcloud(go$all[go$all$Ont=="CC", ])
+      myggwordcloud(go$all[go$all$Ont=="CC" & go$all$level>=input$ccallLevel, ])
       dev.off()
     }
   )
@@ -2173,7 +2174,7 @@ output$barKeggAll <- downloadHandler(
   # GO gobarplot BP Up #######################
   output$gobarplotUpBP <- renderPlot({
     validate(need(go$up, "Load file to render dotPlot"),
-             need(bprowsup(), "Select at least 1 row" ))
+             need( length(bprowsup())>=2, "Select at least 2 row") )
     bprowsup <- bprowsup()
     p <- goBarplot(enrichGO = go$up, resGO = res$sh, genes= data$genesUp,
               category = "BP", nrows = bprowsup)
@@ -2191,7 +2192,7 @@ output$barKeggAll <- downloadHandler(
   output$goCircleUpBP <- renderPlot({
     validate(need(go$up, "Load file to render dotPlot"),
              need(res$sh,""),
-             need( bprowsup() , "Select at least 4 rows"))
+             need( length(bprowsup())>=4 , "Select at least 4 rows"))
     bprowsup <- bprowsup()
     if(length(bprowsup)>=4){
       circ <- data2circle(go=go$up[bprowsup, ], res=res$sh, genes=data$genesUp)
@@ -2209,7 +2210,7 @@ output$barKeggAll <- downloadHandler(
     # GO cloud BP UP  #######################
   output$cloudBPUp <- renderPlot({
     validate(need(go$up, "Load file to render dotPlot"))
-    goup <- go$up[go$up$Ont=="BP", ]
+    goup <- go$up[go$up$Ont=="BP" & go$up$level>=input$bpupLevel, ]
     myggwordcloud(goup, bg = "#343e48")
   })
   
@@ -2217,7 +2218,7 @@ output$barKeggAll <- downloadHandler(
     filename = "cloudbpup.svg",
     content = function(file){
       svg(file, width = 8, height = 6)
-      myggwordcloud(go$up[go$up$Ont=="BP", ])
+      myggwordcloud(go$up[go$up$Ont=="BP" & go$up$level>=input$bpupLevel, ])
       dev.off()
     }
   )
@@ -2297,7 +2298,7 @@ output$barKeggAll <- downloadHandler(
   # GO gobarplot MF Up #######################
   output$gobarplotUpMF <- renderPlot({
     validate(need(go$up, "Load file to render dotPlot"),
-             need(mfrowsup(), "Select at least 1 row" ) )
+             need(length(mfrowsup())>=2, "Select at least 2 row") )
       mfrowsup <- mfrowsup()
     p <- goBarplot(enrichGO = go$up, resGO = res$sh, genes= data$genesUp,
               category = "MF", nrows = mfrowsup)
@@ -2315,7 +2316,7 @@ output$barKeggAll <- downloadHandler(
   output$goCircleUpMF <- renderPlot({
     validate(need(go$up, "Load file to render dotPlot"),
              need(res$sh,""),
-             need( mfrowsup() , "Select at least 4 rows"))
+             need( length(mfrowsup())>=4 , "Select at least 4 rows"))
     mfrowsup <- mfrowsup()
     if(length(mfrowsup)>=4){
       circ <- data2circle(go=go$up[mfrowsup, ], res=res$sh, genes=data$genesUp)
@@ -2333,7 +2334,7 @@ output$barKeggAll <- downloadHandler(
   # GO cloud MF UP  #######################
   output$cloudMFUp <- renderPlot({
     validate(need(go$up, "Load file to render dotPlot"))
-    goup <- go$up[go$up$Ont=="MF", ]
+    goup <- go$up[go$up$Ont=="MF" & go$up$level>=input$mfupLevel, ]
     myggwordcloud(goup, bg = "#343e48")
   })
   
@@ -2341,7 +2342,7 @@ output$barKeggAll <- downloadHandler(
     filename = "cloudmfup.svg",
     content = function(file){
       svg(file, width = 8, height = 6)
-      myggwordcloud(go$up[go$up$Ont=="MF", ])
+      myggwordcloud(go$up[go$up$Ont=="MF" & go$up$level>=input$mfupLevel, ])
       dev.off()
     }
   )
@@ -2420,7 +2421,7 @@ output$barKeggAll <- downloadHandler(
   # GO gobarplot CC Up #######################
   output$gobarplotUpCC <- renderPlot({
     validate(need(go$up, "Load file to render dotPlot"),
-             need(ccrowsup(), "Select at least 1 row" ))
+             need(length(ccrowsup())>=2, "Select at least 2 row"))
     ccrowsup <- ccrowsup()
     goBarplot(enrichGO = go$up, resGO = res$sh, genes= data$genesUp,
               category = "CC", nrows = ccrowsup)
@@ -2437,7 +2438,7 @@ output$barKeggAll <- downloadHandler(
   output$goCircleUpCC <- renderPlot({
     validate(need(go$up, "Load file to render dotPlot"),
              need(res$sh,""),
-             need( ccrowsup() , "Select at least 4 rows"))
+             need( length(ccrowsup())>=4 , "Select at least 4 rows"))
     ccrowsup <- ccrowsup()
     if(length(ccrowsup)>=4){
       circ <- data2circle(go=go$up[ccrowsup, ], res=res$sh, genes=data$genesUp)
@@ -2461,7 +2462,7 @@ output$barKeggAll <- downloadHandler(
     # GO cloud CC UP  #######################
   output$cloudCCUp <- renderPlot({
     validate(need(go$up, "Load file to render dotPlot"))
-    goup <- go$up[go$up$Ont=="CC", ]
+    goup <- go$up[go$up$Ont=="CC" & go$up$level>=input$ccupLevel, ]
     myggwordcloud(goup, bg = "#343e48")
   })
   
@@ -2469,7 +2470,7 @@ output$barKeggAll <- downloadHandler(
     filename = "cloudccup.svg",
     content = function(file){
       svg(file, width = 8, height = 6)
-      myggwordcloud(go$up[go$up$Ont=="CC", ])
+      myggwordcloud(go$up[go$up$Ont=="CC" & go$up$level>=input$ccupLevel, ])
       dev.off()
     }
   )
@@ -2547,7 +2548,7 @@ output$barKeggAll <- downloadHandler(
   # GO gobarplot BP down #######################
   output$gobarplotDownBP <- renderPlot({
     validate(need(go$down, "Load file to render dotPlot"),
-             need(bprowsdown(), "Select at least 1 row" ))
+             need(length(bprowsdown())>=2, "Select at least 2 row"))
     bprowsdown <- bprowsdown()
     p <- goBarplot(enrichGO = go$down, resGO = res$sh, genes= data$genesDown,
               category = "BP", nrows = bprowsdown)
@@ -2564,7 +2565,7 @@ output$barKeggAll <- downloadHandler(
   output$goCircleDownBP <- renderPlot({
     validate(need(go$down, "Load file to render dotPlot"),
              need(res$sh,""),
-             need( bprowsdown() , "Select at least 4 rows"))
+             need( length(bprowsdown())>=4 , "Select at least 4 rows"))
     bprowsdown <- bprowsdown()
     if(length(bprowsdown)>=4){
       circ <- data2circle(go=go$down[bprowsdown, ], res=res$sh, genes=data$genesDown)
@@ -2581,7 +2582,7 @@ output$barKeggAll <- downloadHandler(
   # GO cloud BP Down #######################
   output$cloudBPDown <- renderPlot({
     validate(need(go$down, "Load file to render dotPlot"))
-    godown <- go$down[go$down$Ont=="BP", ]
+    godown <- go$down[go$down$Ont=="BP" & go$down$level>=input$bpdownLevel, ]
     myggwordcloud(godown, bg = "#343e48")
   })
   
@@ -2589,7 +2590,7 @@ output$barKeggAll <- downloadHandler(
     filename = "cloudbpdown.svg",
     content = function(file){
       svg(file, width = 8, height = 6)
-      myggwordcloud(go$down[go$down$Ont=="BP", ])
+      myggwordcloud(go$down[go$down$Ont=="BP" & go$down$level>=input$bpdownLevel, ])
       dev.off()
     }
   )
@@ -2667,7 +2668,7 @@ output$barKeggAll <- downloadHandler(
   # GO gobarplot MF down #######################
   output$gobarplotDownMF <- renderPlot({
     validate(need(go$down, "Load file to render dotPlot"),
-             need(mfrowsdown(), "Select at least 1 row" ))
+             need(length(mfrowsdown())>=2, "Select at least 2 row"))
     mfrowsdown <- mfrowsdown()
     p <- goBarplot(enrichGO = go$down, resGO = res$sh, genes= data$genesDown,
               category = "MF", nrows = mfrowsdown)
@@ -2684,7 +2685,7 @@ output$barKeggAll <- downloadHandler(
   output$goCircleDownMF <- renderPlot({
     validate(need(go$down, "Load file to render dotPlot"),
              need(res$sh,""),
-             need( mfrowsdown() , "Select at least 4 rows"))
+             need( length(mfrowsdown())>=4 , "Select at least 4 rows"))
     mfrowsdown <- mfrowsdown()
     if(length(mfrowsdown)>=4){
       circ <- data2circle(go=go$down[mfrowsdown, ], res=res$sh, genes=data$genesDown)
@@ -2701,7 +2702,7 @@ output$barKeggAll <- downloadHandler(
     # GO cloud MF Down #######################
   output$cloudMFDown <- renderPlot({
     validate(need(go$down, "Load file to render dotPlot"))
-    godown <- go$down[go$down$Ont=="MF", ]
+    godown <- go$down[go$down$Ont=="MF" & go$down$level>=input$mfdownLevel, ]
     myggwordcloud(godown, bg = "#343e48")
   })
   
@@ -2709,7 +2710,7 @@ output$barKeggAll <- downloadHandler(
     filename = "cloudmfdown.svg",
     content = function(file){
       svg(file, width = 8, height = 6)
-      myggwordcloud(go$down[go$down$Ont=="MF", ])
+      myggwordcloud(go$down[go$down$Ont=="MF" & go$down$level>=input$mfdownLevel, ])
       dev.off()
     }
   )
@@ -2787,7 +2788,7 @@ output$barKeggAll <- downloadHandler(
   # GO gobarplot CC down #######################
   output$gobarplotDownCC <- renderPlot({
     validate(need(go$down, "Load file to render dotPlot"),
-             need(ccrowsdown(), "Select at least 1 row" ))
+             need(length(ccrowsdown())>=2, "Select at least 2 row"))
     ccrowsdown <- ccrowsdown()
     goBarplot(enrichGO = go$down, resGO = res$sh, genes= data$genesDown,
               category = "CC", nrows = ccrowsdown)
@@ -2804,7 +2805,7 @@ output$barKeggAll <- downloadHandler(
   output$goCircleDownCC <- renderPlot({
     validate(need(go$down, "Load file to render dotPlot"),
              need(res$sh,""),
-             need( ccrowsdown() , "Select at least 4 rows"))
+             need( length(ccrowsdown() )>=4 , "Select at least 4 rows"))
     ccrowsdown <- ccrowsdown()
     if(length(ccrowsdown)>=4){
       circ <- data2circle(go=go$down[ccrowsdown, ], res=res$sh, genes=data$genesDown)
@@ -2821,7 +2822,7 @@ output$barKeggAll <- downloadHandler(
     # GO cloud CC Down #######################
   output$cloudCCDown <- renderPlot({
     validate(need(go$down, "Load file to render dotPlot"))
-    godown <- go$down[go$down$Ont=="CC", ]
+    godown <- go$down[go$down$Ont=="CC" & go$down$level>=input$ccdownLevel, ]
     myggwordcloud(godown, bg = "#343e48")
   })
   
@@ -2829,7 +2830,7 @@ output$barKeggAll <- downloadHandler(
     filename = "cloudccdown.svg",
     content = function(file){
       svg(file, width = 8, height = 6)
-      myggwordcloud(go$down[go$down$Ont=="CC"])
+      myggwordcloud(go$down[go$down$Ont=="CC" & go$down$level>=input$ccdownLevel, ])
       dev.off()
     }
   )

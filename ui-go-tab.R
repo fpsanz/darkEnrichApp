@@ -22,8 +22,14 @@ fluidPage(
                 column( width = 9, offset = 2,
                     tabBox( width = 12,  height = "650px",# caja con pestañas para los plots
                             tabPanel(title = "GO term cloud", height = "600px", width = "100%",
-                                     fluidRow(column(width=12, downloadButton("cloudbpall","Download SVG"))),
-                                     fluidRow(column(width=12, plotOutput("cloudBPAll", height = "600px" )))
+                                     fluidRow(
+                                       column(width=12, downloadButton("cloudbpall","Download SVG"))),
+                                     fluidRow(
+                                       column(width=2, 
+                                              selectInput( "bpallLevel", label = "Select GO level", 
+                                                           choices = list(0,1,2,3,4,5,6,7,8,9,10),
+                                                           multiple = FALSE) ),
+                                       column(width=10, plotOutput("cloudBPAll", height = "600px" )))
                                      ),
                             tabPanel(title = "Barplot",
                                      fluidRow(column(
@@ -88,8 +94,15 @@ fluidPage(
                 column( width = 9, offset = 2,
                     tabBox( width = 12,  height = "650px",# caja con pestañas para los plots
                             tabPanel(title = "GO term cloud",width = "100%", height = "600px",
-                                     fluidRow(downloadButton("cloudmfall","Download SVG")),
-                                     fluidRow(plotOutput("cloudMFAll", height = "600px"))), 
+                                     fluidRow(
+                                       column(width = 12,downloadButton("cloudmfall","Download SVG"))),
+                                     fluidRow(
+                                       column(width=2, 
+                                              selectInput( "mfallLevel", label = "Select GO level", 
+                                                           choices = list(0,1,2,3,4,5,6,7,8,9,10),
+                                                           multiple = FALSE) ),
+                                       column(width = 10,
+                                         plotOutput("cloudMFAll", height = "600px")))), 
                             tabPanel(title = "Barplot",
                                      fluidRow(column(
                                          width = 3,
@@ -152,7 +165,12 @@ fluidPage(
                     tabBox( width = 12,  height = "650px",# caja con pestañas para los plots
                             tabPanel(title = "GO term cloud", width = "100%", height = "600px",
                                     fluidRow(downloadButton("cloudccall","Download SVG")),
-                                    fluidRow( plotOutput("cloudCCAll", height = "600px") )
+                                    fluidRow(
+                                      column(width=2, 
+                                             selectInput( "ccallLevel", label = "Select GO level", 
+                                                          choices = list(0,1,2,3,4,5,6,7,8,9,10),
+                                                          multiple = FALSE) ),
+                                      column(width=10,plotOutput("cloudCCAll", height = "600px") ))
                                     ),
                             tabPanel(title = "Barplot",
                                      fluidRow(column(
@@ -224,7 +242,12 @@ fluidPage(
                     tabBox( width = 12, height = "650px", # caja con pestañas para los plots
                         tabPanel(title = "GO term cloud",  height = "600px",
                                  fluidRow(downloadButton("cloudbpup","Download SVG")),
-                                 fluidRow( plotOutput("cloudBPUp", height = "600px") )
+                                 fluidRow(
+                                   column(width=2, 
+                                          selectInput( "bpupLevel", label = "Select GO level", 
+                                                       choices = list(0,1,2,3,4,5,6,7,8,9,10),
+                                                       multiple = FALSE) ),
+                                   column(width=10,plotOutput("cloudBPUp", height = "600px") ))
                                  ),
                         tabPanel(title = "Barplot",
                                  fluidRow(column(width=2,
@@ -267,7 +290,12 @@ fluidRow(  # primera fila
                     tabBox( width = 12,  height = "650px",# caja con pestañas para los plots
                         tabPanel(title = "GO term cloud",  height = "600px", width = "100%",
                                  fluidRow(downloadButton("cloudmfup","Download SVG")),
-                                 fluidRow( plotOutput("cloudMFUp", height = "600px") )
+                                 fluidRow( 
+                                   column(width=2, 
+                                          selectInput( "mfupLevel", label = "Select GO level", 
+                                                       choices = list(0,1,2,3,4,5,6,7,8,9,10),
+                                                       multiple = FALSE) ),
+                                   column(width=10, plotOutput("cloudMFUp", height = "600px") ))
                                  ),
                         tabPanel(title = "Barplot",
                                  fluidRow(column(width=2,
@@ -310,7 +338,12 @@ fluidRow(  # primera fila
                     tabBox( width = 12, height = "650px", # caja con pestañas para los plots
                         tabPanel(title = "GO term cloud",  height = "600px", width = "100%" ,
                                  fluidRow(downloadButton("cloudccup","Download SVG")),
-                                 fluidRow( plotOutput("cloudCCUp", height = "600px") )
+                                 fluidRow(
+                                   column(width=2, 
+                                          selectInput( "ccupLevel", label = "Select GO level", 
+                                                       choices = list(0,1,2,3,4,5,6,7,8,9,10),
+                                                       multiple = FALSE) ),
+                                   column(width=10, plotOutput("cloudCCUp", height = "600px") ))
                                  ),
                         tabPanel(title = "Barplot",
                                  fluidRow(column(width=2,
@@ -357,7 +390,12 @@ fluidRow(  # primera fila
                     tabBox( width = 12,  height = "650px",# caja con pestañas para los plots
                         tabPanel(title = "GO term cloud",  height = "600px", width = "100%",
                                  fluidRow(downloadButton("cloudbpdown","Download SVG")),
-                                 fluidRow( plotOutput("cloudBPDown", height = "600px") )
+                                 fluidRow(
+                                   column(width=2, 
+                                          selectInput( "bpdownLevel", label = "Select GO level", 
+                                                       choices = list(0,1,2,3,4,5,6,7,8,9,10),
+                                                       multiple = FALSE) ),
+                                   column(width=10, plotOutput("cloudBPDown", height = "600px") ))
                                  ),
                         tabPanel(title = "Barplot",
                                  fluidRow(column(width=2,
@@ -400,7 +438,12 @@ fluidRow(  # primera fila
                     tabBox( width = 12, height = "650px", # caja con pestañas para los plots
                         tabPanel(title = "GO term cloud",  height = "600px",width = "100%",
                                  fluidRow(downloadButton("cloudmfdown","Download SVG")),
-                                 fluidRow( plotOutput("cloudMFDown", height = "600px") )
+                                 fluidRow( 
+                                   column(width=2, 
+                                          selectInput( "mfdownLevel", label = "Select GO level", 
+                                                       choices = list(0,1,2,3,4,5,6,7,8,9,10),
+                                                       multiple = FALSE) ),
+                                   column(width=10, plotOutput("cloudMFDown", height = "600px") ))
                                  ),
                         tabPanel(title = "Barplot",
                                  fluidRow(column(width=2,
@@ -443,7 +486,12 @@ fluidRow(  # primera fila
                     tabBox( width = 12, height = "650px",# caja con pestañas para los plots
                         tabPanel(title = "GO term cloud",  height = "600px",width = "100%",
                                  fluidRow( downloadButton("cloudccdown","Download SVG")),
-                                 fluidRow( plotOutput("cloudCCDown", height = "600px") )
+                                 fluidRow( 
+                                   column(width=2, 
+                                          selectInput( "ccdownLevel", label = "Select GO level", 
+                                                       choices = list(0,1,2,3,4,5,6,7,8,9,10),
+                                                       multiple = FALSE) ),
+                                   column(width=10, plotOutput("cloudCCDown", height = "600px") ))
                                  ),
                         tabPanel(title = "Barplot",
                                  fluidRow(column(width=2,

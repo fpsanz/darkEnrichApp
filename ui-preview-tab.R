@@ -53,12 +53,53 @@ fluidPage(
         )
     ),
     column(
-        width = 5,
+        width = 4,
         offset = 1,
+        circleButton(
+          inputId = "infoColor",
+          icon = icon("info"),
+          size = "xs",
+          status = "primary"
+        ),
+        bsTooltip(
+          "infoColor",
+          paste0("Select color to customize ",
+                 "plots with up and/or down genes."),
+          
+          trigger = "hover",
+          placement = "right"
+        ),
         box(
             width = 12,
             title = "Up/Down color selector",
-            status = "info"
+            status = "info",
+            tagList(
+              spectrumInput(
+                inputId = "upColor",
+                label = "Pick upregulated color:",
+                selected = "#b30000",
+                width = "60%",
+                choices = list(
+                  list("#b30000","#e34a33","#fc8d59","#fdbb84","#fdd49e","#fef0d9"),
+                  list('#045a8d','#2b8cbe','#74a9cf','#a6bddb','#d0d1e6','#f1eef6'),
+                  list('#006d2c', '#2ca25f', '#66c2a4', '#99d8c9', '#ccece6','#edf8fb'),
+                  list('#252525', '#636363', '#969696', '#bdbdbd', '#d9d9d9', '#f7f7f7')
+                ),
+                options = list(`toggle-palette-more-text` = "Show more")
+              ),
+            spectrumInput(
+              inputId = "downColor",
+              label = "Pick downregulated color:",
+              selected = '#045a8d',
+              width = "60%",
+              choices = list(
+                list("#b30000","#e34a33","#fc8d59","#fdbb84","#fdd49e","#fef0d9"),
+                list('#045a8d','#2b8cbe','#74a9cf','#a6bddb','#d0d1e6','#f1eef6'),
+                list('#006d2c', '#2ca25f', '#66c2a4', '#99d8c9', '#ccece6','#edf8fb'),
+                list('#252525', '#636363', '#969696', '#bdbdbd', '#d9d9d9', '#f7f7f7')
+              ),
+              options = list(`toggle-palette-more-text` = "Show more")
+            )
         ) #tabbox
     ) #column
     ), 
@@ -279,40 +320,11 @@ fluidPage(
                       ), 
   fluidRow(
       column(width = 3,
-             box( title = "Customize plots",
+             box( title = "Gene highlighter",
                   width = NULL,
-                tagList(
-                    tags$p("Volcano & MA plots color scheme"),
-             spectrumInput(
-                 inputId = "upColor",
-                 label = "Pick upregulated color:",
-                 selected = "#b30000",
-                 width = "60%",
-                 choices = list(
-                     list("#b30000","#e34a33","#fc8d59","#fdbb84","#fdd49e","#fef0d9"),
-                     list('#045a8d','#2b8cbe','#74a9cf','#a6bddb','#d0d1e6','#f1eef6'),
-                     list('#006d2c', '#2ca25f', '#66c2a4', '#99d8c9', '#ccece6','#edf8fb'),
-                     list('#252525', '#636363', '#969696', '#bdbdbd', '#d9d9d9', '#f7f7f7')
-                 ),
-                 options = list(`toggle-palette-more-text` = "Show more")
-             ),
-             spectrumInput(
-                 inputId = "downColor",
-                 label = "Pick downregulated color:",
-                 selected = '#045a8d',
-                 width = "60%",
-                 choices = list(
-                     list("#b30000","#e34a33","#fc8d59","#fdbb84","#fdd49e","#fef0d9"),
-                     list('#045a8d','#2b8cbe','#74a9cf','#a6bddb','#d0d1e6','#f1eef6'),
-                     list('#006d2c', '#2ca25f', '#66c2a4', '#99d8c9', '#ccece6','#edf8fb'),
-                     list('#252525', '#636363', '#969696', '#bdbdbd', '#d9d9d9', '#f7f7f7')
-                 ),
-                 options = list(`toggle-palette-more-text` = "Show more")
-             ),
-             uiOutput("geneSelector")
+                  uiOutput("geneSelector")
              )
-             )
-  ),
+             ),
       column(
      width = 9,
      tabBox(
@@ -362,7 +374,7 @@ fluidPage(
                   column(width=8,tableOutput("texto2")),
                   column(width = 4, downloadButton("MAdownload","Download SVG"))
             )
- ))),
+ )))),
  fluidRow(column(width = 4, offset = 4,
             strong("Click to compute enrichment"),
             tags$br(),
