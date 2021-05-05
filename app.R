@@ -282,8 +282,8 @@ server <- function(input, output, session) {
     if(input$testAlgorithmPicker == "wald"){
       datos$dds <- DESeq(deseqObj, test = "Wald")
     }
-    if(input$testAlgorithmPicker == "ltr"){
-      datos$dds <- DESeq(deseqObj, test = "LTR", reduced = ~1, parallel = TRUE)
+    if(input$testAlgorithmPicker == "lrt"){
+      datos$dds <- DESeq(deseqObj, test = "LRT", reduced = ~1, parallel = TRUE)
       }
   })
   # Acciones al cargar fichero deseq ##########################
@@ -655,7 +655,7 @@ server <- function(input, output, session) {
       )
     HTML(paste0(tags$p("Select Wald's test or Likelihood Ratio Test."),
     tags$p("Wald's test performs pairwise test using first category as reference."),
-    tags$p("LTR performs comparison between full and reduced model"),tags$br()
+    tags$p("LRT performs comparison between full and reduced model"),tags$br()
     ))
   })
   # testAlgorithm #################
@@ -667,7 +667,7 @@ server <- function(input, output, session) {
     pickerInput(
           inputId = "testAlgorithmPicker",
           label = "7. Select test",
-          choices = list("Wald" = "wald", "LTR" = "ltr"),
+          choices = list("Wald" = "wald", "LRT" = "lrt"),
           options = list(title = "Test"),
           selected = NULL
         )
