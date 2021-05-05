@@ -30,7 +30,8 @@ fluidPage(
                               menuItem(uiOutput("countFile")),
                        
                               menuItem(uiOutput("sampleFile")))
-                       ))
+                       )),
+                   uiOutput("designMatrix")
                    ) # fin box
                ),
         column(width = 9,

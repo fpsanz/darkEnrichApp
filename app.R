@@ -553,7 +553,7 @@ server <- function(input, output, session) {
           accept = ".Rds")
   })
   
-  # InputDesign ###########################
+  # InputDesign de objeto deseq ###########################
   output$design <- renderUI({
         validate(need(datos$dds,""))
           opciones <- as.list(seq_len(length(resultsNames(datos$dds)[-1] )))
@@ -564,9 +564,26 @@ server <- function(input, output, session) {
           choices = opciones,
           options = list(title = "Design"),
           selected = NULL
-        ) 
+          ) 
           })
   
+  # InputDesign de countMatrix y countData
+    output$designMatrix <- renderUI({
+      validate(need(datos$dds,""),
+               need(countdata$sample,""),
+               need(countdata$count,""))
+      opciones <- as.list(seq_len(length(resultsNames(datos$dds)[-1] )))
+      names(opciones) <- resultsNames(datos$dds)[-1]
+      pickerInput(
+        inputId = "designPicker",
+        label = "4. Select design",
+        choices = opciones,
+        options = list(title = "Design"),
+        selected = NULL
+      )
+    })
+    
+    
   # side bar menu ####################
   output$menu <- renderMenu({
       validate(need(kgg$all, ""))
