@@ -110,18 +110,6 @@ params:
 ---
 
 
-```{r results="asis", echo=FALSE}
-cat("
-<style>
-#content {
-  max-width: 1080px;
-  margin-left: 250px;
-  background: #edf0f2;
-}
-</style>
-")
-```
-
 ```{r setup, echo=FALSE, include=FALSE, comment=FALSE}
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, out.width='100%',
                       comment = FALSE, message = FALSE)
