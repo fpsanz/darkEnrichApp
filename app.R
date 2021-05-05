@@ -518,7 +518,7 @@ server <- function(input, output, session) {
       samplesCount <- sort(colnames(countdata$count))
       samplesSample <- sort(countdata$sample[,1])
       if( is_empty(which(samplesSample != samplesCount ) )){
-        countdata$count <- countdata$count %>% select(countdata$sample[,1])
+        countdata$count <- countdata$count %>% dplyr::select(countdata$sample[,1])
         validateCountData$ok = TRUE
       } else {
       shinyalert("Sorry!!", "At least one sample name is inconsistent between the two tables", type = "error")
@@ -889,7 +889,7 @@ server <- function(input, output, session) {
   })
 
   # preview table ###################
-  output$preview <- DT::renderDT(server=FALSE,{
+  output$preview <- DT::renderDT({
     validate(need(datos$dds, "Load file to render table"),
              need(res$sh, "Load file to render table"))
     res.sh <- res$sh
@@ -902,7 +902,7 @@ server <- function(input, output, session) {
       list(extend = "copy", title=tituloTabla),
       list(extend="collection", buttons = c("csv", "excel"),
            text="Download", filename="expressionValues", title=tituloTabla ) )
-    res.sh <- res.sh %>% select(-lfcSE) # 210/03/2021 eliminar columna lfcSE
+    res.sh <- res.sh %>% dplyr::select(-lfcSE) 
     datatable( res.sh, extensions = "Buttons", escape = FALSE,
                rownames = FALSE,
                colnames = c("User GeneID","SYMBOL","ENSEMBL","ENTREZ","Description","baseMean","log2FoldChange","pAdj"),
@@ -929,7 +929,7 @@ server <- function(input, output, session) {
                )
     )   %>% 
       formatStyle('log2FoldChange',
-                      backgroundColor = styleInterval(0,  c("steelblue","red") ) ) %>% 
+                      backgroundColor = styleInterval(0,  c(input$downColor,input$upColor) ) ) %>% 
       formatStyle('baseMean', background = styleColorBar(res.sh$baseMean, "#357E43") )
   })
   
@@ -1234,17 +1234,17 @@ output$downTopone <- downloadHandler(
     ggsave(file, svg$topone, "svg", units = "in", width = 10, height = 10)}
 )
 ## karyoplot ######################################
-output$karyoPlot <- renderPlot({
+output$karyoPlot <- renderPlot(bg = "#46505a", {
     validate(need(res$sh, "Load file to render plot"))
     krtp(res$sh, specie = specie(), pval = padj(), fcdown = logfc()[1],
-         fcup = logfc()[2], bg="#46505a", coldown="#4ADBFF" , colup="#f7665c")
+         fcup = logfc()[2], bg="#46505a", coldown=input$downColor , colup=input$upColor )
 })
 output$downKrpt <- downloadHandler(
   filename = "karyoplot.png",
   content = function(file){
     png(file)
     krtp(res$sh, specie = specie(), pval = padj(), fcdown = logfc()[1],
-         fcup = logfc()[2], bg="#46505a", coldown="#4ADBFF" , colup="#f7665c")
+         fcup = logfc()[2], bg="#46505a", coldown= input$downColor , colup=input$upColor )
     dev.off()
   }
 )
