@@ -115,7 +115,7 @@ cat("
 <style>
 #content {
   max-width: 1080px;
-  margin-left: 300px;
+  margin-left: 250px;
   background: #edf0f2;
 }
 </style>
@@ -285,6 +285,7 @@ metadata <- as.data.frame(colData(params$datosdds)) %>% dplyr::select(-any_of(c(
                  list(pageLength = 10, white_space = "normal")
                )
     )
+
 ```
 
 ### Statistical expression values
