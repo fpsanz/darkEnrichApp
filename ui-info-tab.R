@@ -1,7 +1,7 @@
 fluidPage(
     br(),
     fluidRow(
-        column(width = 3 ,
+        column(width = 3,
                box(width = 12,
                    pickerInput(
                        inputId = "specie",
