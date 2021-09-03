@@ -12,7 +12,7 @@ library(grid)
 library(gridExtra)
 library(heatmaply)
 library(limma)
-library(mychordplot)
+library(`mychordplot`)
 #remotes::install_version("RSQLite", version = "2.2.5")
 library(org.Hs.eg.db) #Homo sapiens
 library(org.Mm.eg.db) #Mus musculus
