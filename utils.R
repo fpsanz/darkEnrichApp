@@ -1057,6 +1057,7 @@ loadGenes <- function(filegenes){
         name = as.character(colData(object)[[labels]]),
         labels = as.character(colData(object)[[labels]])
       )
+    names(d)[1:2] <- c(paste0("PC",axes[1]) , paste0("PC",axes[2])  )
   } else{
     colgroup <- factor(intgroup.df[ ,intgroup[1] ] )
     d <-
@@ -1069,6 +1070,7 @@ loadGenes <- function(filegenes){
         name = as.character(colData(object)[[labels]]),
         labels = as.character(colData(object)[[labels]])
       )
+    names(d)[1:2] <- c(paste0("PC",axes[1]) , paste0("PC",axes[2])  )
   }
   d$group <- as.factor(d$group)
   # assembly the data for the plot
@@ -1084,11 +1086,13 @@ loadGenes <- function(filegenes){
   }
  if(length(intgroup)>1){
     p <- ggplot(data = d,
-                aes_string(x = "PC1", y = "PC2", color = "group", shape = "shape", text="labels")) +
+                aes_string(x = as.character(names(d)[1]),
+                           y = as.character(names(d)[2]),
+                           color = "group", shape = "shape", text="labels")) +
       geom_point(size = 3) +
-      ggtitle("PCA for top 500 genes on normalized data") +
+      ggtitle(paste0("PCA for top ",min(ntop, length(rv))," genes on normalized data")) +
       xlab(paste0("PC",axes[1],": ", round(percentVar[axes[1]] * 100), "% variance")) +
-      ylab(paste0("PC",axes[1],": ", round(percentVar[axes[2]] * 100), "% variance")) +
+      ylab(paste0("PC",axes[2],": ", round(percentVar[axes[2]] * 100), "% variance")) +
       scale_color_manual(values = colours, name = intgroup[1]) +
       scale_shape_manual(values = seq_len(length(d$shape)), name=intgroup[2] )+
       #coord_fixed() +
@@ -1100,11 +1104,13 @@ loadGenes <- function(filegenes){
     }
   else{
     p <- ggplot(data = d,
-                aes_string(x = "PC1", y = "PC2", color = "group", text = "labels")) +
+                aes_string(x = as.character(names(d)[1]),
+                           y = as.character(names(d)[2]),
+                           color = "group", text = "labels") ) +
       geom_point(size = 3) +
       ggtitle("PCA for top 500 genes on normalized data") +
       xlab(paste0("PC",axes[1],": ", round(percentVar[axes[1]] * 100), "% variance")) +
-      ylab(paste0("PC",axes[1],": ", round(percentVar[axes[2]] * 100), "% variance")) +
+      ylab(paste0("PC",axes[2],": ", round(percentVar[axes[2]] * 100), "% variance")) +
       scale_color_manual(values = colours, name = intgroup[1]) +
       #coord_fixed() +
       ggrepel::geom_text_repel(aes(label = labels,# paste("",d$name, sep = ""),
@@ -2147,6 +2153,7 @@ heat2 <- function (vsd, n = 40, intgroup = NULL, sampleName = NULL,
                 margins = c(50,50,20,0)) }
     else{
       ggheatmap(mat, labRow = labrow, col_side_colors = df,
+                colors = viridis(n=256, alpha = 1, begin = 0, end = 1, option = "magma"),
               col_side_palette = ann, labCol = as.character(vsd[[sampleName]] ), fontsize_row = fsr,
               margins = c(50,50,20,0) )}
 }

@@ -1,4 +1,3 @@
-
 library(AnnotationDbi)
 library(chorddiag)
 library(DESeq2)
@@ -434,7 +433,7 @@ server <- function(input, output, session) {
   keggAllText <- reactive({input$keggAllText})
   GSEAText <- reactive({input$GSEAText})
   numheatmap <- reactive({input$numheatmap})
-  gene <- reactive({input$gene})
+  gene <- reactive({input$genetop1})
   typeBarKeggAll <- reactive({input$selectkeggall})
   typeBarBpAll <- reactive({input$selectbpall})
   typeBarMfAll <- reactive({input$selectmfall})
@@ -887,7 +886,8 @@ server <- function(input, output, session) {
       list(extend="collection", buttons = c("csv", "excel"),
            text="Download", filename="expressionValues", title=tituloTabla ) )
     res.sh <- res.sh %>% dplyr::select(-lfcSE) 
-    datatable( res.sh, extensions = "Buttons", escape = FALSE,
+    res.sh %>% mutate_if(is.character, as.factor) %>% 
+      datatable( extensions = "Buttons", escape = FALSE,
                rownames = FALSE,
                colnames = c("User GeneID","SYMBOL","ENSEMBL","ENTREZ","Description","baseMean","log2FoldChange","pAdj"),
                filter = list(position="top", clear=FALSE),
@@ -1143,6 +1143,7 @@ output$downCluster <- downloadHandler(
     p <- ggplot(z, aes_(as.name(variables()), ~count, colour = as.name(variables()[1] ), text = ~text ) ) + 
       scale_y_log10() +
       geom_point(position = position_jitter(width = 0.1, height = 0), size = 2) +
+      theme(axis.text.x = element_text(angle = 45, hjust = 0.95, vjust = 1))+
       facet_wrap(~symbol) + scale_color_manual( values = coloresPCA$colores() ) +
       ggtitle("Expression of top 6 most significant genes")
     svg$topsix <- p
@@ -1154,13 +1155,26 @@ output$downTopsix <- downloadHandler(
   content = function(file){
     ggsave(file, svg$topsix, "svg", units = "in", width = 10, height = 10)}
 )
+
+# ui selector de genes para top1 #######################
+output$gene <- renderUI({
+  validate(need(res$sh, ""),
+           need(padj(),""))
+  genes <- as.character(res$sh$GeneName_Symbol[ which(!( res$sh$padj>padj() &
+                                                           res$sh$log2FoldChange>logfc()[1] &
+                                                           res$sh$log2FoldChange<logfc()[2] )) ])
+  selectInput("genetop1", label="Select gene to label",
+              choices = genes,
+              multiple = FALSE)
+})
 # view TOP1 data ###################  
   output$top1 <- renderPlotly( {
     validate(need(datos$dds, ""),
              need(res$sh, "Load file to render plot"),
              need(variables(),"Load condition to render plot" ),
              need(coloresPCA$colores(), ""),
-             need(gene(), "Enter a gene of interest in Ensembl or symbol name"))
+             need(gene(), "Enter a gene of interest in Ensembl or symbol name")
+             )
     gene <- gene()
     generow <- which(conversion$ids == gene, arr.ind = TRUE)[1,1] #07/02/2021
     gene <- conversion$ids[generow,1] #07/02/2021
@@ -1190,6 +1204,7 @@ output$downTopsix <- downloadHandler(
                            text = ~text) ) + scale_y_log10() +
         geom_point(position = position_jitter(width = 0.1, height = 0), size = 2)+
         scale_color_manual( values = coloresPCA$colores() )+
+      theme(axis.text.x = element_text(angle = 45, hjust = 0.95, vjust = 1))+
         ggtitle(paste0(symbol) )
     # texto del plot1 #############
     output$top1text <- renderUI({
@@ -1238,6 +1253,7 @@ output$downKrpt <- downloadHandler(
                    need(coloresPCA$colores(), ""))
           p <- boxViolin( names = samplename() , vsd=rlog$datos, boxplotswitch=boxplotswitch(),
                     intgroup=variables(), customColor = coloresPCA$colores() ) 
+          p <- p + theme(axis.text.x = element_text(angle = 45, hjust = 0.95, vjust = 1))
           svg$boxviolin <- p
           print(p)
   })
@@ -1372,7 +1388,8 @@ output$barKeggAll <- downloadHandler(
     output$heatKeggAll <- downloadHandler(
     filename = "heatKeggAll.svg",
     content = function(file){
-    p <- heatmapKegg(svg$heatKeggAll[[1]],svg$heatKeggAll[[2]] )
+    #p <- heatmapKegg( svg$heatKeggAll[[1]], svg$heatKeggAll[[2]] )sustituido 06/09/21
+    p <- heatmapKeggLogFC(kggDT$all, res$sh, rowsAll() ) #añadido 06/09/21
     ggsave(filename= file, plot = p, device = "svg", width = 10, units = "in") }
   )
   # KEGG cnet All #################

@@ -101,7 +101,13 @@ fluidPage(
               options = list(`toggle-palette-more-text` = "Show more")
             )
         ) #tabbox
-    ) #column
+    ), #box
+      fluidRow(column(width = 12, offset = 1,
+      strong("Click to compute enrichment"),
+      tags$br(),
+      actionBttn("runEnrich", label = "Run enrichment", 
+                 size = "lg",color = "default",icon = icon("images") )
+    ))
     ), 
              fluidRow( column(width = 12,
                  tabBox(width = 12,
@@ -137,9 +143,9 @@ fluidPage(
                 box(
                     title = "Conditions and Variables",
                     width = NULL,
+                    uiOutput("samplesName"), 
                     uiOutput("sampleGroup"),
-                    uiOutput("colorPalettes"),
-                    uiOutput("samplesName"))
+                    uiOutput("colorPalettes"))
              ),
              column(width = 9,
                              tabBox( width = 12,
@@ -288,7 +294,8 @@ fluidPage(
                                           tagList(fluidRow(
                                             column(
                                               width = 3,
-                                              textInput("gene", value="", label = "Select gene name of interest"),
+                                              uiOutput("gene"),
+                                              #textInput("gene", value="", label = "Select gene name of interest"),
                                               htmlOutput("top1text"),
                                               downloadButton("downTopone","Download SVG")
                                             ),
@@ -373,12 +380,7 @@ fluidPage(
                   column(width=8,tableOutput("texto2")),
                   column(width = 4, downloadButton("MAdownload","Download SVG"))
             )
- )))),
- fluidRow(column(width = 4, offset = 4,
-            strong("Click to compute enrichment"),
-            tags$br(),
-            actionBttn("runEnrich", label = "Run enrichment", size = "lg", color = "default", icon = icon("images"))
-             ))
+ ))))
 ) # fin page
 
 
