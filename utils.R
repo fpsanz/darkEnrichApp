@@ -897,7 +897,9 @@ plotGOAll <- function(enrichdf, nrows = 30, orderby="p-val",
         theme(axis.text.y = element_text(angle = 0, hjust = 1)) + theme_bw() +
         scale_fill_manual(values = colorfill) +
         theme(panel.grid.major.y  = element_blank(),
-              axis.title.y = element_blank())
+              axis.title.y = element_blank())+
+      scale_y_continuous(breaks= pretty_breaks())
+    
     #r <- r %>% plotly::ggplotly(tooltip = "all")
     p <- ggplot(df, aes(fill = Regulation, y = DEG, x = goId,
                         text =paste0("p-val: ",format(p_val, scientific = T, digits = 4),"<br />Path: ",term) )) +
@@ -905,7 +907,9 @@ plotGOAll <- function(enrichdf, nrows = 30, orderby="p-val",
         theme(axis.text.y = element_text(angle = 0, hjust = 1)) + theme_bw() +
         scale_fill_manual(values = colorfill) +
         theme(panel.grid.major.y  = element_blank(),
-              axis.title.y = element_blank())
+              axis.title.y = element_blank())+
+      scale_y_continuous(breaks= pretty_breaks())
+    
     #p <- p %>% ggplotly(tooltip = "all")
     q <- ggplot(df, aes(fill = Regulation, y = DEG, x = goId,
                         text =paste0("p-val: ",format(p_val, scientific = T, digits = 4),"<br />Path: ",term) )) +
@@ -913,7 +917,8 @@ plotGOAll <- function(enrichdf, nrows = 30, orderby="p-val",
         theme(axis.text.y = element_text(angle = 0, hjust = 1)) + theme_bw() +
         scale_fill_manual(values = colorfill) +
         theme(panel.grid.major.y  = element_blank(),
-              axis.title.y = element_blank())
+              axis.title.y = element_blank())+
+      scale_y_continuous(breaks= pretty_breaks())
     #q <- q %>% ggplotly(tooltip = "all")
     return(list(p,q,r) ) 
 }
@@ -992,7 +997,9 @@ plotKeggAll <- function(enrichdf, nrows = 10, orderby = "p-val",
         theme(axis.text.y = element_text(angle = 0, hjust = 1)) + theme_bw() +
         scale_fill_manual(values = colorfill) +
         theme(panel.grid.major.y  = element_blank(),
-              axis.title.y = element_blank())
+              axis.title.y = element_blank())+
+      scale_y_continuous(breaks= pretty_breaks())
+    
     #r <- r %>% plotly::ggplotly(tooltip = "all" )
     p <- ggplot(df, aes(fill = Regulation, y = DEG, x = pathId,
                         text =paste0("p-val: ",format(p_val, scientific = T, digits = 4),"<br />Path: ",path ) )) +
@@ -1000,7 +1007,9 @@ plotKeggAll <- function(enrichdf, nrows = 10, orderby = "p-val",
         theme(axis.text.y = element_text(angle = 0, hjust = 1)) + theme_bw() +
         scale_fill_manual(values = colorfill) +
         theme(panel.grid.major.y  = element_blank(),
-              axis.title.y = element_blank())
+              axis.title.y = element_blank())+
+      scale_y_continuous(breaks= pretty_breaks())
+    
     #p <- p %>% ggplotly(tooltip = "all")
     q <- ggplot(df, aes(fill = Regulation, y = DEG, x = pathId, 
                         text =paste0("p-val: ",format(p_val, scientific = T, digits = 4),"<br />Path: ",path ) )) +
@@ -1008,7 +1017,9 @@ plotKeggAll <- function(enrichdf, nrows = 10, orderby = "p-val",
         theme(axis.text.y = element_text(angle = 0, hjust = 1)) + theme_bw() +
         scale_fill_manual(values = colorfill) +
         theme(panel.grid.major.y  = element_blank(),
-              axis.title.y = element_blank())
+              axis.title.y = element_blank())+
+      scale_y_continuous(breaks= pretty_breaks())
+    
     #q <- q %>% ggplotly(tooltip = "all")
 
     return(list(p, q, r))
@@ -1937,8 +1948,9 @@ MA <- function (data, fdr = 0.05, fcDOWN = -1, fcUP = 1, genenames = NULL, detec
     data <- data[order(abs(data$lfc), decreasing = TRUE), 
                  ]
   labs_data <- stats::na.omit(data)
-  labs_data <- subset(labs_data, padj <= fdr & name != "" & 
-                        (lfc >= fcUP | lfc <=fcDOWN) )
+  # labs_data <- subset(labs_data, padj <= fdr & name != "" & 
+  #                       (lfc >= fcUP | lfc <=fcDOWN) )
+  labs_data <- subset(labs_data, name != "") 
   if(!is.null(usergenes) ){
     labs_data <- labs_data[which(labs_data$name %in% usergenes),  ] }
   else{  labs_data <- utils::head(labs_data, top) }

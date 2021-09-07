@@ -39,6 +39,7 @@ library(tidyverse)
 library(tidytext)
 library(visNetwork)
 library(wordcloud)
+library(scales)
 source("utils.R")
 source("updatepopModals.R")
 options(shiny.maxRequestSize = 3000*1024^2)
@@ -679,9 +680,10 @@ server <- function(input, output, session) {
   output$geneSelector <- renderUI({
     validate(need(res$sh, ""),
              need(padj(),""))
-    genes <- as.character(res$sh$GeneName_Symbol[ which(!( res$sh$padj>padj() &
-                                                             res$sh$log2FoldChange>logfc()[1] &
-                                                             res$sh$log2FoldChange<logfc()[2] )) ])
+    # genes <- as.character(res$sh$GeneName_Symbol[ which(!( res$sh$padj>padj() &
+    #                                                          res$sh$log2FoldChange>logfc()[1] &
+    #                                                          res$sh$log2FoldChange<logfc()[2] )) ])
+    genes <- as.character(res$sh$GeneName_Symbol)
     selectInput("genesVolcano", label="Select gene[s] to label",
                 choices = genes,
                 multiple = TRUE)
@@ -1357,21 +1359,25 @@ output$barKeggAll <- downloadHandler(
   
 
   # KEGG dotplot All ###################
-  output$keggDotAll <- renderPlot({
+  output$keggDotAll <- renderPlotly({
     validate(need(kgg$all, "Load file and select to render dotPlot"),
              need(rowsAll(), "Select the paths of interest to render DotPlot"))
     rowsAll <- rowsAll()
     if(is.null(rowsAll)){rowsAll <- c(1:20)}
-    p <- dotPlotkegg(kgg$all[rowsAll,], n = length(rowsAll))
-    svg$dotKeggAll <- p
-    print(p)
-  }, height = reactive( myHeightfunction(rowsAll() ) ) )
+    plt <- dotPlotkegg(kgg$all[rowsAll,], n = length(rowsAll))
+    svg$dotKeggAll <- plt
+    plt <- ggplotly(plt)
+    plt$height <- myHeightfunction( rowsAll() )
+    plt$x$layout$height <- myHeightfunction(rowsAll() )
+    plt
+  } )
   
   output$dotkeggAll <- downloadHandler(
     filename = "dotKeggAll.svg",
     content = function(file){
     ggsave(file, svg$dotKeggAll, device = "svg", width = 10, units = "in") }
   )
+  
   # KEGG heatmap All #################
   output$heatmapKeggAll <- renderPlotly({
     validate(need(kgg$all, "Load file and select to render Heatmap"),
@@ -2733,7 +2739,7 @@ output$barKeggAll <- downloadHandler(
     ccrowsdown <- ccrowsdown()
     if(is.null(ccrowsdown)){ccrowsdown <- c(1:10)}
     gosCC <- go$down[go$down$Ont=="CC",]
-    plotGO(enrichdf = gosCC[ccrowsdown,], nrows = length(ccrowsdown), ont="CC",
+    p <- plotGO(enrichdf = gosCC[ccrowsdown,], nrows = length(ccrowsdown), ont="CC",
            colors = c(input$downColor) )
     svg$barccdown <- p
     plt <- p

@@ -69,7 +69,7 @@ fluidPage(
                         tabPanel(title = "Dotplot",
                                  fluidRow(column(width=2,
                                                  downloadButton("dotkeggAll","Download SVG"))),
-                                 plotOutput("keggDotAll")
+                                 plotlyOutput("keggDotAll")
                                  ), # dotplot
                         tabPanel(title = "Heatmap",
                                  fluidRow(column(
