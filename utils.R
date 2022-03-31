@@ -595,6 +595,7 @@ customKegg <- function(data, universe = NULL, restrict.universe = FALSE,
     return(resultado)
 }
 
+
 # Función para crear tablas  con desplegable de genes ############
 datatable2 <- function(x, vars = NULL, opts = NULL, ...) {
   names_x <- names(x)
